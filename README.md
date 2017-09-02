@@ -1,6 +1,6 @@
 # yourdaily
 
-> yourdaily webApp
+> 高仿你的日记webApp
 
 ## Build Setup
 
