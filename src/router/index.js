@@ -1,6 +1,8 @@
 import Vue from 'vue';
 import Router from 'vue-router';
 import login from 'components/login/login.vue';
+import register from 'components/register/register.vue';
+import findpwd from 'components/findPwd/findPwd.vue';
 import user from 'components/user/user.vue';
 import daily from 'components/daily/daily.vue';
 import calendar from 'components/calendar/calendar.vue';
@@ -15,6 +17,16 @@ export default new Router({
       path: '/login',
       name: 'login',
       component: login
+    },
+    {
+      path: '/register',
+      name: 'register',
+      component: register
+    },
+    {
+      path: '/findpwd',
+      name: 'findPwd',
+      component: findpwd
     },
     {
       path: '/user',

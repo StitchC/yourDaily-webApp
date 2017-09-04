@@ -14,4 +14,4 @@ new Vue({
   router,
   render: h => h(App)
 });
-router.push('/login');
+// router.push('/login');
