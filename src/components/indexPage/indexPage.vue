@@ -20,8 +20,11 @@
     padding-top: 1px
     background-color: #5AABDE
     .logo
-      margin-top: 35%
+      position: fixed
+      top: 10%
+      width: 100%
       text-align: center
+      transition: all .5s linear
       .logo-icon
         width: 88px
     input
@@ -30,4 +33,9 @@
       background-color: rgba(255,255,255,0)
       &:focus
         outline: none
+
+  @media screen and (max-height: 300px)
+    .logo
+      opacity: 0
+
 </style>

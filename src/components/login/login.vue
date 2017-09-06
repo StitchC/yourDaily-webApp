@@ -4,43 +4,80 @@
         <p slot="page-title" class="title">你的日记</p>
         <div slot="input-group" class="input-group">
           <div class="input-wrap border-1px">
-            <input type="text" placeholder="邮箱">
+            <input type="text" placeholder="邮箱" v-model="accountVal">
           </div>
           <div class="input-wrap border-1px">
-            <input type="password" placeholder="密码">
+            <input type="password" placeholder="密码" v-model="pwdVal">
           </div>
         </div>
         <div class="btn-group" slot="btn-group">
-          <div class="login-btn">登陆</div>
+          <div class="login-btn" @click="login">登陆</div>
           <span class="register-link" @click="toRegister">没有账号？去注册</span>
         </div>
       </index-page>
-  </div>
+      <alert-dialog :dialog-show="dialogShowStatus" :txt="dialogTxt" @dialog-show-change="listenDialogStatus"></alert-dialog>
+    </div>
 </template>
 
 <script type="text/ecmascript-6">
   import router from '../../router/index.js';
   import indexPage from 'components/indexPage/indexPage.vue';
+  import dialog from 'components/alertDialog/alertdialog.vue';
 
   export default {
     data: function() {
-      return {};
+      return {
+        dialogShowStatus: false,
+        dialogTxt: '',
+        accountVal: '',
+        pwdVal: ''
+      };
     },
     router: router,
     methods: {
       toRegister: function() {
         this.$router.push('/register');
+      },
+      login: function() {
+        if(this.accountVal === '' || this.pwdVal === '') {
+          this.dialogTxt = '账号或密码不能为空哦';
+          this.dialogShowStatus = true;
+        }else {
+          this.$http.get('/yourdaily/php/login/check.php', {
+            params: {
+              account: this.accountVal,
+              pwd: this.pwdVal
+            }
+          }).then(res => {
+            let data = res.body;
+            if(data.status === 400) {
+              this.dialogTxt = '你的账号或密码有错误哦';
+              this.dialogShowStatus = true;
+            }else {
+              this.$router.push({
+                name: 'user',
+                params: {
+                  userId: data.info.id,
+                  userSex: data.info.sex
+                }
+              });
+            }
+          });
+        }
+      },
+      listenDialogStatus: function(bool) {
+        this.dialogShowStatus = bool;
       }
     },
     components: {
-      'index-page': indexPage
+      'index-page': indexPage,
+      'alert-dialog': dialog
     }
   };
 </script>
 
 <style lang="stylus" rel="stylesheet/stylus">
    @import "../../common/stylus/mixin.styl"
-
   .login-wrapper
     position: fixed
     width: 100%
@@ -48,15 +85,19 @@
     top: 0
     left: 0
     .title
-      margin-top: 15px
       font-size: 24px
       color: #fff
     .input-group
-      width: 80%
-      margin: 40% auto 0 auto
+      position: fixed
+      top: 50%
+      width: 100%
+      transition: all .3s linear
       .input-wrap
-        margin-top: 10px
-        border-1px(rgba(255,255,255,1))
+        width: 80%
+        margin: 0 auto
+        border-bottom-1px(rgba(255,255,255,1))
+        &:last-child
+          margin-top: 10px
         input
           width: 100%
           height: 45px
@@ -64,13 +105,15 @@
           &::-webkit-input-placeholder
             color: rgba(255,255,255,0.8)
     .btn-group
-      width: 80%
-      margin: 35px auto 0 auto
+      position: fixed
+      top: 80%
+      width: 100%
       text-align: center
       .login-btn
-        width: 100%
+        width: 80%
         height: 40px
         line-height: 40px
+        margin: 0 auto
         border-radius: 5px
         background-color: #549DCD
         color: #fff
@@ -79,4 +122,8 @@
         display: inline-block
         margin-top: 15px
         color: #fff
+
+   @media screen and (max-height: 300px)
+    .input-group
+      top: 10% !important
 </style>

@@ -5,6 +5,9 @@ import App from './App';
 import router from './router/index.js';
 import VueResource from 'vue-resource';
 
+// 导入样式表
+import 'common/stylus/index.styl';
+
 Vue.config.productionTip = false;
 Vue.use(VueResource);
 
