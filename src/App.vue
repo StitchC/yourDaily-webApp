@@ -16,7 +16,7 @@
     watch: {
       '$route': function(to, from) {
         let toPath = to.path;
-        if(toPath === '/user') {
+        if(toPath === '/user/daily' || toPath === '/user') {
           this.transitionName = 'router-fade';
         }
       }

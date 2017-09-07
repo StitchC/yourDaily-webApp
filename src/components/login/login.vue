@@ -23,6 +23,11 @@
   import router from '../../router/index.js';
   import indexPage from 'components/indexPage/indexPage.vue';
   import dialog from 'components/alertDialog/alertdialog.vue';
+  import {setLocalStorage} from 'common/js/localStorage.js';
+
+
+  const ERROR_CODE = 400;
+  const SUCCESS_CODE = 200;
 
   export default {
     data: function() {
@@ -50,17 +55,13 @@
             }
           }).then(res => {
             let data = res.body;
-            if(data.status === 400) {
+            if(data.status === ERROR_CODE) {
               this.dialogTxt = '你的账号或密码有错误哦';
               this.dialogShowStatus = true;
-            }else {
-              this.$router.push({
-                name: 'user',
-                params: {
-                  userId: data.info.id,
-                  userSex: data.info.sex
-                }
-              });
+            }else if(data.status === SUCCESS_CODE) {
+              this.$router.push('/user');
+              let locaStr = JSON.stringify(res.body.info);
+              setLocalStorage(locaStr);
             }
           });
         }

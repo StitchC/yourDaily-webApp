@@ -25,6 +25,8 @@
   import indexPage from 'components/indexPage/indexPage.vue';
   import dialog from 'components/alertDialog/alertdialog.vue';
 
+  const SUCCESS_CODE = 200;
+
   export default {
     data: function() {
       return {
@@ -74,7 +76,7 @@
               let data = res.body;
               console.log(data);
 
-              if(data.status === 200) {
+              if(data.status === SUCCESS_CODE) {
                 this.dialogShowStatus = true;
                 this.dialogTxt = '注册成功啦';
                 this.accountVal = '';
