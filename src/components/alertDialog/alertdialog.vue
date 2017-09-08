@@ -3,7 +3,7 @@
     <div class="dialog-wrapper" v-show="show">
       <div class="dialog-main">
         <p class="txt">{{txt}}</p>
-        <div class="btn" @click="hidden">好的</div>
+        <div class="btn" @click="hide">好的</div>
       </div>
     </div>
   </transition>
@@ -33,9 +33,8 @@
       }
     },
     methods: {
-      hidden: function() {
-        this.show = false;
-        this.$emit('dialog-show-change', this.show);
+      hide: function() {
+        this.$emit('dialog-show-change', !this.show);
       }
     },
     watch: {

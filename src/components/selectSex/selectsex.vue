@@ -17,6 +17,7 @@
 <script type="text/ecmascript-6">
   import alertdialog from 'components/alertDialog/alertdialog.vue';
 
+  const SUCCESS_CODE = 200;
   export default {
     data: function() {
       return {
@@ -36,7 +37,7 @@
           id: this.userId
         }, {emulateJSON: true}).then(res => {
           let data = res.body;
-          if(data.status === 200) {
+          if(data.status === SUCCESS_CODE) {
             this.show = false;
             this.$emit('selectsex-confirm', this.curSex);
           }else {

@@ -17,6 +17,18 @@
    import {getLocalStorage} from 'common/js/localStorage.js';
    import dailyNotePad from 'components/dailyNotePad/dailynotepad.vue';
 
+   /**
+    * 当前面user 组件进行了一连串的对用户性别的判断到最后会采用的异步的过程跳转到这个daily 组件中
+    * 组件可能还没有获得数据 不过没关系 vue 的响应式数据会为这个组件异步填充数据
+    *
+    * 而这个组件会执行如下一系列的初始化动作：
+    *   1、 通过 localStorage 获取用户的性别 初始化组件各部分的样式 实现不同性别用户不同风格
+    *
+    *   2、判断用户数据中的日记内容是否为空 为空会显示class 为 no-daily-hint 这个元素 否则隐藏
+    *
+    * 写日记的功能：
+    *   写日记功能基本在dailynotepad 组件中实现 请看dailynotepad 组件的注释
+    */
   export default {
     data: function() {
       return {
@@ -43,7 +55,6 @@
       },
       toggleNotepadShow: function() {
         this.notepadShow = true;
-        console.log('click');
       }
     }
   };
