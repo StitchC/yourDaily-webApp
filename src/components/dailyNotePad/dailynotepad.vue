@@ -3,35 +3,43 @@
     <div class="notepad-wrapper" v-show="show">
       <div class="notepad-header" :class="{'male-theme': userSex === 1, 'female-theme': userSex === 0}">
         <div class="close-btn icon-close" @click="closeNotepad"></div>
-        <div class="date">2017-09-07</div>
-        <div class="save-btn">保存</div>
+        <div class="date">{{curTime | formateTime}}</div>
+        <div class="save-btn" @click="uploadDaily">{{saveBtnStatus}}</div>
       </div>
       <div class="notepad-main">
         <div class="title-input">
-          <input type="text" placeholder="标题">
+          <input type="text" placeholder="标题" v-model="titleVal">
         </div>
         <div class="content-input">
-          <textarea class="daily-content" rows="20" placeholder="日记"></textarea>
+          <textarea class="daily-content" rows="20" placeholder="日记" v-model="contentVal"></textarea>
         </div>
       </div>
       <div class="notepad-footer" :class="{'male-theme': userSex === 1, 'female-theme': userSex === 0}">
         <div class="select-item-wrap">
-          <span class="mood-select" :class="[{'icon-mood-happy': curSelectType === -1 || curMoodType === -1}, curMoodClass === '' ? '' : curMoodClass]" @click="selectMood"></span>
-          <span class="weather-select" :class="[{'icon-weather-sunny': curSelectType === -1 || curWeatherType === -1}, curWeatherClass === '' ? '' : curWeatherClass]" @click="selectWeather"></span>
+          <span class="mood-select" :class="[{'icon-mood-happy': curSelectType === -1 || curMoodType === -1}, curSelectType === -1 && curMoodType === -1 ? '' : curMoodClass]" @click="selectMood"></span>
+          <span class="weather-select" :class="[{'icon-weather-sunny': curSelectType === -1 || curWeatherType === -1}, curSelectType === -1 && curWeatherType === -1 ? '' : curWeatherClass]" @click="selectWeather"></span>
         </div>
       </div>
       <extra-selector :classList="selectorClassList" :selectorToggleShow="selectorShow" @selector-change="listenSelectorChange" @selector-show-change="listenSelectorShow"></extra-selector>
+      <alert-dialog :dialog-show="dialogShowStatus" :txt="dialogTxt" @dialog-show-change="listenDialogShow"></alert-dialog>
+      <select-dialog :txt="selectDialogTxt" :show="selectDialogShowStatus" @confirm="confrimClose" @cancel="cancelClose"></select-dialog>
     </div>
   </transition>
 </template>
 
 <script type="text/ecmascript-6">
   import dailyExtraSelector from 'components/selectMoodandWeather/selectMoodAndWeather.vue';
+  import alertDialog from 'components/alertDialog/alertdialog.vue';
+  import selectDialog from 'components/selectDialog/selectdialog.vue';
+  import {formateDate} from 'common/js/formateDate.js';
+  import {getLocalStorage} from 'common/js/localStorage.js';
 
   const WEATHER_CLASS_LIST = ['icon-weather-sunny', 'icon-weather-cloudy', 'icon-weather-rainny', 'icon-weather-snowly'];
   const MOOD_CLASS_LIST = ['icon-mood-happy', 'icon-mood-normal', 'icon-mood-sadness'];
   const MOOD_SELECT_TYPE = 0;
   const WEATHER_SELECT_TYPE = 1;
+  const SUCCESS_CODE = 200;
+  const ERROR_CODE = 400;
 
   /**
    *  日记输入组件
@@ -49,43 +57,51 @@
    *
    *          当点击心情选项或天气选项的时候会自动获取对应的代替码
    *          这个交给 selectMood 和 selectWeather 处理
-   *          处理后将保存在 curSelectType 这个变量中
+   *          处理后将保存在 curSelectType 这个变量中记录当前选择的是心情选项还是天气选项
    *
-   *          而对 selectMoodAndWeather 组件中的选项初始化也交给 selectMood 和 selectWeather 处理
+   *          之后显示 selectMoodAndWeather 组件中
+   *          选项内容初始化也交给 selectMood 和 selectWeather 处理
    *          他们会把对应的icon 类名数组保存在  selectorClassList 这个变量中
    *          这个变量将会传递给 selectMoodAndWeather 组件
-   *          selectMoodAndWeather 组件做的就是将其遍历
-   *          同时 curSelectType 将会保存当前点击的选项的代替码
+   *          selectMoodAndWeather 组件做的就是将其遍历生成选项内容
    *
    *          当子组件选择完成后会触发 selector-change 事件
    *          这个事件交给 listenSelectorChange 方法处理这个方法接收一个参数是子组件选项的下标值
-   *          具体处理如下
-   *              1、确认当前点击的选项（是天气或是心情）
-   *                 如果是心情即将子组件传过来的下标值保存在 curMoodType 变量中
-   *                 否则保存在 curWeatherType 中
+   *          父组件操作流程如下
+   *              1、判断此时 curSelectType 的代替码是多少
+   *                 0：选择了心情选项
+   *                 1：选择了天气选项
    *
-*                 2、格式化类名
-   *                 这个类名将会添加到选项中 并且改变他们的样式
-   *                 通过子组件传递过来的下标值中 在对应icon类名数组中找到对应索引的值
-   *                 整理后的类名格式为：'active 对应icon类名'
-   *                 最后会在选项中加上如下语句控制类名
-   *                 [{'icon-mood-happy': curSelectType === -1 || curMoodType === -1}, curMoodClass === '' ? '' : curMoodClass]
-   *                 意思为： 如果当前没有选择任何天气或心情 或者 现在是初始化你并没有点击选项 那么将会加上默认的类名
-   *                 如果你选择了 就会加上对应的 已经格式化好了的类名
-   *                 
+   *              2、通过以上的代替码确定当前选择了哪个选项
+   *                 根据这个选项便可以做如下操作：
+   *                 1）根据对应的代替码 找到对应的选项内容类名数组
+   *                 2）根据子组件传递过来的下标值确定具体类名
+   *                 3）确定类名后格式化要输出的类名 格式为 'active 某个选项内容的类名'并保存到与其对应类名变量中（curMoodClass 或 curWeatherClass）
+   *                 4）于是便会触发选项绑定类名的条件判断
+   *                    拿天气选项的例子：
+   *                    [{'icon-mood-happy': curSelectType === -1 || curMoodType === -1}, curSelectType === -1 && curMoodType === -1 ? '' : curMoodClass]
+   *                    语句的意思为：如果在默认情况下（用户没有点击任何一个选项 或 点击了选项之后没有选择内容）会绑定 'icon-mood-happy' 这个类名，当用户点击了选项并且选择了内容就会绑定curMoodClass 保存好的类名
+   *
    */
 
   export default {
     data: function() {
       return {
         show: this.notepadShow,
+        saveBtnStatus: '保存',
         selectorShow: false,
         selectorClassList: [],
+        titleVal: '',
+        contentVal: '',
+        dialogShowStatus: false,
+        dialogTxt: '',
+        selectDialogShowStatus: false,
+        selectDialogTxt: '',
         curSelectType: -1,
-        curMoodType: -1,
-        curWeatherType: -1,
-        curMoodClass: '',
-        curWeatherClass: ''
+        curMoodType: -1,          // 保存选择的心情内容类型代替码 用作传输给后台和锁定切换的类名
+        curWeatherType: -1,       // 同上
+        curMoodClass: '',         // 保存要切换的心情选项类名
+        curWeatherClass: ''       // 保存要切换的天气选项类名
       };
     },
     props: {
@@ -94,14 +110,69 @@
       },
       notepadShow: {
         type: Boolean
+      },
+      curTime: {
+        type: Date
       }
     },
     components: {
-      'extra-selector': dailyExtraSelector
+      'extra-selector': dailyExtraSelector,
+      'alert-dialog': alertDialog,
+      'select-dialog': selectDialog
     },
     methods: {
       closeNotepad: function() {
+        if(this.contentVal === '' || this.saveBtnStatus === '已保存') {
+          this.$emit('notepad-close', !this.show);
+          this.curSelectType = -1;
+          this.curMoodType = -1;
+          this.curWeatherType = -1;
+          this.contentVal = '';
+          this.titleVal = '';
+          this.saveBtnStatus = '保存';
+        }else {
+          this.selectDialogShowStatus = true;
+          this.selectDialogTxt = '你确定要离开编辑日记吗';
+        }
+      },
+      confrimClose: function(bool) {
+        this.selectDialogShowStatus = bool;
         this.$emit('notepad-close', !this.show);
+        this.curSelectType = -1;
+        this.curMoodType = -1;
+        this.curWeatherType = -1;
+        this.contentVal = '';
+        this.titleVal = '';
+        this.saveBtnStatus = '保存';
+      },
+      cancelClose: function(bool) {
+        this.selectDialogShowStatus = bool;
+      },
+      uploadDaily: function() {
+        if(this.saveBtnStatus !== '已保存') {
+          if(this.contentVal === '') {
+            this.dialogShowStatus = true;
+            this.dialogTxt = '你还没有输入日记内容哦';
+          }else {
+            let data = JSON.parse(getLocalStorage('ohMyDaily').userData);
+            let userId = data.id;
+            this.$http.post('/yourdaily/php/user/uploadDaily.php', {
+              id: userId,
+              title: this.titleVal,
+              content: this.contentVal,
+              mood: this.curMoodType,
+              weather: this.curWeatherType
+            }, {emulateJSON: true}).then(res => {
+              if(res.body.status === SUCCESS_CODE) {
+                this.saveBtnStatus = '已保存';
+              }else if(res.body.status === ERROR_CODE) {
+                this.dialogShowStatus = true;
+                this.dialogTxt = '很抱歉，日记未能保存请检查你的网络';
+              }
+              console.log(res.body);
+            });
+          }
+        }
       },
       selectMood: function() {
         this.curSelectType = MOOD_SELECT_TYPE;
@@ -128,6 +199,14 @@
       },
       listenSelectorShow: function(bool) {
         this.selectorShow = bool;
+      },
+      listenDialogShow: function(bool) {
+        this.dialogShowStatus = bool;
+      }
+    },
+    filters: {
+      formateTime: function(val) {
+        return formateDate(val, 'yyyy-MM-dd');
       }
     },
     watch: {

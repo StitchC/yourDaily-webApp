@@ -56,6 +56,7 @@
         userId: '',
         userSex: -1,
         userData: null,
+        userConnectId: '',
         selectSexShow: false
       };
     },
@@ -64,11 +65,13 @@
       let user = JSON.parse(data.userData);
       this.userSex = parseInt(user.sex);
       this.userId = user.id;
+      this.userConnectId = user.connect;
 
       if(this.userSex === SEX_NOTINIT) {
         this.selectSexShow = true;
       }else {
         // 发送ajax 请求获取数据
+
         this.$router.push('/user/daily');
       }
     },

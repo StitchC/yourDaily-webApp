@@ -14,7 +14,7 @@
    *
    * 通过遍历对 select-item-wrap 元素中的每一个item 增加类名生成icon
    * 每一个icon 点击会触发父组件的监听事件 selector-change
-   * 而触发事件将由 itemSelected 方法处理 它会将对应的icon 的index 传递给父组件
+   * 而触发事件将由 itemSelected 方法处理 它会将对应icon 的index 传递给父组件
    * 至于父组件对选择后的icon 处理请看父组件的 dailynotepad 的注释
    */
 

@@ -9,7 +9,7 @@
       <span class="write-daily-btn icon-pen" @click="toggleNotepadShow"></span>
       <span class="total-daily-num">共0篇日记</span>
     </div>
-    <daily-notepad :user-sex="userSex" :notepad-show="notepadShow" @notepad-close="notepadClose"></daily-notepad>
+    <daily-notepad :user-sex="userSex" :cur-time="notepadDate" :notepad-show="notepadShow" @notepad-close="notepadClose"></daily-notepad>
   </div>
 </template>
 
@@ -33,6 +33,8 @@
     data: function() {
       return {
         userSex: -1,
+        curTime: false,
+        notepadDate: null,
         notepadShow: false
       };
     },
@@ -55,6 +57,7 @@
       },
       toggleNotepadShow: function() {
         this.notepadShow = true;
+        this.notepadDate = new Date();
       }
     }
   };
