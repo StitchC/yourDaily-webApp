@@ -16,8 +16,8 @@
       </div>
       <div class="notepad-footer" :class="{'male-theme': userSex === 1, 'female-theme': userSex === 0}">
         <div class="select-item-wrap">
-          <span class="mood-select" :class="[{'icon-mood-happy': curSelectType === -1 || curMoodType === -1}, curSelectType === -1 && curMoodType === -1 ? '' : curMoodClass]" @click="selectMood"></span>
-          <span class="weather-select" :class="[{'icon-weather-sunny': curSelectType === -1 || curWeatherType === -1}, curSelectType === -1 && curWeatherType === -1 ? '' : curWeatherClass]" @click="selectWeather"></span>
+          <span class="mood-select" :class="curMoodClass" @click="selectMood"></span>
+          <span class="weather-select" :class="curWeatherClass" @click="selectWeather"></span>
         </div>
       </div>
       <extra-selector :classList="selectorClassList" :selectorToggleShow="selectorShow" @selector-change="listenSelectorChange" @selector-show-change="listenSelectorShow"></extra-selector>
@@ -100,8 +100,8 @@
         curSelectType: -1,
         curMoodType: -1,          // 保存选择的心情内容类型代替码 用作传输给后台和锁定切换的类名
         curWeatherType: -1,       // 同上
-        curMoodClass: '',         // 保存要切换的心情选项类名
-        curWeatherClass: ''       // 保存要切换的天气选项类名
+        curMoodClass: 'icon-mood-happy',         // 保存要切换的心情选项类名
+        curWeatherClass: 'icon-weather-sunny'       // 保存要切换的天气选项类名
       };
     },
     props: {
@@ -127,6 +127,8 @@
           this.curSelectType = -1;
           this.curMoodType = -1;
           this.curWeatherType = -1;
+          this.curMoodClass = 'icon-mood-happy';
+          this.curWeatherClass = 'icon-weather-sunny';
           this.contentVal = '';
           this.titleVal = '';
           this.saveBtnStatus = '保存';
@@ -137,13 +139,18 @@
       },
       confrimClose: function(bool) {
         this.selectDialogShowStatus = bool;
-        this.$emit('notepad-close', !this.show);
         this.curSelectType = -1;
         this.curMoodType = -1;
         this.curWeatherType = -1;
+        // 修改选项的class
+        this.curMoodClass = 'icon-mood-happy';
+        this.curWeatherClass = 'icon-weather-sunny';
+        // 清空日记内容
         this.contentVal = '';
         this.titleVal = '';
         this.saveBtnStatus = '保存';
+        this.$emit('notepad-close', !this.show);
+        console.log(this.curSelectType + ',' + this.curMoodType + ',' + this.curWeatherType);
       },
       cancelClose: function(bool) {
         this.selectDialogShowStatus = bool;
@@ -169,7 +176,6 @@
                 this.dialogShowStatus = true;
                 this.dialogTxt = '很抱歉，日记未能保存请检查你的网络';
               }
-              console.log(res.body);
             });
           }
         }
@@ -178,6 +184,7 @@
         this.curSelectType = MOOD_SELECT_TYPE;
         this.selectorClassList = MOOD_CLASS_LIST;
         this.selectorShow = true;
+        console.log(this.curSelectType + ',' + this.curMoodType + ',' + this.curWeatherType);
       },
       selectWeather: function() {
         this.curSelectType = WEATHER_SELECT_TYPE;

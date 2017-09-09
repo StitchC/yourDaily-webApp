@@ -4,6 +4,7 @@
       <h3 class="hint-title">NO Enteries</h3>
       <p class="hint-txt">你还没有写过日记</p>
       <p class="begin-write-daily" :class="{'male-theme': userSex === 1, 'female-theme': userSex === 0}" @click="toggleNotepadShow">开始写日记</p>
+      <img :src="src">
     </div>
     <div class="daily-bottom-bar" :class="{'male-theme': userSex === 1, 'female-theme': userSex === 0}">
       <span class="write-daily-btn icon-pen" @click="toggleNotepadShow"></span>
@@ -35,7 +36,8 @@
         userSex: -1,
         curTime: false,
         notepadDate: null,
-        notepadShow: false
+        notepadShow: false,
+        src: '/yourdaily/userAvatar/timg.jpg'
       };
     },
     created: function() {

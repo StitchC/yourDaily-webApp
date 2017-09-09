@@ -16,7 +16,7 @@
         <p class="user-title">日记</p>
       </div>
       <div class="user-main">
-        <router-view></router-view>
+        <router-view :user-data="userAllData"></router-view>
       </div>
       <select-sex :select-show="selectSexShow" :user-id="userId" @selectsex-confirm="confirmSex"></select-sex>
     </div>
@@ -55,7 +55,7 @@
       return {
         userId: '',
         userSex: -1,
-        userData: null,
+        userAllData: null,
         userConnectId: '',
         selectSexShow: false
       };
@@ -71,8 +71,16 @@
         this.selectSexShow = true;
       }else {
         // 发送ajax 请求获取数据
-
-        this.$router.push('/user/daily');
+        this.$http.get('/yourdaily/php/user/getUserData.php', {
+          params: {
+            id: this.userId,
+            connectId: this.userConnectId
+          }
+        }).then(res => {
+          this.userAllData = res.body;
+          this.$router.push('/user/daily');
+          console.log(typeof res.body);
+        });
       }
     },
     components: {
@@ -81,8 +89,16 @@
     methods: {
       confirmSex: function(sex) {
         this.userSex = sex;
-        this.$router.push('/user/daily');
-        // 发送ajax 请求获取数据
+        this.$http.get('/yourdaily/php/user/getUserData.php', {
+          params: {
+            id: this.userId,
+            connectId: this.userConnectId
+          }
+        }).then(res => {
+            this.userAllData = res.body;
+            this.$router.push('/user/daily');
+            console.log(this.userAllData);
+        });
       }
     }
   };
