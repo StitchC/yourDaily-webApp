@@ -1,14 +1,34 @@
 <template>
   <div class="daily-wrapper">
-    <div class="no-daily-hint">
+    <div class="no-daily-hint" v-show="!userData.daily">
       <h3 class="hint-title">NO Enteries</h3>
       <p class="hint-txt">你还没有写过日记</p>
       <p class="begin-write-daily" :class="{'male-theme': userSex === 1, 'female-theme': userSex === 0}" @click="toggleNotepadShow">开始写日记</p>
-      <img :src="src">
     </div>
-    <div class="daily-bottom-bar" :class="{'male-theme': userSex === 1, 'female-theme': userSex === 0}">
+    <div class="daily-list-wrap">
+      <ul class="daily-list">
+        <li v-for="daily in userData.daily" class="daily-item" :class="{'male-theme': daily.sex === '1', 'female-theme': daily.sex === '0'}">
+          <div class="date-time">
+            <div class="date">{{daily.publicTime | translateDate}}</div>
+            <div class="day">{{daily.publicTime | translateDay}}</div>
+          </div>
+          <div class="daily-main">
+            <div class="header">
+              <div class="time">{{daily.publicTime | translateTime}}</div>
+              <div class="mood-weather" v-show="daily.mood !== -1 && daily.weather !== -1">
+                <span class="mood" :class="outputMoodClass(daily.mood)"></span>
+                <span class="weather" :class="outputWeatherClass(daily.weather)"></span>
+              </div>
+            </div>
+            <div class="daily-title">{{daily.title}}</div>
+            <div class="daily-txt">{{daily.content}}</div>
+          </div>
+        </li>
+      </ul>
+    </div>
+    <div class="daily-bottom-bar" :class="{'male-theme': userSex === 1, 'female-theme': userSex === 0}" v-show="userData.daily">
       <span class="write-daily-btn icon-pen" @click="toggleNotepadShow"></span>
-      <span class="total-daily-num">共0篇日记</span>
+      <span class="total-daily-num">{{userData.info.count}}篇日记</span>
     </div>
     <daily-notepad :user-sex="userSex" :cur-time="notepadDate" :notepad-show="notepadShow" @notepad-close="notepadClose"></daily-notepad>
   </div>
@@ -16,6 +36,7 @@
 
 <script type="text/ecmascript-6">
    import {getLocalStorage} from 'common/js/localStorage.js';
+   import {formateDate} from 'common/js/formateDate.js';
    import dailyNotePad from 'components/dailyNotePad/dailynotepad.vue';
 
    /**
@@ -37,7 +58,8 @@
         curTime: false,
         notepadDate: null,
         notepadShow: false,
-        src: '/yourdaily/userAvatar/timg.jpg'
+        weatherClassList: ['icon-weather-sunny', 'icon-weather-cloudy', 'icon-weather-rainny', 'icon-weather-snowly'],
+        moodClassList: ['icon-mood-happy', 'icon-mood-normal', 'icon-mood-sadness']
       };
     },
     created: function() {
@@ -60,8 +82,35 @@
       toggleNotepadShow: function() {
         this.notepadShow = true;
         this.notepadDate = new Date();
+      },
+      outputMoodClass: function(val) {
+        if(val !== -1) {
+          return this.moodClassList[val];
+        }
+      },
+      outputWeatherClass: function(val) {
+        if(val !== -1) {
+          return this.weatherClassList[val];
+        }
       }
-    }
+    },
+     filters: {
+       translateDate: function(val) {
+         let date = new Date(val);
+         return date.getDate();
+       },
+       translateDay: function(val) {
+         let date = new Date(val);
+         let chinese = ['一', '二', '三', '四', '五', '六', '日'];
+         let str = '星期' + chinese[date.getDay()];
+         return str;
+       },
+       translateTime: function(val) {
+         let date = new Date(val);
+         let str = formateDate(date, 'hh:mm');
+         return str;
+       }
+     }
   };
 </script>
 
@@ -100,6 +149,46 @@
           color: #4889B4
         &.female-theme
           color: #FE706F
+    .daily-list-wrap
+      .daily-list
+        .daily-item
+          display: flex
+          width: 90%
+          height: 70px
+          margin: 10px auto 0 auto
+          padding: 10px
+          border-radius: 5px
+          background-color: #fff
+          &.male-theme
+            color: #4889B4
+          &.female-theme
+            color: #FE706F
+          .date-time
+            flex: 50px 0 0
+            margin-right: 12px
+            .date
+              line-height: 40px
+              font-size: 25px
+              text-align: center
+            .day
+              font-size: 14px
+              text-align: center
+          .daily-main
+            flex: 1
+            .header
+              display: flex
+              .time
+                flex: 1
+                font-size: 14px
+              .mood-weather
+                flex: 1
+                text-align: right
+                font-size: 15px
+            .daily-title
+              font-size: 18px
+              white-space: nowrap
+              overflow: hidden
+              text-overflow: ellipsis
     .daily-bottom-bar
       position: fixed
       left: 0
@@ -119,10 +208,10 @@
         display: inline-block
         top: 50%
         left: 50%
-        width: 40px
-        height: 40px
-        line-height: 40px
-        margin: -20px 0 0 -20px
+        width: 30px
+        height: 30px
+        line-height: 30px
+        margin: -15px 0 0 -15px
         border-radius: 5px
         background-color: #fff
         text-align: center
@@ -131,7 +220,7 @@
       .total-daily-num
         position: absolute
         right: 10px
-        top: 5px
-        line-height: 40px
+        top: 10px
+        line-height: 30px
         color: #fff
 </style>

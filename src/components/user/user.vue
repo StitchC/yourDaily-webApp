@@ -5,7 +5,7 @@
         <div class="user-tool-bar">
           <div class="setting-icon icon-setting"></div>
           <div class="user-nav">
-            <router-link to="/user/daily" class="nav-item">日记</router-link>
+            <router-link to="/user/daily" class="nav-item">浏览</router-link>
             <router-link to="/user/calendar" class="nav-item">日历</router-link>
             <router-link to="/user/self" class="nav-item">我</router-link>
           </div>
@@ -79,7 +79,7 @@
         }).then(res => {
           this.userAllData = res.body;
           this.$router.push('/user/daily');
-          console.log(typeof res.body);
+          console.log(this.userAllData);
         });
       }
     },

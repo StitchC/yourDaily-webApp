@@ -121,17 +121,21 @@
       'select-dialog': selectDialog
     },
     methods: {
+      initNotepad: function() {
+        this.curSelectType = -1;
+        this.curMoodType = -1;
+        this.curWeatherType = -1;
+        this.curMoodClass = 'icon-mood-happy';
+        this.curWeatherClass = 'icon-weather-sunny';
+        this.contentVal = '';
+        this.titleVal = '';
+        this.saveBtnStatus = '保存';
+      },
       closeNotepad: function() {
         if(this.contentVal === '' || this.saveBtnStatus === '已保存') {
           this.$emit('notepad-close', !this.show);
-          this.curSelectType = -1;
-          this.curMoodType = -1;
-          this.curWeatherType = -1;
-          this.curMoodClass = 'icon-mood-happy';
-          this.curWeatherClass = 'icon-weather-sunny';
-          this.contentVal = '';
-          this.titleVal = '';
-          this.saveBtnStatus = '保存';
+          // 初始化日记输入组件
+          this.initNotepad();
         }else {
           this.selectDialogShowStatus = true;
           this.selectDialogTxt = '你确定要离开编辑日记吗';
@@ -139,16 +143,8 @@
       },
       confrimClose: function(bool) {
         this.selectDialogShowStatus = bool;
-        this.curSelectType = -1;
-        this.curMoodType = -1;
-        this.curWeatherType = -1;
-        // 修改选项的class
-        this.curMoodClass = 'icon-mood-happy';
-        this.curWeatherClass = 'icon-weather-sunny';
-        // 清空日记内容
-        this.contentVal = '';
-        this.titleVal = '';
-        this.saveBtnStatus = '保存';
+        // 初始化日记输入组件
+        this.initNotepad();
         this.$emit('notepad-close', !this.show);
         console.log(this.curSelectType + ',' + this.curMoodType + ',' + this.curWeatherType);
       },
