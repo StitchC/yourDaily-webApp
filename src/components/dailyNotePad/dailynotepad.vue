@@ -146,7 +146,6 @@
         // 初始化日记输入组件
         this.initNotepad();
         this.$emit('notepad-close', !this.show);
-        console.log(this.curSelectType + ',' + this.curMoodType + ',' + this.curWeatherType);
       },
       cancelClose: function(bool) {
         this.selectDialogShowStatus = bool;
@@ -159,6 +158,7 @@
           }else {
             let data = JSON.parse(getLocalStorage('ohMyDaily').userData);
             let userId = data.id;
+            let connectId = data.connect;
             this.$http.post('/yourdaily/php/user/uploadDaily.php', {
               id: userId,
               title: this.titleVal,
@@ -168,6 +168,8 @@
             }, {emulateJSON: true}).then(res => {
               if(res.body.status === SUCCESS_CODE) {
                 this.saveBtnStatus = '已保存';
+                // 触发上一级父组件事件
+                this.$emit('has-upload', userId, connectId);
               }else if(res.body.status === ERROR_CODE) {
                 this.dialogShowStatus = true;
                 this.dialogTxt = '很抱歉，日记未能保存请检查你的网络';

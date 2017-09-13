@@ -13,7 +13,8 @@
   "dependencies": {
     "vue": "^2.4.2",
     "vue-router": "^2.7.0",
-    "vue-resource": "^1.0.1"
+    "vue-resource": "^1.0.1",
+    "better-scroll": "^0.1.7"
   },
   "devDependencies": {
     "stylus": "0.54.5",

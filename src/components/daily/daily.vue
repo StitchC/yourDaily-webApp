@@ -1,13 +1,13 @@
 <template>
   <div class="daily-wrapper">
-    <div class="no-daily-hint" v-show="!userData.daily">
+    <div class="no-daily-hint" v-show="userData.daily.length === 0">
       <h3 class="hint-title">NO Enteries</h3>
       <p class="hint-txt">你还没有写过日记</p>
       <p class="begin-write-daily" :class="{'male-theme': userSex === 1, 'female-theme': userSex === 0}" @click="toggleNotepadShow">开始写日记</p>
     </div>
-    <div class="daily-list-wrap">
+    <div class="daily-list-wrap" ref="dailylist">
       <ul class="daily-list">
-        <li v-for="daily in userData.daily" class="daily-item" :class="{'male-theme': daily.sex === '1', 'female-theme': daily.sex === '0'}">
+        <li v-for="(daily, key) in userData.daily" class="daily-item" :class="{'male-theme': daily.sex === '1', 'female-theme': daily.sex === '0'}" @click="enterDailyDetail(key)">
           <div class="date-time">
             <div class="date">{{daily.publicTime | translateDate}}</div>
             <div class="day">{{daily.publicTime | translateDay}}</div>
@@ -26,11 +26,12 @@
         </li>
       </ul>
     </div>
-    <div class="daily-bottom-bar" :class="{'male-theme': userSex === 1, 'female-theme': userSex === 0}" v-show="userData.daily">
+    <div class="daily-bottom-bar" :class="{'male-theme': userSex === 1, 'female-theme': userSex === 0}" v-show="userData.daily.length !== 0">
       <span class="write-daily-btn icon-pen" @click="toggleNotepadShow"></span>
       <span class="total-daily-num">{{userData.info.count}}篇日记</span>
     </div>
-    <daily-notepad :user-sex="userSex" :cur-time="notepadDate" :notepad-show="notepadShow" @notepad-close="notepadClose"></daily-notepad>
+    <daily-notepad :user-sex="userSex" :cur-time="notepadDate" :notepad-show="notepadShow" @notepad-close="notepadClose" @has-upload="dailyHasUpload"></daily-notepad>
+    <daily-detail-dialog :detail-data="dailyDetail" :detail-dialog-show="detailDialogShow"></daily-detail-dialog>
   </div>
 </template>
 
@@ -38,6 +39,8 @@
    import {getLocalStorage} from 'common/js/localStorage.js';
    import {formateDate} from 'common/js/formateDate.js';
    import dailyNotePad from 'components/dailyNotePad/dailynotepad.vue';
+   import dailyDetailDialog from 'components/dailyDetailDialog/dailyDetailDialog.vue';
+   import BetScroll from 'better-scroll';
 
    /**
     * 当前面user 组件进行了一连串的对用户性别的判断到最后会采用的异步的过程跳转到这个daily 组件中
@@ -59,7 +62,9 @@
         notepadDate: null,
         notepadShow: false,
         weatherClassList: ['icon-weather-sunny', 'icon-weather-cloudy', 'icon-weather-rainny', 'icon-weather-snowly'],
-        moodClassList: ['icon-mood-happy', 'icon-mood-normal', 'icon-mood-sadness']
+        moodClassList: ['icon-mood-happy', 'icon-mood-normal', 'icon-mood-sadness'],
+        dailyDetail: {},
+        detailDialogShow: false
       };
     },
     created: function() {
@@ -72,8 +77,20 @@
         type: Object
       }
     },
+    mounted: function() {
+      this.$nextTick(() => {
+        if(!this.scroll) {
+          this.scroll = new BetScroll(this.$refs.dailylist, {
+            click: true
+          });
+        }else {
+          this.scroll.refresh();
+        }
+      });
+    },
     components: {
-      'daily-notepad': dailyNotePad
+      'daily-notepad': dailyNotePad,
+      'daily-detail-dialog': dailyDetailDialog
     },
     methods: {
       notepadClose: function(bool) {
@@ -92,33 +109,60 @@
         if(val !== -1) {
           return this.weatherClassList[val];
         }
+      },
+      dailyHasUpload: function(id, connectId) {
+        console.log('daily has upload');
+        // 触发上一级父组件事件
+        this.$emit('update-data', id, connectId);
+      },
+      enterDailyDetail: function(key) {
+        let detail = this.userData.daily[key];
+        this.dailyDetail.time = detail.publicTime;
+        this.dailyDetail.title = detail.title;
+        this.dailyDetail.content = detail.content;
+        this.dailyDetail.userId = detail.userId;
+        this.dailyDetail.sex = parseInt(detail.sex);
+        console.log(this.dailyDetail);
       }
     },
-     filters: {
-       translateDate: function(val) {
-         let date = new Date(val);
-         return date.getDate();
-       },
-       translateDay: function(val) {
-         let date = new Date(val);
-         let chinese = ['一', '二', '三', '四', '五', '六', '日'];
-         let str = '星期' + chinese[date.getDay()];
-         return str;
-       },
-       translateTime: function(val) {
-         let date = new Date(val);
-         let str = formateDate(date, 'hh:mm');
-         return str;
-       }
+    watch: {
+      userData: function(val) {
+        this.$nextTick(() => {
+          if(!this.scroll) {
+            this.scroll = new BetScroll(this.$refs.dailylist, {
+              click: true
+            });
+          }else {
+            this.scroll.refresh();
+          }
+        });
+      }
+    },
+    filters: {
+     translateDate: function(val) {
+       let date = new Date(val);
+       return date.getDate();
+     },
+     translateDay: function(val) {
+       let date = new Date(val);
+       let chinese = ['日', '一', '二', '三', '四', '五', '六'];
+       let str = '星期' + chinese[date.getDay()];
+       return str;
+     },
+     translateTime: function(val) {
+       let date = new Date(val);
+       let str = formateDate(date, 'hh:mm');
+       return str;
      }
+   }
   };
 </script>
 
 <style lang="stylus" rel="stylesheet/stylus">
   .daily-wrapper
+    position: relative
     width: 100%
     height: 100%
-    padding-top: 1px
     .no-daily-hint
       position: absolute
       width: 300px
@@ -150,12 +194,17 @@
         &.female-theme
           color: #FE706F
     .daily-list-wrap
+      position: absolute
+      top: 110px
+      bottom: 50px
+      width: 100%
+      overflow: hidden
       .daily-list
         .daily-item
           display: flex
           width: 90%
           height: 70px
-          margin: 10px auto 0 auto
+          margin: 0 auto 10px auto
           padding: 10px
           border-radius: 5px
           background-color: #fff

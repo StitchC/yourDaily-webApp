@@ -16,7 +16,7 @@
         <p class="user-title">日记</p>
       </div>
       <div class="user-main">
-        <router-view :user-data="userAllData"></router-view>
+        <router-view :user-data="userAllData" @update-data="requireData"></router-view>
       </div>
       <select-sex :select-show="selectSexShow" :user-id="userId" @selectsex-confirm="confirmSex"></select-sex>
     </div>
@@ -79,7 +79,6 @@
         }).then(res => {
           this.userAllData = res.body;
           this.$router.push('/user/daily');
-          console.log(this.userAllData);
         });
       }
     },
@@ -97,7 +96,17 @@
         }).then(res => {
             this.userAllData = res.body;
             this.$router.push('/user/daily');
-            console.log(this.userAllData);
+        });
+      },
+      requireData: function(id, connectId) {
+        // 日记上传成功之后会触发此函数
+        this.$http.get('/yourdaily/php/user/getUserData.php', {
+          params: {
+            id: id,
+            connectId: connectId
+          }
+        }).then(res => {
+          this.userAllData = res.body;
         });
       }
     }
@@ -210,8 +219,6 @@
     .user-main
       width: 100%
       height: 100%
-      padding-top: 150px
-
   @media screen and (max-width: 320px)
     .user-nav
       flex: 240px 0 0 !important
