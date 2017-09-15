@@ -7,7 +7,7 @@
     </div>
     <div class="daily-list-wrap" ref="dailylist">
       <ul class="daily-list">
-        <li v-for="(daily, key) in userData.daily" class="daily-item" :class="{'male-theme': daily.sex === '1', 'female-theme': daily.sex === '0'}" @click="enterDailyDetail(key)">
+        <li v-for="(daily, key) in userData.daily" class="daily-item" :class="{'male-theme': daily.sex === '1', 'female-theme': daily.sex === '0'}" @click="enterDailyDetail($event, key)">
           <div class="date-time">
             <div class="date">{{daily.publicTime | translateDate}}</div>
             <div class="day">{{daily.publicTime | translateDay}}</div>
@@ -31,7 +31,7 @@
       <span class="total-daily-num">{{userData.info.count}}篇日记</span>
     </div>
     <daily-notepad :user-sex="userSex" :cur-time="notepadDate" :notepad-show="notepadShow" @notepad-close="notepadClose" @has-upload="dailyHasUpload"></daily-notepad>
-    <daily-detail-dialog :detail-data="dailyDetail" :detail-dialog-show="detailDialogShow"></daily-detail-dialog>
+    <daily-detail-dialog :detail-data="dailyDetail" :detail-dialog-show="detailDialogShow" @detail-dialog-close="detailDialogClose"></daily-detail-dialog>
   </div>
 </template>
 
@@ -41,7 +41,6 @@
    import dailyNotePad from 'components/dailyNotePad/dailynotepad.vue';
    import dailyDetailDialog from 'components/dailyDetailDialog/dailyDetailDialog.vue';
    import BetScroll from 'better-scroll';
-
    /**
     * 当前面user 组件进行了一连串的对用户性别的判断到最后会采用的异步的过程跳转到这个daily 组件中
     * 组件可能还没有获得数据 不过没关系 vue 的响应式数据会为这个组件异步填充数据
@@ -100,6 +99,9 @@
         this.notepadShow = true;
         this.notepadDate = new Date();
       },
+      detailDialogClose: function() {
+        this.detailDialogShow = false;
+      },
       outputMoodClass: function(val) {
         if(val !== -1) {
           return this.moodClassList[val];
@@ -115,14 +117,21 @@
         // 触发上一级父组件事件
         this.$emit('update-data', id, connectId);
       },
-      enterDailyDetail: function(key) {
-        let detail = this.userData.daily[key];
-        this.dailyDetail.time = detail.publicTime;
-        this.dailyDetail.title = detail.title;
-        this.dailyDetail.content = detail.content;
-        this.dailyDetail.userId = detail.userId;
-        this.dailyDetail.sex = parseInt(detail.sex);
-        console.log(this.dailyDetail);
+      enterDailyDetail: function(event, key) {
+        if(event._constructed) {
+          let detail = this.userData.daily[key];
+
+          this.dailyDetail = {
+            dailyId: detail.id,
+            time: detail.publicTime,
+            title: detail.title,
+            content: detail.content,
+            userId: detail.userId,
+            sex: parseInt(detail.sex)
+          };
+
+         this.detailDialogShow = true;
+        };
       }
     },
     watch: {
