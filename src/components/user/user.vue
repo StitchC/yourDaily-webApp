@@ -99,7 +99,7 @@
         });
       },
       requireData: function(id, connectId) {
-        // 日记上传成功之后会触发此函数
+        // 日记任何修改之后会触发此函数
         this.$http.get('/yourdaily/php/user/getUserData.php', {
           params: {
             id: id,
@@ -128,6 +128,7 @@
       background-size: cover
       background-repeat: no-repeat
       .user-header
+        z-index: 50
         .user-nav
           display: flex
           flex: 270px 0 0

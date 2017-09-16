@@ -1,9 +1,9 @@
 <template>
   <transition name="notepad-slide">
     <div class="notepad-wrapper" v-show="show">
-      <div class="notepad-header" :class="{'male-theme': userSex === 1, 'female-theme': userSex === 0}">
+      <div class="notepad-header" :class="{'male-theme': allData.userSex === 1, 'female-theme': allData.userSex === 0}">
         <div class="close-btn icon-close" @click="closeNotepad"></div>
-        <div class="date">{{curTime | formateTime}}</div>
+        <div class="date">{{allData.curTime | formateTime}}</div>
         <div class="save-btn" @click="uploadDaily">{{saveBtnStatus}}</div>
       </div>
       <div class="notepad-main">
@@ -14,7 +14,7 @@
           <textarea class="daily-content" rows="20" placeholder="日记" v-model="contentVal"></textarea>
         </div>
       </div>
-      <div class="notepad-footer" :class="{'male-theme': userSex === 1, 'female-theme': userSex === 0}">
+      <div class="notepad-footer" :class="{'male-theme': allData.userSex === 1, 'female-theme': allData.userSex === 0}">
         <div class="select-item-wrap">
           <span class="mood-select" :class="curMoodClass" @click="selectMood"></span>
           <span class="weather-select" :class="curWeatherClass" @click="selectWeather"></span>
@@ -40,6 +40,8 @@
   const WEATHER_SELECT_TYPE = 1;
   const SUCCESS_CODE = 200;
   const ERROR_CODE = 400;
+  const ADD_DAILY_CODE = 0;
+  const MODIFY_DAILY_CODE = 1;
 
   /**
    *  日记输入组件
@@ -77,42 +79,38 @@
    *                 1）根据对应的代替码 找到对应的选项内容类名数组
    *                 2）根据子组件传递过来的下标值确定具体类名
    *                 3）确定类名后格式化要输出的类名 格式为 'active 某个选项内容的类名'并保存到与其对应类名变量中（curMoodClass 或 curWeatherClass）
-   *                 4）于是便会触发选项绑定类名的条件判断
-   *                    拿天气选项的例子：
-   *                    [{'icon-mood-happy': curSelectType === -1 || curMoodType === -1}, curSelectType === -1 && curMoodType === -1 ? '' : curMoodClass]
-   *                    语句的意思为：如果在默认情况下（用户没有点击任何一个选项 或 点击了选项之后没有选择内容）会绑定 'icon-mood-happy' 这个类名，当用户点击了选项并且选择了内容就会绑定curMoodClass 保存好的类名
+   *
+   *
    *
    */
 
   export default {
     data: function() {
       return {
-        show: this.notepadShow,
-        saveBtnStatus: '保存',
+        show: this.notepadShow, // 编辑日记组件显示/隐藏
+        curEditType: ADD_DAILY_CODE,         // 记录当前的输入环境 0 表示新增日记， 1 表示编辑日记
+        saveBtnStatus: '保存',  // 按钮内容
+        titleVal: this.allData.title,
+        contentVal: this.allData.content,
         selectorShow: false,
-        selectorClassList: [],
-        titleVal: '',
-        contentVal: '',
+        selectorClassList: [],  // 用作更换心情/ 天气组件中的选项
         dialogShowStatus: false,
         dialogTxt: '',
         selectDialogShowStatus: false,
         selectDialogTxt: '',
         curSelectType: -1,
-        curMoodType: -1,          // 保存选择的心情内容类型代替码 用作传输给后台和锁定切换的类名
-        curWeatherType: -1,       // 同上
-        curMoodClass: 'icon-mood-happy',         // 保存要切换的心情选项类名
-        curWeatherClass: 'icon-weather-sunny'       // 保存要切换的天气选项类名
+        curMoodType: this.allData.moodType,       // 保存选择的心情内容类型代替码 用作传输给后台和锁定切换的类名
+        curWeatherType: this.allData.weatherType, // 同上
+        curMoodClass: 'icon-mood-happy',          // 保存要切换的心情选项类名
+        curWeatherClass: 'icon-weather-sunny'     // 保存要切换的天气选项类名
       };
     },
     props: {
-      userSex: {
-        type: Number
+      allData: {
+        type: Object
       },
       notepadShow: {
         type: Boolean
-      },
-      curTime: {
-        type: Date
       }
     },
     components: {
@@ -133,7 +131,7 @@
       },
       closeNotepad: function() {
         if(this.contentVal === '' || this.saveBtnStatus === '已保存') {
-          this.$emit('notepad-close', !this.show);
+          this.$emit('notepad-close');
           // 初始化日记输入组件
           this.initNotepad();
         }else {
@@ -145,7 +143,7 @@
         this.selectDialogShowStatus = bool;
         // 初始化日记输入组件
         this.initNotepad();
-        this.$emit('notepad-close', !this.show);
+        this.$emit('notepad-close');
       },
       cancelClose: function(bool) {
         this.selectDialogShowStatus = bool;
@@ -159,22 +157,42 @@
             let data = JSON.parse(getLocalStorage('ohMyDaily').userData);
             let userId = data.id;
             let connectId = data.connect;
-            this.$http.post('/yourdaily/php/user/uploadDaily.php', {
-              id: userId,
-              title: this.titleVal,
-              content: this.contentVal,
-              mood: this.curMoodType,
-              weather: this.curWeatherType
-            }, {emulateJSON: true}).then(res => {
-              if(res.body.status === SUCCESS_CODE) {
-                this.saveBtnStatus = '已保存';
-                // 触发上一级父组件事件
-                this.$emit('has-upload', userId, connectId);
-              }else if(res.body.status === ERROR_CODE) {
-                this.dialogShowStatus = true;
-                this.dialogTxt = '很抱歉，日记未能保存请检查你的网络';
-              }
-            });
+
+            if(this.editType === ADD_DAILY_CODE) {
+              this.$http.post('/yourdaily/php/user/uploadDaily.php', {
+                id: userId,
+                title: this.titleVal,
+                content: this.contentVal,
+                mood: this.curMoodType,
+                weather: this.curWeatherType
+              }, {emulateJSON: true}).then(res => {
+                if(res.body.status === SUCCESS_CODE) {
+                  this.saveBtnStatus = '已保存';
+                  // 触发上一级父组件事件
+                  this.$emit('has-upload', userId, connectId);
+                }else if(res.body.status === ERROR_CODE) {
+                  this.dialogShowStatus = true;
+                  this.dialogTxt = '很抱歉，日记未能保存请检查你的网络';
+                }
+              });
+            }else if(this.editType === MODIFY_DAILY_CODE) {
+              this.$http.post('/yourdaily/php/user/modifyDaily.php', {
+                dailyId: this.allData.dailyId,
+                title: this.titleVal,
+                content: this.contentVal,
+                mood: this.curMoodType,
+                weather: this.curWeatherType
+              }, {emulateJSON: true}).then(res => {
+                if(res.body.status === SUCCESS_CODE) {
+                  this.saveBtnStatus = '已保存';
+                  // 触发上一级父组件事件
+                  this.$emit('has-upload', userId, connectId);
+                }else if(res.body.status === ERROR_CODE) {
+                  this.dialogShowStatus = true;
+                  this.dialogTxt = '很抱歉，日记未能保存请检查你的网络';
+                }
+              });
+            }
           }
         }
       },
@@ -182,7 +200,6 @@
         this.curSelectType = MOOD_SELECT_TYPE;
         this.selectorClassList = MOOD_CLASS_LIST;
         this.selectorShow = true;
-        console.log(this.curSelectType + ',' + this.curMoodType + ',' + this.curWeatherType);
       },
       selectWeather: function() {
         this.curSelectType = WEATHER_SELECT_TYPE;
@@ -191,15 +208,15 @@
       },
       listenSelectorChange: function(val) {
         if(this.curSelectType === MOOD_SELECT_TYPE) {
-          let className = this.selectorClassList[val];
           this.curMoodType = val;
-          this.curMoodClass = 'active ' + className;
+          console.log('当前选择的类型：' + this.curSelectType);
+          console.log('当前心情类型：' + this.curMoodType);
         }
 
         if(this.curSelectType === WEATHER_SELECT_TYPE) {
-          let className = this.selectorClassList[val];
           this.curWeatherType = val;
-          this.curWeatherClass = 'active ' + className;
+          console.log('当前选择的类型：' + this.curSelectType);
+          console.log('当前天气类型：' + this.curWeatherType);
         }
       },
       listenSelectorShow: function(bool) {
@@ -217,6 +234,25 @@
     watch: {
       notepadShow: function(val) {
         this.show = val;
+      },
+      curMoodType: function(val) {
+        if(val !== -1) {
+          let curClass = MOOD_CLASS_LIST[val];
+          this.curMoodClass = 'active ' + curClass;
+        }
+      },
+      curWeatherType: function(val) {
+        if(val !== -1) {
+          let curClass = WEATHER_CLASS_LIST[val];
+          this.curWeatherClass = 'active ' + curClass;
+        }
+      },
+      allData: function(val) {
+        this.editType = val.editType;
+        this.titleVal = val.title;
+        this.contentVal = val.content;
+        this.curMoodType = val.moodType;
+        this.curWeatherType = val.weatherType;
       }
     }
   };
@@ -232,6 +268,7 @@
     top: 0
     left: 0
     background-color: #fff
+    z-index: 55
     &.notepad-slide-enter
       transform: translate3d(0,100%,0)
     &.notepad-slide-enter-active

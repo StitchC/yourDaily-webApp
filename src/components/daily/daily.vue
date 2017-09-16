@@ -30,8 +30,8 @@
       <span class="write-daily-btn icon-pen" @click="toggleNotepadShow"></span>
       <span class="total-daily-num">{{userData.info.count}}篇日记</span>
     </div>
-    <daily-notepad :user-sex="userSex" :cur-time="notepadDate" :notepad-show="notepadShow" @notepad-close="notepadClose" @has-upload="dailyHasUpload"></daily-notepad>
-    <daily-detail-dialog :detail-data="dailyDetail" :detail-dialog-show="detailDialogShow" @detail-dialog-close="detailDialogClose"></daily-detail-dialog>
+    <daily-notepad :all-data="notepadData" :notepad-show="notepadShow" @notepad-close="notepadClose" @has-upload="dailyHasUpload"></daily-notepad>
+    <daily-detail-dialog :detail-data="dailyDetail" :detail-dialog-show="detailDialogShow" @detail-dialog-close="detailDialogClose" @daily-has-delete="dailyHasDelete" @daily-modify="modifyDaily"></daily-detail-dialog>
   </div>
 </template>
 
@@ -57,8 +57,7 @@
     data: function() {
       return {
         userSex: -1,
-        curTime: false,
-        notepadDate: null,
+        notepadData: {},
         notepadShow: false,
         weatherClassList: ['icon-weather-sunny', 'icon-weather-cloudy', 'icon-weather-rainny', 'icon-weather-snowly'],
         moodClassList: ['icon-mood-happy', 'icon-mood-normal', 'icon-mood-sadness'],
@@ -92,14 +91,41 @@
       'daily-detail-dialog': dailyDetailDialog
     },
     methods: {
-      notepadClose: function(bool) {
-        this.notepadShow = bool;
+      notepadClose: function() {
+        this.notepadShow = false;
       },
       toggleNotepadShow: function() {
+        // 当在日记组件中点击添加日记按钮的时候对日记编辑组件进行数据的初始化
+        this.notepadData = {
+          editType: 0,
+          curTime: new Date(),
+          userSex: this.userSex,
+          title: '',
+          content: '',
+          moodType: -1,
+          weatherType: -1
+        };
         this.notepadShow = true;
-        this.notepadDate = new Date();
       },
       detailDialogClose: function() {
+        this.detailDialogShow = false;
+      },
+      dailyHasDelete: function() {
+        this.$emit('update-data', this.userData.info.id, this.userData.info.connect);
+      },
+      modifyDaily: function(key) {
+        let detail = this.userData.daily[key];
+        this.notepadData = {
+          editType: 1,
+          dailyId: detail.id,
+          curTime: new Date(),
+          userSex: parseInt(detail.sex),
+          title: detail.title,
+          content: detail.content,
+          moodType: parseInt(detail.mood),
+          weatherType: parseInt(detail.weather)
+        };
+        this.notepadShow = true;
         this.detailDialogShow = false;
       },
       outputMoodClass: function(val) {
@@ -113,7 +139,6 @@
         }
       },
       dailyHasUpload: function(id, connectId) {
-        console.log('daily has upload');
         // 触发上一级父组件事件
         this.$emit('update-data', id, connectId);
       },
@@ -233,7 +258,9 @@
               text-align: center
           .daily-main
             flex: 1
+            width: 80%
             .header
+              width: 100%
               display: flex
               .time
                 flex: 1
@@ -243,7 +270,14 @@
                 text-align: right
                 font-size: 15px
             .daily-title
-              font-size: 18px
+              width: 100%
+              font-size: 14px
+              white-space: nowrap
+              overflow: hidden
+              text-overflow: ellipsis
+            .daily-txt
+              width: 100%
+              font-size: 12px
               white-space: nowrap
               overflow: hidden
               text-overflow: ellipsis

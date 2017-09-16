@@ -1,7 +1,7 @@
 <template>
   <transition name="detail-dialog-fade">
     <div class="detail-dialog-wrapper" v-show="show">
-      <div class="dialog-main">
+      <div class="detail-dialog-main">
         <div class="header" :class="{'male-theme': detailData.sex === 1, 'female-theme': detailData.sex === 0}">
           <div class="close-btn icon-close" @click="closeDialog"></div>
           <p class="year-month">{{detailData.time | translateYear}}年，{{detailData.time | translateMonth}}月</p>
@@ -13,10 +13,11 @@
           <p class="txt">{{detailData.content}}</p>
         </div>
         <div class="footer" :class="{'male-theme': detailData.sex === 1, 'female-theme': detailData.sex === 0}">
-          <div class="delete-btn icon-delete" v-show="selfDaily()" @click="deleteDaily(detailData.dailyId)"></div>
-          <div class="edit-btn icon-edit" v-show="selfDaily()" @click="editDaily(detailData.dailyId)"></div>
+          <div class="delete-btn icon-delete" v-show="selfDaily()" @click="deleteDaily"></div>
+          <div class="edit-btn icon-edit" v-show="selfDaily()" @click="editDaily"></div>
         </div>
       </div>
+      <select-dialog :show="selectDialogShow" :txt="selectDialogTxt" @cancel="selectDialogCancel" @confirm="selectDialogConfirm"></select-dialog>
     </div>
   </transition>
 </template>
@@ -24,12 +25,15 @@
 <script type="text/ecmascript-6">
   import {formateDate} from 'common/js/formateDate.js';
   import {getLocalStorage} from 'common/js/localStorage.js';
+  import selectDialog from 'components/selectDialog/selectdialog.vue';
 
   export default {
     data: function() {
       return {
         show: this.detailDialogShow,
-        detail: this.detailData
+        detail: this.detailData,
+        selectDialogShow: false,
+        selectDialogTxt: ''
       };
     },
     props: {
@@ -61,12 +65,39 @@
         }else {
           return false;
         }
+      },
+      deleteDaily: function() {
+        this.selectDialogShow = true;
+        this.selectDialogTxt = '确定要删除日记吗？删了将不会再恢复了';
+      },
+      editDaily: function() {
+        this.$emit('daily-modify', this.detailData.dailyId);
+      },
+      selectDialogCancel: function() {
+        this.selectDialogShow = false;
+      },
+      selectDialogConfirm: function() {
+        this.$http.post('/yourdaily/php/user/deleteDaily.php', {
+          id: this.detailData.dailyId
+        }, {
+          emulateJSON: true
+        }).then(res => {
+          let msg = res.body;
+
+          if(msg.status === 200) {
+            this.$emit('daily-has-delete');
+            this.selectDialogShow = false;
+            this.$emit('detail-dialog-close');
+          }
+        });
       }
+    },
+    components: {
+      'select-dialog': selectDialog
     },
     filters: {
       translateYear: function(val) {
         let date = new Date(val);
-        console.log(val);
         return date.getFullYear();
       },
       translateMonth: function(val) {
@@ -97,6 +128,7 @@
     width: 100%
     height: 100%
     background-color: rgba(0,0,0,0.5)
+    z-index: 55
     &.detail-dialog-fade-enter
       opacity: 0
     &.detail-dialog-fade-enter-active
@@ -107,7 +139,7 @@
       transition: all .5s ease
     &.detail-dialog-fade-leave-to
       opacity: 0
-    .dialog-main
+    .detail-dialog-main
       position: absolute
       top: 50%
       left: 50%
