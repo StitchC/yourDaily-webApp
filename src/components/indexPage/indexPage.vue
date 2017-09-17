@@ -34,8 +34,8 @@
       &:focus
         outline: none
 
-  @media screen and (max-height: 300px)
-    .logo
-      opacity: 0
-
+  @media screen and (max-height: 450px)
+    .index-wrapper
+      .logo
+        opacity: 0
 </style>

@@ -90,7 +90,7 @@
       color: #fff
     .input-group
       position: fixed
-      top: 50%
+      top: 60%
       width: 100%
       transition: all .3s linear
       .input-wrap
@@ -124,7 +124,8 @@
         margin-top: 15px
         color: #fff
 
-   @media screen and (max-height: 300px)
-    .input-group
-      top: 10% !important
+  @media screen and (max-height: 450px)
+    .login-wrapper
+      .input-group
+        top: 30%
 </style>

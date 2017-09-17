@@ -13,7 +13,7 @@
             <img src="./sex-double.png">
           </div>
         </div>
-        <p class="user-title">日记</p>
+        <p class="user-title" v-show="headerTitleShow">日记</p>
       </div>
       <div class="user-main">
         <router-view :user-data="userAllData" @update-data="requireData"></router-view>
@@ -57,7 +57,8 @@
         userSex: -1,
         userAllData: null,
         userConnectId: '',
-        selectSexShow: false
+        selectSexShow: false,
+        headerTitleShow: true
       };
     },
     created: function() {
@@ -66,7 +67,7 @@
       this.userSex = parseInt(user.sex);
       this.userId = user.id;
       this.userConnectId = user.connect;
-
+      console.log(this.curRoutePath);
       if(this.userSex === SEX_NOTINIT) {
         this.selectSexShow = true;
       }else {
@@ -108,6 +109,18 @@
         }).then(res => {
           this.userAllData = res.body;
         });
+      },
+      routeClick: function() {
+        console.log('click');
+      }
+    },
+    watch: {
+      $route: function(val) {
+        if(val.fullPath === '/user/calendar' || val.fullPath === '/user/self') {
+          this.headerTitleShow = false;
+        }else {
+          this.headerTitleShow = true;
+        }
       }
     }
   };

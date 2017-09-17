@@ -111,7 +111,7 @@
         margin: 0 6px
     .input-group
       position: fixed
-      top: 40%
+      top: 50%
       width: 100%
       margin: 15% auto 0 auto
       transition: all .3s linear
@@ -129,7 +129,7 @@
             color: rgba(255,255,255,0.8)
     .btn-group
       position: fixed
-      top: 75%
+      top: 80%
       width: 100%
       text-align: center
       .register-btn
@@ -147,8 +147,8 @@
         margin-top: 15px
         color: #fff
 
-  @media screen and (max-height: 300px)
+  @media screen and (max-height: 450px)
     .register-wrapper
       .input-group
-        top: 5% !important
+        top: 20%
 </style>

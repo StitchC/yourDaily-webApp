@@ -271,13 +271,13 @@
                 font-size: 15px
             .daily-title
               width: 100%
-              font-size: 14px
+              font-size: 16px
               white-space: nowrap
               overflow: hidden
               text-overflow: ellipsis
             .daily-txt
               width: 100%
-              font-size: 12px
+              font-size: 14px
               white-space: nowrap
               overflow: hidden
               text-overflow: ellipsis
