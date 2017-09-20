@@ -26,7 +26,7 @@
         </li>
       </ul>
     </div>
-    <div class="daily-bottom-bar" :class="{'male-theme': userSex === 1, 'female-theme': userSex === 0}" v-show="userData.daily.length !== 0">
+    <div class="daily-bottom-bar" :class="{'male-theme': userData.info.sex === '1', 'female-theme': userData.info.sex === '0'}" v-show="userData.daily.length !== 0">
       <span class="write-daily-btn icon-pen" @click="toggleNotepadShow"></span>
       <span class="total-daily-num">{{userData.info.count}}篇日记</span>
     </div>

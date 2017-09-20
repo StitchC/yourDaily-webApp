@@ -9,15 +9,15 @@
       </div>
       <div class="next-btn icon-arrow-right" @click="nextDate"></div>
     </div>
-    <div class="no-match-daily-hint" v-show="matchDailys.length === 0">
-      <div class="hint-content" :class="{'male-theme': userSex === 1, 'female-theme': userSex === 0}">
+    <div class="no-match-daily-hint" v-show="matchDailys.length === 0 && isToday">
+      <div class="hint-content" :class="{'male-theme': userData.info.sex === '1', 'female-theme': userData.info.sex === '0'}" @click="addDaily">
         <span class="icon icon-pen"></span>
         <span class="txt">添加日记</span>
       </div>
     </div>
     <div class="match-daily-list-wrap" ref="matchDailyWrap">
       <ul class="match-daily-list">
-        <li v-for="daily in matchDailys" class="match-daily-item" :class="{'male-theme': daily.sex === '1', 'female-theme': daily.sex === '0'}">
+        <li v-for="daily in matchDailys" class="match-daily-item" :class="{'male-theme': daily.sex === '1', 'female-theme': daily.sex === '0'}" @click="enterDailyDetail($event, daily.id)">
           <div class="date-time">
             <div class="date">{{daily.publicTime | translateDate}}</div>
             <div class="day">星期{{daily.publicTime | translateWeek}}</div>
@@ -36,6 +36,8 @@
         </li>
       </ul>
     </div>
+    <daily-detail-dialog :detail-data="dailyDetail" :detail-dialog-show="detailDialogShow" @detail-dialog-close="detailDialogClose" @daily-has-delete="dailyHasDelete" @daily-modify="modifyDaily"></daily-detail-dialog>
+    <daily-notepad :all-data="notepadData" :notepad-show="notepadShow" @notepad-close="notepadClose" @has-upload="dailyHasUpload"></daily-notepad>
   </div>
 </template>
 
@@ -43,14 +45,19 @@
   import {getLocalStorage} from 'common/js/localStorage.js';
   import {formateDate} from 'common/js/formateDate.js';
   import BetScroll from 'better-scroll';
-
+  import dailyDetailDialog from 'components/dailyDetailDialog/dailyDetailDialog.vue';
+  import dailyNotepad from 'components/dailyNotePad/dailynotepad.vue';
 
   export default {
     data: function() {
       return {
         userSex: -1,
         curDate: new Date().getTime(),
-        scroll: null
+        scroll: null,
+        dailyDetail: {},
+        detailDialogShow: false,
+        notepadData: {},
+        notepadShow: false
       };
     },
     created: function() {
@@ -74,6 +81,10 @@
         type: Object
       }
     },
+    components: {
+      'daily-detail-dialog': dailyDetailDialog,
+      'daily-notepad': dailyNotepad
+    },
     methods: {
       rewardDate: function() {
         let date = new Date(this.curDate);
@@ -92,7 +103,6 @@
       nextDate: function() {
         let date = new Date(this.curDate);
         this.curDate = date.setDate(date.getDate() + 1);
-
         this.$nextTick(() => {
           if(!this.scroll) {
             this.scroll = new BetScroll(this.$refs.matchDailyWrap, {
@@ -116,6 +126,58 @@
           let weatherClassList = ['icon-weather-sunny', 'icon-weather-cloudy', 'icon-weather-rainny', 'icon-weather-snowly'];
           return weatherClassList[type];
         }
+      },
+      addDaily: function() {
+        this.notepadData = {
+          editType: 0,
+          curTime: new Date(),
+          userSex: this.userSex,
+          title: '',
+          content: '',
+          moodType: -1,
+          weatherType: -1
+        };
+        this.notepadShow = true;
+      },
+      enterDailyDetail: function(event, key) {
+        if(event._constructed) {
+          let data = this.userData.daily[key];
+          this.dailyDetail = {
+            dailyId: data.id,
+            time: data.publicTime,
+            title: data.title,
+            content: data.content,
+            userId: data.userId,
+            sex: parseInt(data.sex)
+          };
+          this.detailDialogShow = true;
+        };
+      },
+      detailDialogClose: function() {
+        this.detailDialogShow = false;
+      },
+      dailyHasDelete: function() {
+        this.$emit('update-data', this.userData.info.id, this.userData.info.connect);
+      },
+      modifyDaily: function(dailyId) {
+        let data = this.userData.daily[dailyId];
+        this.notepadData = {
+          editType: 1,
+          dailyId: data.id,
+          curTime: new Date(),
+          userSex: parseInt(data.sex),
+          title: data.title,
+          content: data.content,
+          moodType: parseInt(data.mood),
+          weatherType: parseInt(data.weather)
+        };
+        this.notepadShow = true;
+      },
+      notepadClose: function() {
+        this.notepadShow = false;
+      },
+      dailyHasUpload: function() {
+        this.$emit('update-data', this.userData.info.id, this.userData.info.connect);
       }
     },
     computed: {
@@ -131,6 +193,11 @@
           }
         }
         return resultList;
+      },
+      isToday: function() {
+        let todayStr = formateDate(new Date().getTime(), 'yyyy-MM-dd');
+        let curDateStr = formateDate(this.curDate, 'yyyy-MM-dd');
+        return todayStr === curDateStr;
       }
     },
     filters: {

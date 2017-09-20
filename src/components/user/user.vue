@@ -67,7 +67,7 @@
       this.userSex = parseInt(user.sex);
       this.userId = user.id;
       this.userConnectId = user.connect;
-      console.log(this.curRoutePath);
+
       if(this.userSex === SEX_NOTINIT) {
         this.selectSexShow = true;
       }else {
@@ -141,7 +141,6 @@
       background-size: cover
       background-repeat: no-repeat
       .user-header
-        z-index: 50
         .user-nav
           display: flex
           flex: 270px 0 0
@@ -190,6 +189,7 @@
       top: 0
       left: 0
       background-color: #EFF0EF
+      z-index:50
       .user-tool-bar
         display: flex
         height: 30px

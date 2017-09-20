@@ -23,6 +23,28 @@
 </template>
 
 <script type="text/ecmascript-6">
+  /**
+   * 日记详情组件
+   * 参数：
+   * detailData （日记的数据）
+   * 格式：
+   * {
+        dailyId: detail.id,
+        time: detail.publicTime,
+        title: detail.title,
+        content: detail.content,
+        userId: detail.userId,
+        sex: parseInt(detail.sex)
+      }
+   *
+   * detailDialogShow （组件显示或隐藏的状态切换）
+   * true / false
+   *
+   * 触发事件：
+   * detail-dialog-close：组件关闭按钮点击时通知父组件将其关闭
+   * daily-has-delete：组件删除按钮点击时通知父组件
+   * daily-modify：组件编辑按钮点击时通知父组件
+   */
   import {formateDate} from 'common/js/formateDate.js';
   import {getLocalStorage} from 'common/js/localStorage.js';
   import selectDialog from 'components/selectDialog/selectdialog.vue';
@@ -125,6 +147,8 @@
 <style lang="stylus" rel="stylesheet/stylus">
   .detail-dialog-wrapper
     position: fixed
+    top: 0
+    left: 0
     width: 100%
     height: 100%
     background-color: rgba(0,0,0,0.5)
@@ -214,7 +238,7 @@
 
   @media screen and (max-width: 320px)
     .detail-dialog-wrapper
-      .dialog-main
+      .detail-dialog-main
         top: 50%
         left: 50%
         margin: -250px auto 0 -140px

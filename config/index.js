@@ -30,17 +30,10 @@ module.exports = {
     proxyTable: {
       // proxy all requests starting with /api to jsonplaceholder
       '/yourdaily': {
-        target: 'http://localhost/yourdaily/php',
+        target: 'http://localhost/yourdaily',
         changeOrigin: true,
         pathRewrite: {
-          '^/yourdaily/php': ''
-        }
-      },
-      'userImg': {
-        target: 'http://localhost/yourdaily/userAvatar',
-        changeOrigin: true,
-        pathRewrite: {
-          '^/yourdaily/userAvatar': ''
+          '^/yourdaily': ''
         }
       }
     },
