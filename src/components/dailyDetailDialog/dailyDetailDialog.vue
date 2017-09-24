@@ -8,9 +8,11 @@
           <p class="date">{{detailData.time | translateDate}}</p>
           <p class="week-time">星期{{detailData.time | translateWeek}} {{detailData.time | translateTime}}</p>
         </div>
-        <div class="content">
-          <p class="title" v-show="detailData.title !== ''">{{detailData.title}}</p>
-          <p class="txt">{{detailData.content}}</p>
+        <div class="content-scroll" ref="contentScroll">
+          <div class="content">
+            <p class="title" v-show="detailData.title !== ''">{{detailData.title}}</p>
+            <p class="txt">{{detailData.content}}</p>
+          </div>
         </div>
         <div class="footer" :class="{'male-theme': detailData.sex === 1, 'female-theme': detailData.sex === 0}">
           <div class="delete-btn icon-delete" v-show="selfDaily()" @click="deleteDaily"></div>
@@ -48,6 +50,7 @@
   import {formateDate} from 'common/js/formateDate.js';
   import {getLocalStorage} from 'common/js/localStorage.js';
   import selectDialog from 'components/selectDialog/selectdialog.vue';
+  import BetScroll from 'better-scroll';
 
   const SUCCESS_CODE = 200;
   export default {
@@ -67,9 +70,27 @@
         type: Boolean
       }
     },
+    mounted: function() {
+      this.$nextTick(() => {
+        if(!this.scroll) {
+          this.scroll = new BetScroll(this.$refs.contentScroll);
+        }else {
+          this.scroll.refresh();
+        }
+      });
+    },
     watch: {
       detailDialogShow: function(val) {
         this.show = val;
+      },
+      detailData: function() {
+       this.$nextTick(() => {
+         if(!this.scroll) {
+           this.scroll = new BetScroll(this.$refs.contentScroll);
+         }else {
+           this.scroll.refresh();
+         }
+       });
       }
     },
     methods: {
@@ -222,6 +243,7 @@
           line-height: 38px
         .txt
           line-height: 30px
+          font-size: 14px
       .footer
         position: relative
         width: 100%

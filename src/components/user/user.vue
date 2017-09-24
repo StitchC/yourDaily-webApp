@@ -16,7 +16,7 @@
         <p class="user-title" v-show="headerTitleShow">日记</p>
       </div>
       <div class="user-main">
-        <router-view @update-data="requireData"></router-view>
+        <router-view></router-view>
       </div>
       <select-sex :select-show="selectSexShow" :user-id="userId" @select-complete="confirmSex"></select-sex>
     </div>
@@ -63,56 +63,43 @@
     created: function() {
       let data = getLocalStorage('ohMyDaily');
       let user = JSON.parse(data.userData);
-      this.userSex = parseInt(user.sex);
       this.userId = user.id;
       this.userConnectId = user.connect;
-
-      if(this.userSex === SEX_NOTINIT) {
-        this.selectSexShow = true;
-        this.$store.commit('toggleSelectSex', true);
-      }else {
-        // 发送ajax 请求获取数据
-        this.$http.get('/yourdaily/php/user/getUserData.php', {
-          params: {
-            id: this.userId,
-            connectId: this.userConnectId
-          }
-        }).then(res => {
-          this.userAllData = res.body;
-          this.$store.commit('updateData', res.body);
+      // 发送ajax 请求获取数据
+      this.$http.get('/yourdaily/php/user/getUserData.php', {
+        params: {
+          id: this.userId,
+          connectId: this.userConnectId
+        }
+      }).then(res => {
+        this.$store.commit('updateData', res.body);
+        let userSex = parseInt(this.$store.state.userData.info.sex);
+        if(userSex === SEX_NOTINIT) {
+          this.$store.commit('toggleSelectSex', true);
+        }else {
           this.$nextTick(() => {
             this.$router.push('/user/daily');
           });
-        });
-      }
+        }
+      });
     },
     components: {
       'select-sex': selectsex
     },
     methods: {
-      confirmSex: function(sex) {
-        this.userSex = sex;
+      confirmSex: function() {
+        // 选择完性别之后发送ajax 更新 vuex 数据
         this.$http.get('/yourdaily/php/user/getUserData.php', {
           params: {
             id: this.userId,
             connectId: this.userConnectId
           }
         }).then(res => {
-            this.userAllData = res.body;
-            this.$store.commit('updateData', res.body);
-            this.$store.commit('toggleSelectSex', false);
+          this.$store.commit('updateData', res.body);
+          this.$store.commit('toggleSelectSex', false);
+          this.$nextTick(() => {
             this.$router.push('/user/daily');
-        });
-      },
-      requireData: function(id, connectId) {
-        // 日记任何修改之后会触发此函数
-        this.$http.get('/yourdaily/php/user/getUserData.php', {
-          params: {
-            id: id,
-            connectId: connectId
-          }
-        }).then(res => {
-          this.userAllData = res.body;
+          });
         });
       }
     },
@@ -127,6 +114,7 @@
     },
     computed: {
       userData: function() {
+        console.log(this.$store.state.userData);
         return this.$store.state.userData;
       },
       selectSexShow: function() {

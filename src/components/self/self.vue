@@ -42,9 +42,6 @@
         toggleModifyInfo: false
       };
     },
-    created: function() {
-      console.log(this.$store.state.userData);
-    },
     components: {
       'modify-user-info': modifyUserInfo
     },

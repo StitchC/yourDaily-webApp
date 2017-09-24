@@ -118,7 +118,6 @@
     },
     computed: {
       resetLimit: function() {
-        console.log(this.modifyContent.length);
         return this.limit - parseInt(this.modifyContent.length);
       }
     }
