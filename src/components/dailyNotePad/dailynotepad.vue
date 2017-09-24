@@ -32,7 +32,6 @@
   import alertDialog from 'components/alertDialog/alertdialog.vue';
   import selectDialog from 'components/selectDialog/selectdialog.vue';
   import {formateDate} from 'common/js/formateDate.js';
-  import {getLocalStorage} from 'common/js/localStorage.js';
 
   const WEATHER_CLASS_LIST = ['icon-weather-sunny', 'icon-weather-cloudy', 'icon-weather-rainny', 'icon-weather-snowly'];
   const MOOD_CLASS_LIST = ['icon-mood-happy', 'icon-mood-normal', 'icon-mood-sadness'];
@@ -154,13 +153,9 @@
             this.dialogShowStatus = true;
             this.dialogTxt = '你还没有输入日记内容哦';
           }else {
-            let data = JSON.parse(getLocalStorage('ohMyDaily').userData);
-            let userId = data.id;
-            let connectId = data.connect;
-
             if(this.editType === ADD_DAILY_CODE) {
               this.$http.post('/yourdaily/php/user/uploadDaily.php', {
-                id: userId,
+                id: this.userData.info.id,
                 title: this.titleVal,
                 content: this.contentVal,
                 mood: this.curMoodType,
@@ -168,8 +163,15 @@
               }, {emulateJSON: true}).then(res => {
                 if(res.body.status === SUCCESS_CODE) {
                   this.saveBtnStatus = '已保存';
-                  // 触发上一级父组件事件
-                  this.$emit('has-upload', userId, connectId);
+                  // 发布成功后 发送ajax 请求 更新vuex 数据
+                  this.$http.get('/yourdaily/php/user/getUserData.php', {
+                    params: {
+                      id: this.userData.info.id,
+                      connectId: this.userData.info.connect
+                    }
+                  }).then(res => {
+                    this.$store.commit('updateData', res.body);
+                  });
                 }else if(res.body.status === ERROR_CODE) {
                   this.dialogShowStatus = true;
                   this.dialogTxt = '很抱歉，日记未能保存请检查你的网络';
@@ -185,8 +187,15 @@
               }, {emulateJSON: true}).then(res => {
                 if(res.body.status === SUCCESS_CODE) {
                   this.saveBtnStatus = '已保存';
-                  // 触发上一级父组件事件
-                  this.$emit('has-upload', userId, connectId);
+                  // 修改成功后发送ajax 请求 更新vuex 数据
+                  this.$http.get('/yourdaily/php/user/getUserData.php', {
+                    params: {
+                      id: this.userData.info.id,
+                      connectId: this.userData.info.connect
+                    }
+                  }).then(res => {
+                    this.$store.commit('updateData', res.body);
+                  });
                 }else if(res.body.status === ERROR_CODE) {
                   this.dialogShowStatus = true;
                   this.dialogTxt = '很抱歉，日记未能保存请检查你的网络';
@@ -209,14 +218,10 @@
       listenSelectorChange: function(val) {
         if(this.curSelectType === MOOD_SELECT_TYPE) {
           this.curMoodType = val;
-          console.log('当前选择的类型：' + this.curSelectType);
-          console.log('当前心情类型：' + this.curMoodType);
         }
 
         if(this.curSelectType === WEATHER_SELECT_TYPE) {
           this.curWeatherType = val;
-          console.log('当前选择的类型：' + this.curSelectType);
-          console.log('当前天气类型：' + this.curWeatherType);
         }
       },
       listenSelectorShow: function(bool) {
@@ -224,6 +229,11 @@
       },
       listenDialogShow: function(bool) {
         this.dialogShowStatus = bool;
+      }
+    },
+    computed: {
+      userData: function() {
+        return this.$store.state.userData;
       }
     },
     filters: {

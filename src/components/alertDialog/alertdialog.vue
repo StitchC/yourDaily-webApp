@@ -11,6 +11,8 @@
 
 <script type="text/ecmascript-6">
   /*
+    参数：
+    txt: 警告框提示内容
     dialogShow: 父组件传递给子组件 控制子组件是否显示
     子组件内部的局部变量 show 接收dialogShow 父组件的值
     点击子组件 class="btn" 的按钮会更改局部变量 show 的值

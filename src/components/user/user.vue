@@ -1,6 +1,6 @@
 <template>
   <transition name="user-fade">
-    <div class="user-wrapper" :class="{'male-theme': userSex === 1, 'female-theme': userSex === 0}">
+    <div class="user-wrapper" :class="{'male-theme': userData.info.sex === '1', 'female-theme': userData.info.sex === '0'}">
       <div class="user-header">
         <div class="user-tool-bar">
           <div class="setting-icon icon-setting"></div>
@@ -16,9 +16,9 @@
         <p class="user-title" v-show="headerTitleShow">日记</p>
       </div>
       <div class="user-main">
-        <router-view :user-data="userAllData" @update-data="requireData"></router-view>
+        <router-view @update-data="requireData"></router-view>
       </div>
-      <select-sex :select-show="selectSexShow" :user-id="userId" @selectsex-confirm="confirmSex"></select-sex>
+      <select-sex :select-show="selectSexShow" :user-id="userId" @select-complete="confirmSex"></select-sex>
     </div>
   </transition>
 </template>
@@ -57,7 +57,6 @@
         userSex: -1,
         userAllData: null,
         userConnectId: '',
-        selectSexShow: false,
         headerTitleShow: true
       };
     },
@@ -70,6 +69,7 @@
 
       if(this.userSex === SEX_NOTINIT) {
         this.selectSexShow = true;
+        this.$store.commit('toggleSelectSex', true);
       }else {
         // 发送ajax 请求获取数据
         this.$http.get('/yourdaily/php/user/getUserData.php', {
@@ -79,7 +79,10 @@
           }
         }).then(res => {
           this.userAllData = res.body;
-          this.$router.push('/user/daily');
+          this.$store.commit('updateData', res.body);
+          this.$nextTick(() => {
+            this.$router.push('/user/daily');
+          });
         });
       }
     },
@@ -96,6 +99,8 @@
           }
         }).then(res => {
             this.userAllData = res.body;
+            this.$store.commit('updateData', res.body);
+            this.$store.commit('toggleSelectSex', false);
             this.$router.push('/user/daily');
         });
       },
@@ -109,9 +114,6 @@
         }).then(res => {
           this.userAllData = res.body;
         });
-      },
-      routeClick: function() {
-        console.log('click');
       }
     },
     watch: {
@@ -121,6 +123,14 @@
         }else {
           this.headerTitleShow = true;
         }
+      }
+    },
+    computed: {
+      userData: function() {
+        return this.$store.state.userData;
+      },
+      selectSexShow: function() {
+        return this.$store.state.selectSexShow;
       }
     }
   };

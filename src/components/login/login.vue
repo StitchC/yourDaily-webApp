@@ -16,6 +16,7 @@
         </div>
       </index-page>
       <alert-dialog :dialog-show="dialogShowStatus" :txt="dialogTxt" @dialog-show-change="listenDialogStatus"></alert-dialog>
+    <loading :show="loadingShow"></loading>
     </div>
 </template>
 
@@ -23,6 +24,7 @@
   import router from '../../router/index.js';
   import indexPage from 'components/indexPage/indexPage.vue';
   import dialog from 'components/alertDialog/alertdialog.vue';
+  import loading from 'components/loading/loading.vue';
   import {setLocalStorage} from 'common/js/localStorage.js';
 
 
@@ -32,6 +34,7 @@
   export default {
     data: function() {
       return {
+        loadingShow: false,
         dialogShowStatus: false,
         dialogTxt: '',
         accountVal: '',
@@ -52,16 +55,21 @@
             params: {
               account: this.accountVal,
               pwd: this.pwdVal
+            },
+            before: function() {
+              this.loadingShow = true;
             }
           }).then(res => {
             let data = res.body;
             if(data.status === ERROR_CODE) {
+              this.loadingShow = false;
               this.dialogTxt = '你的账号或密码有错误哦';
               this.dialogShowStatus = true;
             }else if(data.status === SUCCESS_CODE) {
+              this.loadingShow = false;
+              let localStr = JSON.stringify(res.body.info);
+              setLocalStorage(localStr);
               this.$router.push('/user');
-              let locaStr = JSON.stringify(res.body.info);
-              setLocalStorage(locaStr);
             }
           });
         }
@@ -72,7 +80,8 @@
     },
     components: {
       'index-page': indexPage,
-      'alert-dialog': dialog
+      'alert-dialog': dialog,
+      'loading': loading
     }
   };
 </script>

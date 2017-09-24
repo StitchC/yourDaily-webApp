@@ -6,8 +6,8 @@
           <img :src="avatar">
         </div>
         <div class="detail-content">
-          <p class="user-name">{{userData.info.username}}用户名</p>
-          <p class="user-motto">{{userData.info.motto}}座右铭</p>
+          <p class="user-name">{{userData.info.username}}</p>
+          <p class="user-motto">{{userData.info.motto}}</p>
         </div>
       </div>
       <div class="edit-user-info-wrap" @click="showModifyInfo">
@@ -42,10 +42,8 @@
         toggleModifyInfo: false
       };
     },
-    props: {
-      userData: {
-        type: Object
-      }
+    created: function() {
+      console.log(this.$store.state.userData);
     },
     components: {
       'modify-user-info': modifyUserInfo
@@ -59,6 +57,9 @@
       }
     },
     computed: {
+      userData: function() {
+        return this.$store.state.userData;
+      },
       avatar: function() {
         if(this.userData.info.avatar === '') {
           if(this.userData.info.sex === '1') {
@@ -157,4 +158,24 @@
         text-align: center
         font-size: 14px
         color: #6A6B6A
+
+  @media screen and (max-width: 320px)
+    .self-wrapper
+      .user-detail
+        .user-detail-main
+          .avatar-wrap
+            width: 50px
+            height: 50px
+            margin-top: 15px
+            margin-left: 12px
+          .detail-content
+            .user-name
+              line-height: 50px
+              font-size: 14px
+            .user-motto
+              font-size: 12px
+              line-height: 10px
+      .edit-user-info-wrap
+          width: 50px !important
+          font-size: 12px
 </style>

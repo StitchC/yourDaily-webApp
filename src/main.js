@@ -4,6 +4,7 @@ import Vue from 'vue';
 import App from './App';
 import router from './router/index.js';
 import VueResource from 'vue-resource';
+import store from './vuex/index';
 
 // 导入样式表
 import 'common/stylus/index.styl';
@@ -15,6 +16,6 @@ Vue.use(VueResource);
 new Vue({
   el: '#app',
   router,
+  store,
   render: h => h(App)
 });
-// router.push('/login');

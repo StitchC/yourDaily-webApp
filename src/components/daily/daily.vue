@@ -3,7 +3,7 @@
     <div class="no-daily-hint" v-show="userData.daily.length === 0">
       <h3 class="hint-title">NO Enteries</h3>
       <p class="hint-txt">你还没有写过日记</p>
-      <p class="begin-write-daily" :class="{'male-theme': userSex === 1, 'female-theme': userSex === 0}" @click="toggleNotepadShow">开始写日记</p>
+      <p class="begin-write-daily" :class="{'male-theme': userData.info.sex === '1', 'female-theme': userData.info.sex === '0'}" @click="toggleNotepadShow">开始写日记</p>
     </div>
     <div class="daily-list-wrap" ref="dailylist">
       <ul class="daily-list">
@@ -30,13 +30,12 @@
       <span class="write-daily-btn icon-pen" @click="toggleNotepadShow"></span>
       <span class="total-daily-num">{{userData.info.count}}篇日记</span>
     </div>
-    <daily-notepad :all-data="notepadData" :notepad-show="notepadShow" @notepad-close="notepadClose" @has-upload="dailyHasUpload"></daily-notepad>
-    <daily-detail-dialog :detail-data="dailyDetail" :detail-dialog-show="detailDialogShow" @detail-dialog-close="detailDialogClose" @daily-has-delete="dailyHasDelete" @daily-modify="modifyDaily"></daily-detail-dialog>
+    <daily-notepad :all-data="notepadData" :notepad-show="notepadShow" @notepad-close="notepadClose"></daily-notepad>
+    <daily-detail-dialog :detail-data="dailyDetail" :detail-dialog-show="detailDialogShow" @detail-dialog-close="detailDialogClose" @daily-modify="modifyDaily"></daily-detail-dialog>
   </div>
 </template>
 
 <script type="text/ecmascript-6">
-   import {getLocalStorage} from 'common/js/localStorage.js';
    import {formateDate} from 'common/js/formateDate.js';
    import dailyNotePad from 'components/dailyNotePad/dailynotepad.vue';
    import dailyDetailDialog from 'components/dailyDetailDialog/dailyDetailDialog.vue';
@@ -65,16 +64,6 @@
         detailDialogShow: false
       };
     },
-    created: function() {
-      let data = getLocalStorage('ohMyDaily');
-      let user = JSON.parse(data.userData);
-      this.userSex = parseInt(user.sex);
-    },
-    props: {
-      userData: {
-        type: Object
-      }
-    },
     mounted: function() {
       this.$nextTick(() => {
         if(!this.scroll) {
@@ -93,13 +82,14 @@
     methods: {
       notepadClose: function() {
         this.notepadShow = false;
+        this.detailDialogShow = false;
       },
       toggleNotepadShow: function() {
         // 当在日记组件中点击添加日记按钮的时候对日记编辑组件进行数据的初始化
         this.notepadData = {
           editType: 0,
           curTime: new Date(),
-          userSex: this.userSex,
+          userSex: parseInt(this.userData.info.sex),
           title: '',
           content: '',
           moodType: -1,
@@ -109,9 +99,6 @@
       },
       detailDialogClose: function() {
         this.detailDialogShow = false;
-      },
-      dailyHasDelete: function() {
-        this.$emit('update-data', this.userData.info.id, this.userData.info.connect);
       },
       modifyDaily: function(key) {
         let detail = this.userData.daily[key];
@@ -138,10 +125,6 @@
           return this.weatherClassList[val];
         }
       },
-      dailyHasUpload: function(id, connectId) {
-        // 触发上一级父组件事件
-        this.$emit('update-data', id, connectId);
-      },
       enterDailyDetail: function(event, key) {
         if(event._constructed) {
           let detail = this.userData.daily[key];
@@ -159,18 +142,19 @@
         };
       }
     },
-    watch: {
-      userData: function(val) {
-        this.$nextTick(() => {
-          if(!this.scroll) {
-            this.scroll = new BetScroll(this.$refs.dailylist, {
-              click: true
-            });
-          }else {
-            this.scroll.refresh();
-          }
-        });
-      }
+    computed: {
+     userData: function() {
+       this.$nextTick(() => {
+         if(!this.scroll) {
+           this.scroll = new BetScroll(this.$refs.dailylist, {
+             click: true
+           });
+         }else {
+           this.scroll.refresh();
+         }
+       });
+       return this.$store.state.userData;
+     }
     },
     filters: {
      translateDate: function(val) {
@@ -206,6 +190,7 @@
       margin: -100px 0 0 -150px
       border-radius: 5px
       background-color: #fff
+      z-index: 10
       .hint-title
         line-height: 40px
         margin-top: 30px

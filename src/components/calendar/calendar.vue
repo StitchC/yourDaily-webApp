@@ -1,6 +1,6 @@
 <template>
   <div class="calendar-wrapper">
-    <div class="calendar-main" :class="{'male-theme': userSex === 1, 'female-theme': userSex === 0}">
+    <div class="calendar-main" :class="{'male-theme': userData.info.sex === '1', 'female-theme': userData.info.sex === '0'}">
       <div class="reward-btn icon-arrow-left" @click="rewardDate"></div>
       <div class="date-txt">
         <p class="month">{{curDate | translateMonth}}月</p>
@@ -36,13 +36,12 @@
         </li>
       </ul>
     </div>
-    <daily-detail-dialog :detail-data="dailyDetail" :detail-dialog-show="detailDialogShow" @detail-dialog-close="detailDialogClose" @daily-has-delete="dailyHasDelete" @daily-modify="modifyDaily"></daily-detail-dialog>
-    <daily-notepad :all-data="notepadData" :notepad-show="notepadShow" @notepad-close="notepadClose" @has-upload="dailyHasUpload"></daily-notepad>
+    <daily-detail-dialog :detail-data="dailyDetail" :detail-dialog-show="detailDialogShow" @detail-dialog-close="detailDialogClose" @daily-modify="modifyDaily"></daily-detail-dialog>
+    <daily-notepad :all-data="notepadData" :notepad-show="notepadShow" @notepad-close="notepadClose"></daily-notepad>
   </div>
 </template>
 
 <script type="text/ecmascript-6">
-  import {getLocalStorage} from 'common/js/localStorage.js';
   import {formateDate} from 'common/js/formateDate.js';
   import BetScroll from 'better-scroll';
   import dailyDetailDialog from 'components/dailyDetailDialog/dailyDetailDialog.vue';
@@ -60,11 +59,6 @@
         notepadShow: false
       };
     },
-    created: function() {
-      let data = getLocalStorage('ohMyDaily');
-      let user = JSON.parse(data.userData);
-      this.userSex = parseInt(user.sex);
-    },
     mounted: function() {
       this.$nextTick(() => {
         if(!this.scroll) {
@@ -75,11 +69,6 @@
           this.scroll.refresh();
         }
       });
-    },
-    props: {
-      userData: {
-        type: Object
-      }
     },
     components: {
       'daily-detail-dialog': dailyDetailDialog,
@@ -156,9 +145,6 @@
       detailDialogClose: function() {
         this.detailDialogShow = false;
       },
-      dailyHasDelete: function() {
-        this.$emit('update-data', this.userData.info.id, this.userData.info.connect);
-      },
       modifyDaily: function(dailyId) {
         let data = this.userData.daily[dailyId];
         this.notepadData = {
@@ -175,12 +161,13 @@
       },
       notepadClose: function() {
         this.notepadShow = false;
-      },
-      dailyHasUpload: function() {
-        this.$emit('update-data', this.userData.info.id, this.userData.info.connect);
+        this.detailDialogShow = false;
       }
     },
     computed: {
+      userData: function() {
+        return this.$store.state.userData;
+      },
       matchDailys: function() {
         let curDateStr = formateDate(this.curDate, 'yyyy-MM-dd');
         let resultList = [];

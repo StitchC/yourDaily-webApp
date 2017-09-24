@@ -49,6 +49,7 @@
   import {getLocalStorage} from 'common/js/localStorage.js';
   import selectDialog from 'components/selectDialog/selectdialog.vue';
 
+  const SUCCESS_CODE = 200;
   export default {
     data: function() {
       return {
@@ -105,9 +106,16 @@
           emulateJSON: true
         }).then(res => {
           let msg = res.body;
-
-          if(msg.status === 200) {
-            this.$emit('daily-has-delete');
+          // 删除成功后发送ajax 请求更新 vuex 数据
+          if(msg.status === SUCCESS_CODE) {
+            this.$http.get('/yourdaily/php/user/getUserData.php', {
+              params: {
+                id: this.userData.info.id,
+                connectId: this.userData.info.connect
+              }
+            }).then(res => {
+              this.$store.commit('updateData', res.body);
+            });
             this.selectDialogShow = false;
             this.$emit('detail-dialog-close');
           }
@@ -116,6 +124,11 @@
     },
     components: {
       'select-dialog': selectDialog
+    },
+    computed: {
+      userData: function() {
+        return this.$store.state.userData;
+      }
     },
     filters: {
       translateYear: function(val) {

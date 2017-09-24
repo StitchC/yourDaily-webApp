@@ -25,10 +25,10 @@
         <div class="info-content-wrap user-sex">
           <span class="title">身份</span>
           <span class="info-content user-sex-content" :class="{'icon-male-icon': userData.info.sex === '1', 'icon-female-icon': userData.info.sex === '0'}"></span>
-          <span class="edit-btn icon-arrow-right" :class="{'male-theme': userData.info.sex === '1', 'female-theme': userData.info.sex === '0'}"></span>
+          <span class="edit-btn icon-arrow-right" :class="{'male-theme': userData.info.sex === '1', 'female-theme': userData.info.sex === '0'}" @click="modifySex"></span>
         </div>
       </div>
-      <info-input :initData="initInfoInput" :input-show="toggleInput" @input-close="closeInput"></info-input>
+      <info-input :init-data="initInfoInput" :input-show="toggleInput" @input-close="closeInput"></info-input>
     </div>
   </transition>
 </template>
@@ -41,13 +41,10 @@
       return {
         show: this.modifyInfoShow,
         initInfoInput: {},
-        toggleInput: true
+        toggleInput: false
       };
     },
     props: {
-      userData: {
-        type: Object
-      },
       modifyInfoShow: {
         type: Boolean
       }
@@ -65,7 +62,9 @@
           modifyType: 0,
           content: this.userData.info.username,
           userSex: parseInt(this.userData.info.sex),
-          userId: this.userData.info.id
+          userId: this.userData.info.id,
+          connect: this.userData.info.connect,
+          limit: 15
         };
         this.toggleInput = true;
       },
@@ -75,9 +74,18 @@
           modifyType: 1,
           content: this.userData.info.motto,
           userSex: parseInt(this.userData.info.sex),
-          userId: this.userData.info.id
+          userId: this.userData.info.id,
+          connect: this.userData.info.connect,
+          limit: 30
         };
         this.toggleInput = true;
+        this.$emit('update-data');
+      },
+      modifySex: function() {
+        // 个人信息修改性别 将vuex toggleSelectSex 修改为true 弹出选择性别组件
+        this.$store.commit('toggleSelectSex', true);
+        console.log('click');
+        console.log(this.$store.state.selectSexShow);
       },
       closeInput: function() {
         this.toggleInput = false;
@@ -99,6 +107,9 @@
         }else {
           return this.userData.info.avatar;
         }
+      },
+      userData: function() {
+        return this.$store.state.userData;
       }
     }
   };
@@ -112,7 +123,7 @@
     width: 100%
     height: 100%
     background-color: #fff
-    z-index: 90
+    z-index: 55
     &.modify-info-slide-enter
       transform: translate3d(0,100%,0)
     &.modify-info-slide-enter-active

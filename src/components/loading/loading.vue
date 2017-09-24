@@ -1,0 +1,39 @@
+<template>
+  <div class="loading-wrap" v-show="show">
+    <div class="loading-logo">请稍候...</div>
+  </div>
+</template>
+
+<script type="text/ecmascript-6">
+  export default {
+    props: {
+      show: {
+        type: Boolean
+      }
+    }
+  };
+</script>
+
+<style lang="stylus">
+  .loading-wrap
+    position: fixed
+    top: 0
+    left: 0
+    width: 100%
+    height: 100%
+    background-color: rgba(0,0,0,0.3)
+    z-index: 99
+    .loading-logo
+      position: absolute
+      top: 50%
+      left: 50%
+      margin-top: -75px
+      margin-left: -100px
+      width: 200px
+      height: 150px
+      line-height: 150px
+      border-radius: 5px
+      background-color: rgba(0,0,0,0.6)
+      text-align: center
+      color: #fff
+</style>

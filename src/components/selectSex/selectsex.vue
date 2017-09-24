@@ -22,7 +22,6 @@
     data: function() {
       return {
         curSex: 2,
-        show: this.selectShow,
         dialogShowStatus: false,
         dialogTxt: ''
       };
@@ -38,8 +37,7 @@
         }, {emulateJSON: true}).then(res => {
           let data = res.body;
           if(data.status === SUCCESS_CODE) {
-            this.show = false;
-            this.$emit('selectsex-confirm', this.curSex);
+            this.$emit('select-complete');
           }else {
             this.dialogShowStatus = true;
             this.dialogTxt = '抱歉，你的网络当前可能有问题请稍后重试哦';
@@ -61,6 +59,11 @@
     },
     components: {
       'alert-dialog': alertdialog
+    },
+    computed: {
+      show: function() {
+        return this.$store.state.selectSexShow;
+      }
     }
   };
 </script>
@@ -74,7 +77,7 @@
     height: 100%
     background-color: #888988
     transition: all .3s linear
-    z-index: 20
+    z-index: 60
     &.selectSex-fade-enter
       opacity: 0
     &.selectSex-fade-enter-active
