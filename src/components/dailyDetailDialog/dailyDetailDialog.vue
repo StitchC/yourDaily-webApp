@@ -48,7 +48,6 @@
    * daily-modify：组件编辑按钮点击时通知父组件
    */
   import {formateDate} from 'common/js/formateDate.js';
-  import {getLocalStorage} from 'common/js/localStorage.js';
   import selectDialog from 'components/selectDialog/selectdialog.vue';
   import BetScroll from 'better-scroll';
 
@@ -98,11 +97,8 @@
         this.$emit('detail-dialog-close');
       },
       selfDaily: function() {
-        let data = getLocalStorage('ohMyDaily');
-        let user = JSON.parse(data.userData);
-
         let curDailyUserId = this.detailData.userId;
-        let curLoginUserId = user.id;
+        let curLoginUserId = this.$store.state.userData.info.id;
 
         if(curDailyUserId === curLoginUserId) {
           return true;
@@ -127,18 +123,15 @@
           emulateJSON: true
         }).then(res => {
           let msg = res.body;
-          // 删除成功后发送ajax 请求更新 vuex 数据
           if(msg.status === SUCCESS_CODE) {
-            this.$http.get('/yourdaily/php/user/getUserData.php', {
-              params: {
-                id: this.userData.info.id,
-                connectId: this.userData.info.connect
-              }
-            }).then(res => {
-              this.$store.commit('updateData', res.body);
+            // 删除成功后发送ajax 请求更新 vuex 数据
+            this.$store.dispatch('requestNewData', {
+              id: this.userData.info.id,
+              connectId: this.userData.info.connect
+            }).then(() => {
+              this.selectDialogShow = false;
+              this.$emit('detail-dialog-close');
             });
-            this.selectDialogShow = false;
-            this.$emit('detail-dialog-close');
           }
         });
       }
@@ -201,13 +194,14 @@
       position: absolute
       top: 50%
       left: 50%
-      margin: -320px auto 0 -170px
+      margin-top: -280px
+      margin-left: -170px
       width: 340px
-      height: 640px
+      height: 560px
       .header
         position: relative
         width: 100%
-        height: 200px
+        height: 180px
         padding-top: 24px
         border-top-left-radius: 20px
         border-top-right-radius: 20px
@@ -235,19 +229,20 @@
           font-size: 14px
           text-align: center
           color: #fff
-      .content
-        height: 320px
-        padding: 24px
+      .content-scroll
+        height: 316px
         background-color: #fff
-        .title
-          line-height: 38px
-        .txt
-          line-height: 30px
-          font-size: 14px
+        .content
+          padding: 24px
+          .title
+            line-height: 38px
+          .txt
+            line-height: 30px
+            font-size: 14px
       .footer
         position: relative
         width: 100%
-        height: 50px
+        height: 40px
         border-bottom-left-radius: 20px
         border-bottom-right-radius: 20px
         &.male-theme
@@ -258,16 +253,16 @@
           position: absolute
           left: 24px
           display: inline-block
-          height: 50px
-          line-height: 50px
+          height: 40px
+          line-height: 40px
           font-size: 25px
           color: #fff
         .edit-btn
           position: absolute
           display: inline-block
           right: 24px
-          height: 50px
-          line-height: 50px
+          height: 40px
+          line-height: 40px
           font-size: 25px
           color: #fff
 
@@ -276,18 +271,18 @@
       .detail-dialog-main
         top: 50%
         left: 50%
-        margin: -250px auto 0 -140px
+        margin-top: -240px
+        margin-left: -140px
         width: 280px
-        height: 500px
+        height: 480px
         .header
           width: 100%
           height: 180px
           padding-top: 20px
           .close-btn
             top: 18px
-        .content
-          height: 230px
-          padding: 24px
+        .content-scroll
+          height: 260px
         .footer
           height: 40px
           .delete-btn

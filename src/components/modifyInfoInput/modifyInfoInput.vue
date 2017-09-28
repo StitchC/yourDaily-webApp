@@ -59,13 +59,9 @@
               if(data.status === SUCCESS_CODE) {
                 this.btnTxt = '已保存';
                 // 修改成功后 发送ajax 请求 更新vuex 数据
-                this.$http.get('/yourdaily/php/user/getUserData.php', {
-                  params: {
-                    id: this.initData.userId,
-                    connectId: this.initData.connect
-                  }
-                }).then(res => {
-                  this.$store.commit('updateData', res.body);
+                this.$store.dispatch('requestNewData', {
+                  id: this.initData.userId,
+                  connectId: this.initData.connect
                 });
               }else if(data.status === ERR_CODE) {
                 this.alertDialogShow = true;
@@ -80,14 +76,10 @@
               let data = res.body;
               if(data.status === SUCCESS_CODE) {
                 this.btnTxt = '已保存';
-                // 修改成功后发送ajax 更新vuex 数据
-                this.$http.get('/yourdaily/php/user/getUserData.php', {
-                  params: {
-                    id: this.initData.userId,
-                    connectId: this.initData.connect
-                  }
-                }).then(res => {
-                  this.$store.commit('updateData', res.body);
+                // 修改成功后 发送ajax 请求 更新vuex 数据
+                this.$store.dispatch('requestNewData', {
+                  id: this.initData.userId,
+                  connectId: this.initData.connect
                 });
               }else if(data.status === ERR_CODE) {
                 this.alertDialogShow = true;

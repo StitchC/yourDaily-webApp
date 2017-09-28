@@ -35,52 +35,45 @@
 
   const WEATHER_CLASS_LIST = ['icon-weather-sunny', 'icon-weather-cloudy', 'icon-weather-rainny', 'icon-weather-snowly'];
   const MOOD_CLASS_LIST = ['icon-mood-happy', 'icon-mood-normal', 'icon-mood-sadness'];
-  const MOOD_SELECT_TYPE = 0;
-  const WEATHER_SELECT_TYPE = 1;
+  const MOOD_SELECT_TYPE = 0;    // 选择心情时的状态码
+  const WEATHER_SELECT_TYPE = 1; // 选择天气时的状态码
   const SUCCESS_CODE = 200;
   const ERROR_CODE = 400;
-  const ADD_DAILY_CODE = 0;
-  const MODIFY_DAILY_CODE = 1;
+  const ADD_DAILY_CODE = 0;    // 新增日记状态的状态码
+  const MODIFY_DAILY_CODE = 1; // 编辑日记状态的状态码
 
   /**
    *  日记输入组件
    *
-   *  组件的初始化是根据父组件传递过来的 userSex 参数切换对应的风格
-   *
-   *  重要功能能（选择心情和选择天气）
-   *      此功能由 selectMoodAndWeather 组件实现
-   *      思路如下：
-   *          先定义几个常量：
-   *          WEATHER_CLASS_LIST：保存要初始化的天气icon 类名
-   *          MOOD_CLASS_LIST：保存要初始化的心情icon 类名
-   *          MOOD_SELECT_TYPE：定义心情选项的代替码
-   *          WEATHER_SELECT_TYPE：定义天气选项的代替码
-   *
-   *          当点击心情选项或天气选项的时候会自动获取对应的代替码
-   *          这个交给 selectMood 和 selectWeather 处理
-   *          处理后将保存在 curSelectType 这个变量中记录当前选择的是心情选项还是天气选项
-   *
-   *          之后显示 selectMoodAndWeather 组件中
-   *          选项内容初始化也交给 selectMood 和 selectWeather 处理
-   *          他们会把对应的icon 类名数组保存在  selectorClassList 这个变量中
-   *          这个变量将会传递给 selectMoodAndWeather 组件
-   *          selectMoodAndWeather 组件做的就是将其遍历生成选项内容
-   *
-   *          当子组件选择完成后会触发 selector-change 事件
-   *          这个事件交给 listenSelectorChange 方法处理这个方法接收一个参数是子组件选项的下标值
-   *          父组件操作流程如下
-   *              1、判断此时 curSelectType 的代替码是多少
-   *                 0：选择了心情选项
-   *                 1：选择了天气选项
-   *
-   *              2、通过以上的代替码确定当前选择了哪个选项
-   *                 根据这个选项便可以做如下操作：
-   *                 1）根据对应的代替码 找到对应的选项内容类名数组
-   *                 2）根据子组件传递过来的下标值确定具体类名
-   *                 3）确定类名后格式化要输出的类名 格式为 'active 某个选项内容的类名'并保存到与其对应类名变量中（curMoodClass 或 curWeatherClass）
+   *  参数：
+   *  allData（初始化日记输入组件的内容）
+   *    类型: Object
+   *    格式:
+   *    {
+   *      editType:  激活组件时的编辑类型，"0"：新建日记  "1"：编辑已有日记,
+          dailyId: detail.id   如果是编辑状态词属性存在用于保存当前编辑日记的id,
+          curTime: new Date()  当前日期 用于显示在编辑组件的顶部,
+          userSex: parseInt(detail.sex)  用户的性别 用于更改组件的颜色风格,
+          title: detail.title  日记标题，如果是新增日记则填入空内容如果不是填入已有日记的题目,
+          content: detail.content  日记内容用法同上,
+          moodType: parseInt(detail.mood)  心情类型，如果是新增日记填入 -1 如果不是填入对应的心情类型编码,
+          weatherType: parseInt(detail.weather)   天气类型，用法同上
+   *    }
+   *  notepadShow（控制日记输入组件的关闭或显示）
+   *    类型: Boolean
    *
    *
+   *  重要：
+   *  1、心情和天气的选择
+   *  当用户点击心情图标时 会触发 selectMood 函数，此函数将会对 this.curSelectType 和 this.selectorClassList 进行修改。
+   *  之后子组件 'extra-selector' 将会根据 this.selectorClassList 里面的类名进行图标的输出
+   *  当子组件 'extra-selector' 选择完之后会触发 ‘selector-change’事件并且传递一个对应 this.selectorClassList 数组的索引下标
+   *  事件的执行函数 listenSelectorChange 会根据当前的 this.curSelectType 对 curMoodType 或 curWeatherType 附上对应类名数组索引下标，并且当提交数据时也需要这个值指定当前日记心情和天气
+   *  当这两个局部变量发生改变的时候 对应的 curMoodClass 或 curWeatherClass 就会发生改变 并在类名前加上了 active 形成高亮状态
    *
+   *
+   *  2、日记输入组件关闭时会对它进行初始化还原 因此会执行 initNotepad 这个函数
+   *  这也确保了下一次无论是用作修改日记或新增日记时数据的一致性（尤其是在修改日记时尤为明显）
    */
 
   export default {
@@ -100,8 +93,8 @@
         curSelectType: -1,
         curMoodType: this.allData.moodType,       // 保存选择的心情内容类型代替码 用作传输给后台和锁定切换的类名
         curWeatherType: this.allData.weatherType, // 同上
-        curMoodClass: 'icon-mood-happy',          // 保存要切换的心情选项类名
-        curWeatherClass: 'icon-weather-sunny'     // 保存要切换的天气选项类名
+        curMoodClass: 'icon-mood-happy',          // 保存要切换的心情选项类名控制着选择按钮的高亮状态
+        curWeatherClass: 'icon-weather-sunny'     // 保存要切换的天气选项类名控制着选择按钮的高亮状态
       };
     },
     props: {
@@ -164,13 +157,9 @@
                 if(res.body.status === SUCCESS_CODE) {
                   this.saveBtnStatus = '已保存';
                   // 发布成功后 发送ajax 请求 更新vuex 数据
-                  this.$http.get('/yourdaily/php/user/getUserData.php', {
-                    params: {
-                      id: this.userData.info.id,
-                      connectId: this.userData.info.connect
-                    }
-                  }).then(res => {
-                    this.$store.commit('updateData', res.body);
+                  this.$store.dispatch('requestNewData', {
+                    id: this.userData.info.id,
+                    connectId: this.userData.info.connect
                   });
                 }else if(res.body.status === ERROR_CODE) {
                   this.dialogShowStatus = true;
@@ -188,13 +177,9 @@
                 if(res.body.status === SUCCESS_CODE) {
                   this.saveBtnStatus = '已保存';
                   // 修改成功后发送ajax 请求 更新vuex 数据
-                  this.$http.get('/yourdaily/php/user/getUserData.php', {
-                    params: {
-                      id: this.userData.info.id,
-                      connectId: this.userData.info.connect
-                    }
-                  }).then(res => {
-                    this.$store.commit('updateData', res.body);
+                  this.$store.dispatch('requestNewData', {
+                    id: this.userData.info.id,
+                    connectId: this.userData.info.connect
                   });
                 }else if(res.body.status === ERROR_CODE) {
                   this.dialogShowStatus = true;

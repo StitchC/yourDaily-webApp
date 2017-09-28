@@ -39,13 +39,13 @@
    *    弹出性别的选择框让用户选择性别
    *    当用户确认修改性别后会触发 selectsex-confirm 事件
    *    事件调用 confirmSex 方法 此方法会发送ajax 请求后台获取用户的所有关联的数据
-   *    然后初始化user 组件下的 daily， calendar， self 各个组件的数据
+   *    更新 vuex 里的共享数据
    *    最后跳转到 /user/daily 组件下
    *
    * 分支二：
    *    如果性别不为2 即用户不是新注册用户
    *    在created 生命周期钩子中发送ajax 请求用户所有关联的数据
-   *    然后初始化user 组件下的 daily， calendar， self 各个组件的数据
+   *    然后更新 vuex 里的共享数据
    *    最后跳转到 /user/daily 组件下
    */
   const SEX_NOTINIT = 2;
@@ -65,7 +65,7 @@
       let user = JSON.parse(data.userData);
       this.userId = user.id;
       this.userConnectId = user.connect;
-      // 发送ajax 请求获取数据
+      // 组件第一次加载时发送ajax 请求获取数据
       this.$http.get('/yourdaily/php/user/getUserData.php', {
         params: {
           id: this.userId,
@@ -74,6 +74,7 @@
       }).then(res => {
         this.$store.commit('updateData', res.body);
         let userSex = parseInt(this.$store.state.userData.info.sex);
+        // 如果性别为2 表示未被初始化 需要显示性别选择组件
         if(userSex === SEX_NOTINIT) {
           this.$store.commit('toggleSelectSex', true);
         }else {
@@ -89,13 +90,11 @@
     methods: {
       confirmSex: function() {
         // 选择完性别之后发送ajax 更新 vuex 数据
-        this.$http.get('/yourdaily/php/user/getUserData.php', {
-          params: {
-            id: this.userId,
-            connectId: this.userConnectId
-          }
-        }).then(res => {
-          this.$store.commit('updateData', res.body);
+        this.$store.dispatch('requestNewData', {
+          id: this.userId,
+          connectId: this.userConnectId
+        }).then(() => {
+          // 更新数据完毕后关闭性别选择组件
           this.$store.commit('toggleSelectSex', false);
           this.$nextTick(() => {
             this.$router.push('/user/daily');
