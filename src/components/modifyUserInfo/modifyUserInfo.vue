@@ -10,6 +10,7 @@
           <span class="title">头像</span>
           <div class="info-content avatar-wrap">
             <img :src="avatar">
+            <span class="edit-btn icon-arrow-right" :class="{'male-theme': userData.info.sex === '1', 'female-theme': userData.info.sex === '0'}" @click="modifyUserAvatar"></span>
           </div>
         </div>
         <div class="info-content-wrap user-name">
@@ -29,19 +30,22 @@
         </div>
       </div>
       <info-input :init-data="initInfoInput" :input-show="toggleInput" @input-close="closeInput"></info-input>
+      <upload-image :show="uploadImgShow" @upload-img-close="toggleUploadImage"></upload-image>
     </div>
   </transition>
 </template>
 
 <script type="text/ecmascript-6">
   import infoInput from 'components/modifyInfoInput/modifyInfoInput.vue';
+  import uploadImage from 'components/uploadImage/uploadImage.vue';
 
   export default {
     data: function() {
       return {
         show: this.modifyInfoShow,
         initInfoInput: {},
-        toggleInput: false
+        toggleInput: false,
+        uploadImgShow: false
       };
     },
     props: {
@@ -50,11 +54,18 @@
       }
     },
     components: {
-      'info-input': infoInput
+      'info-input': infoInput,
+      'upload-image': uploadImage
     },
     methods: {
       close: function() {
         this.$emit('modify-info-close');
+      },
+      toggleUploadImage: function() {
+        this.uploadImgShow = false;
+      },
+      modifyUserAvatar: function() {
+        this.uploadImgShow = true;
       },
       modifyUserName: function() {
         this.initInfoInput = {
@@ -84,8 +95,6 @@
       modifySex: function() {
         // 个人信息修改性别 将vuex toggleSelectSex 修改为true 弹出选择性别组件
         this.$store.commit('toggleSelectSex', true);
-        console.log('click');
-        console.log(this.$store.state.selectSexShow);
       },
       closeInput: function() {
         this.toggleInput = false;

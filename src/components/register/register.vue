@@ -74,7 +74,6 @@
               pwd: this.pwdVal
             }, {emulateJSON: true}).then(res => {
               let data = res.body;
-              console.log(data);
 
               if(data.status === SUCCESS_CODE) {
                 this.dialogShowStatus = true;
