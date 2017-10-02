@@ -137,7 +137,8 @@
             title: data.title,
             content: data.content,
             userId: data.userId,
-            sex: parseInt(data.sex)
+            sex: parseInt(data.sex),
+            images: data.image.split(',')
           };
           this.detailDialogShow = true;
         };

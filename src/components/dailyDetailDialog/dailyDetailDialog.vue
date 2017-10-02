@@ -12,6 +12,11 @@
           <div class="content">
             <p class="title" v-show="detailData.title !== ''">{{detailData.title}}</p>
             <p class="txt">{{detailData.content}}</p>
+            <ul class="daily-image-list">
+              <li v-for="item in detailData.images" class="image-item">
+                <img :src="item">
+              </li>
+            </ul>
           </div>
         </div>
         <div class="footer" :class="{'male-theme': detailData.sex === 1, 'female-theme': detailData.sex === 0}">
@@ -70,6 +75,7 @@
       }
     },
     mounted: function() {
+      console.log(this.detailData.images);
       this.$nextTick(() => {
         if(!this.scroll) {
           this.scroll = new BetScroll(this.$refs.contentScroll);
@@ -119,9 +125,7 @@
       selectDialogConfirm: function() {
         this.$http.post('/yourdaily/php/user/deleteDaily.php', {
           id: this.detailData.dailyId
-        }, {
-          emulateJSON: true
-        }).then(res => {
+        }, {emulateJSON: true}).then(res => {
           let msg = res.body;
           if(msg.status === SUCCESS_CODE) {
             // 删除成功后发送ajax 请求更新 vuex 数据
@@ -232,6 +236,7 @@
       .content-scroll
         height: 316px
         background-color: #fff
+        overflow: hidden
         .content
           padding: 24px
           .title
@@ -239,6 +244,10 @@
           .txt
             line-height: 30px
             font-size: 14px
+          .daily-image-list
+            .image-item
+              img
+                width: 100%
       .footer
         position: relative
         width: 100%

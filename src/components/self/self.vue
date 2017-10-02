@@ -25,7 +25,7 @@
         <p>字</p>
       </div>
       <div class="photo-count">
-        <p>0</p>
+        <p>{{userData.info.images}}</p>
         <p>图</p>
       </div>
     </div>

@@ -6,8 +6,12 @@
         <span class="close-btn icon-close" @click="close"></span>
       </div>
       <div class="upload-image-main">
-        <div class="no-select-photo" v-show="imgURL === ''">你还没有选择图片哦</div>
-        <img :src="imgURL" v-show="imgURL !== ''" class="preview-img">
+        <div class="img-preview-area">
+          <transition-group name="previewArea-slide" mode="out-in" tag="div">
+            <div class="no-select-photo" v-show="imgURL === ''" key="hint">你还没有选择图片哦</div>
+            <img :src="imgURL" v-show="imgURL !== ''" class="preview-img" key="preview-area">
+          </transition-group>
+        </div>
         <div class="select-img-btn">
           <span class="txt">选择图片</span>
           <input type="file" class="file-input" ref="fileInput" @change="imgChange">
@@ -15,12 +19,14 @@
         <div class="upload-btn" @click="uploadImg">上传图片</div>
       </div>
       <alert-dialog :dialog-show="alertDialogShow" :txt="alertDialogTxt" @dialog-show-change="toggleAlertDialog"></alert-dialog>
+      <loading :show="loadingShow"></loading>
     </div>
   </transition>
 </template>
 
 <script type="text/ecmascript-6">
   import alertDialog from 'components/alertDialog/alertdialog.vue';
+  import loading from 'components/loading/loading.vue';
 
   const SUCCESS_CODE = 200;
 
@@ -28,9 +34,10 @@
     data: function() {
       return {
         imgURL: '',
-        reader: new FileReader(),
+        fileContent: null,
         alertDialogShow: false,
-        alertDialogTxt: ''
+        alertDialogTxt: '',
+        loadingShow: false
       };
     },
     props: {
@@ -39,7 +46,8 @@
       }
     },
     components: {
-      'alert-dialog': alertDialog
+      'alert-dialog': alertDialog,
+      'loading': loading
     },
     methods: {
       close: function() {
@@ -47,33 +55,35 @@
         this.imgURL = '';
       },
       imgChange: function() {
-         let file = this.$refs.fileInput.files[0];
-         let reg = /image\/(jpg|png|jpeg)/;
-         console.log(file);
-         if(!reg.test(file.type)) {
-            this.alertDialogShow = true;
-            this.alertDialogTxt = '上传的图片格式只能为 jpg,png,jpeg 哦';
-         }else {
-            this.reader.readAsDataURL(file);
-            this.reader.addEventListener('load', (event) => {
-            this.imgURL = event.target.result;
-          });
-        }
+         if(this.$refs.fileInput.files[0]) {
+           let reg = /image\/(jpg|png|jpeg)/;
+           this.fileContent = this.$refs.fileInput.files[0];
+           if(!reg.test(this.fileContent.type)) {
+             this.alertDialogShow = true;
+             this.alertDialogTxt = '上传的图片格式只能为 jpg,png,jpeg 哦';
+           }else {
+             let reader = new FileReader();
+             reader.readAsDataURL(this.fileContent);
+             reader.addEventListener('load', (event) => {
+               this.imgURL = event.target.result;
+             });
+           }
+         }
       },
       uploadImg: function() {
-        if(!this.$refs.fileInput.files[0]) {
+        if(!this.fileContent) {
             this.alertDialogShow = true;
             this.alertDialogTxt = '你还没有选择图片喔';
             return;
         }
         let formdata = new FormData();
         let actualFileName = this.$store.state.userData.info.avatar.split('/')[3];
-        formdata.append('avatar', this.$refs.fileInput.files[0]);
+        formdata.append('avatar', this.fileContent);
         formdata.append('id', this.$store.state.userData.info.id);
         formdata.append('curAvatar', actualFileName);
         this.$http.post('/yourdaily/php/user/uploadAvatar.php', formdata, {
-          progress: function(event) {
-            console.log((event.loaded / event.total) * 100);
+          before: function() {
+            this.loadingShow = true;
           }
         }).then((res) => {
           let data = res.body;
@@ -81,7 +91,15 @@
             this.$store.dispatch('requestNewData', {
               id: this.$store.state.userData.info.id,
               connectId: this.$store.state.userData.info.connect
+            }).then(() => {
+              this.loadingShow = false;
+              this.imgURL = '';
+              this.fileContent = null;
+              this.$emit('upload-img-close');
             });
+          }else {
+            this.alertDialogShow = true;
+            this.alertDialogTxt = '你的网络有点小问题请稍候重试哦';
           }
         });
       },
@@ -145,20 +163,44 @@
         color: #fff
         text-align: center
     .upload-image-main
-      .no-select-photo
-        width: 150px
+      .img-preview-area
+        position: relative
+        width: 100%
         height: 150px
-        line-height: 150px
-        margin: 50px auto 0 auto
-        border: 1px dashed #ccc
-        color: #ccc
-        font-size: 14px
-        text-align: center
-      .preview-img
-        display: block
-        width: 150px
-        height: 150px
-        margin: 30px auto 0 auto
+        margin-top: 30px
+        .no-select-photo
+          position: absolute
+          top: 0
+          left: 50%
+          width: 150px
+          height: 150px
+          line-height: 150px
+          margin-left: -75px
+          border: 1px dashed #ccc
+          color: #ccc
+          font-size: 14px
+          text-align: center
+          &.previewArea-slide-leave-to
+            opacity: 0
+            transform: translate3d(-100%,0,0)
+          &.previewArea-slide-leave-active
+            transition: all .4s ease
+        .preview-img
+          position: absolute
+          top: 0
+          left: 50%
+          display: block
+          width: 150px
+          height: 150px
+          margin-left: -75px
+          &.previewArea-slide-enter
+            opacity: 0
+            transform: translate3d(100%,0,0)
+          &.previewArea-slide-enter-to
+            opacity: 1
+            transform: translate3d(0,0,0)
+          &.previewArea-slide-enter-active
+            transition: all .4s ease
       .select-img-btn
         position: relative
         width: 150px

@@ -135,7 +135,8 @@
             title: detail.title,
             content: detail.content,
             userId: detail.userId,
-            sex: parseInt(detail.sex)
+            sex: parseInt(detail.sex),
+            images: detail.image.split(',')
           };
 
          this.detailDialogShow = true;

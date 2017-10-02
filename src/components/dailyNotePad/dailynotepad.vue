@@ -4,7 +4,7 @@
       <div class="notepad-header" :class="{'male-theme': allData.userSex === 1, 'female-theme': allData.userSex === 0}">
         <div class="close-btn icon-close" @click="closeNotepad"></div>
         <div class="date">{{allData.curTime | formateTime}}</div>
-        <div class="save-btn" @click="uploadDaily">{{saveBtnStatus}}</div>
+        <div class="save-btn" @click="uploadDaily">{{saveBtnStatus === 0 ? '保存': '已保存'}}</div>
       </div>
       <div class="notepad-main">
         <div class="title-input">
@@ -15,14 +15,26 @@
         </div>
       </div>
       <div class="notepad-footer" :class="{'male-theme': allData.userSex === 1, 'female-theme': allData.userSex === 0}">
+        <div class="select-photo" :class="{'disabled': fileContenList.length === 3}">
+          <span class="txt">图片</span>
+          <input type="file" class="file-input" @change="selectImgChange" v-show="fileContenList.length < 3">
+        </div>
         <div class="select-item-wrap">
           <span class="mood-select" :class="curMoodClass" @click="selectMood"></span>
           <span class="weather-select" :class="curWeatherClass" @click="selectWeather"></span>
         </div>
       </div>
+      <transition name="photo-list-fade">
+        <ul class="photo-list-preview" v-show="fileContenList.length !== 0">
+          <li v-for="(item, index) in fileContenList" class="img-item">
+            <img :src="item.url" @click="seePhoto($event, index)">
+          </li>
+        </ul>
+      </transition>
       <extra-selector :classList="selectorClassList" :selectorToggleShow="selectorShow" @selector-change="listenSelectorChange" @selector-show-change="listenSelectorShow"></extra-selector>
       <alert-dialog :dialog-show="dialogShowStatus" :txt="dialogTxt" @dialog-show-change="listenDialogShow"></alert-dialog>
       <select-dialog :txt="selectDialogTxt" :show="selectDialogShowStatus" @confirm="confrimClose" @cancel="cancelClose"></select-dialog>
+      <daily-photo-view :show="photoViewShow" :photo-url="curPhotoUrl" :photo-index="curPhotoIndex" @close="photoViewClose" @delete-photo="dropPhoto"></daily-photo-view>
     </div>
   </transition>
 </template>
@@ -31,16 +43,20 @@
   import dailyExtraSelector from 'components/selectMoodandWeather/selectMoodAndWeather.vue';
   import alertDialog from 'components/alertDialog/alertdialog.vue';
   import selectDialog from 'components/selectDialog/selectdialog.vue';
+  import dailyPhotoView from 'components/dailyPhotoView/dailyPhotoView.vue';
   import {formateDate} from 'common/js/formateDate.js';
 
+  const SUCCESS_CODE = 200;
+  const ERROR_CODE = 400;
+  const DAILY_HAS_SAVE = 1;  // 日记已保存的状态码
+  const DAILY_NOT_SAVE = 0;  // 日记未保存的状态码
   const WEATHER_CLASS_LIST = ['icon-weather-sunny', 'icon-weather-cloudy', 'icon-weather-rainny', 'icon-weather-snowly'];
   const MOOD_CLASS_LIST = ['icon-mood-happy', 'icon-mood-normal', 'icon-mood-sadness'];
   const MOOD_SELECT_TYPE = 0;    // 选择心情时的状态码
   const WEATHER_SELECT_TYPE = 1; // 选择天气时的状态码
-  const SUCCESS_CODE = 200;
-  const ERROR_CODE = 400;
   const ADD_DAILY_CODE = 0;    // 新增日记状态的状态码
   const MODIFY_DAILY_CODE = 1; // 编辑日记状态的状态码
+  const PHOTO_LIMIT = 3;       // 日记图片的限制数
 
   /**
    *  日记输入组件
@@ -81,7 +97,7 @@
       return {
         show: this.notepadShow, // 编辑日记组件显示/隐藏
         curEditType: ADD_DAILY_CODE,         // 记录当前的输入环境 0 表示新增日记， 1 表示编辑日记
-        saveBtnStatus: '保存',  // 按钮内容
+        saveBtnStatus: DAILY_NOT_SAVE,  // 保存日记按钮的状态 0为 '未保存' 1为'已保存'
         titleVal: this.allData.title,
         contentVal: this.allData.content,
         selectorShow: false,
@@ -94,7 +110,12 @@
         curMoodType: this.allData.moodType,       // 保存选择的心情内容类型代替码 用作传输给后台和锁定切换的类名
         curWeatherType: this.allData.weatherType, // 同上
         curMoodClass: 'icon-mood-happy',          // 保存要切换的心情选项类名控制着选择按钮的高亮状态
-        curWeatherClass: 'icon-weather-sunny'     // 保存要切换的天气选项类名控制着选择按钮的高亮状态
+        curWeatherClass: 'icon-weather-sunny',     // 保存要切换的天气选项类名控制着选择按钮的高亮状态
+        fileContenList: [],
+        curPhotoUrl: '',
+        curPhotoIndex: -1,
+        curPhotoName: [], // 保存以选择的图片名
+        photoViewShow: false
       };
     },
     props: {
@@ -108,7 +129,8 @@
     components: {
       'extra-selector': dailyExtraSelector,
       'alert-dialog': alertDialog,
-      'select-dialog': selectDialog
+      'select-dialog': selectDialog,
+      'daily-photo-view': dailyPhotoView
     },
     methods: {
       initNotepad: function() {
@@ -119,10 +141,12 @@
         this.curWeatherClass = 'icon-weather-sunny';
         this.contentVal = '';
         this.titleVal = '';
-        this.saveBtnStatus = '保存';
+        this.saveBtnStatus = DAILY_NOT_SAVE;
+        this.fileContenList = [];
+        this.curPhotoName = [];
       },
       closeNotepad: function() {
-        if(this.contentVal === '' || this.saveBtnStatus === '已保存') {
+        if((this.contentVal === '' && this.fileContenList.length === 0) || this.saveBtnStatus === DAILY_HAS_SAVE) {
           this.$emit('notepad-close');
           // 初始化日记输入组件
           this.initNotepad();
@@ -131,31 +155,42 @@
           this.selectDialogTxt = '你确定要离开编辑日记吗';
         }
       },
-      confrimClose: function(bool) {
-        this.selectDialogShowStatus = bool;
+      confrimClose: function() {
+        this.selectDialogShowStatus = false;
         // 初始化日记输入组件
         this.initNotepad();
         this.$emit('notepad-close');
       },
-      cancelClose: function(bool) {
-        this.selectDialogShowStatus = bool;
+      cancelClose: function() {
+        this.selectDialogShowStatus = false;
       },
       uploadDaily: function() {
-        if(this.saveBtnStatus !== '已保存') {
+        if(this.saveBtnStatus !== DAILY_HAS_SAVE) {
           if(this.contentVal === '') {
             this.dialogShowStatus = true;
             this.dialogTxt = '你还没有输入日记内容哦';
           }else {
             if(this.editType === ADD_DAILY_CODE) {
-              this.$http.post('/yourdaily/php/user/uploadDaily.php', {
+              let formdata = new FormData();
+              // 遍历所有文件保存到 formdata
+              for(let i = 0; i < this.fileContenList.length; i++) {
+                formdata.append('file[]', this.fileContenList[i].content);
+              };
+              // 保存所有除文件外的日记信息
+              let data = {
                 id: this.userData.info.id,
                 title: this.titleVal,
                 content: this.contentVal,
                 mood: this.curMoodType,
                 weather: this.curWeatherType
-              }, {emulateJSON: true}).then(res => {
+              };
+              // 遍历日记信息 保存到 formdata
+              for(let key in data) {
+                formdata.append(key, data[key]);
+              };
+              this.$http.post('/yourdaily/php/user/uploadDaily.php', formdata).then(res => {
                 if(res.body.status === SUCCESS_CODE) {
-                  this.saveBtnStatus = '已保存';
+                  this.saveBtnStatus = DAILY_HAS_SAVE;
                   // 发布成功后 发送ajax 请求 更新vuex 数据
                   this.$store.dispatch('requestNewData', {
                     id: this.userData.info.id,
@@ -175,7 +210,7 @@
                 weather: this.curWeatherType
               }, {emulateJSON: true}).then(res => {
                 if(res.body.status === SUCCESS_CODE) {
-                  this.saveBtnStatus = '已保存';
+                  this.saveBtnStatus = DAILY_HAS_SAVE;
                   // 修改成功后发送ajax 请求 更新vuex 数据
                   this.$store.dispatch('requestNewData', {
                     id: this.userData.info.id,
@@ -214,6 +249,57 @@
       },
       listenDialogShow: function(bool) {
         this.dialogShowStatus = bool;
+      },
+      selectImgChange: function(event) {
+        let file = event.target.files[0];
+        let e = event;
+        let reg = /image\/(jpg|png|jpeg)/;
+        // 判断文件是否存在或数量是否已达到标准
+        // 满足则返回空值结束函数
+        if(!file || this.fileContenList.length === PHOTO_LIMIT) {
+          return;
+        }
+        // 文件名不符显示提示框 返回空值结束函数
+        if(!reg.test(file.type)) {
+          this.dialogShowStatus = true;
+          this.dialogTxt = '上传的图片格式只能为 jpg,png,jpeg 哦';
+          return;
+        }
+        // 是否有相同文件名
+        // 符合则返回控制结束函数
+        if(this.curPhotoName.indexOf(file.name) !== -1) {
+          return;
+        }
+        // 以上条件均不成立 对文件进行读取显示
+        // 保存文件数据 用作上传
+        let reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.addEventListener('load', (event) => {
+          let fileObj = {
+            content: file,
+            url: event.target.result
+          };
+          this.fileContenList.push(fileObj);
+          this.curPhotoName.push(file.name);
+          e.target.value = '';
+          console.log(e.target.files[0]);
+          console.log(this.curPhotoName);
+        });
+      },
+      seePhoto: function(event, index) {
+        this.curPhotoUrl = this.fileContenList[index].url;
+        this.photoViewShow = true;
+        this.curPhotoIndex = index;
+      },
+      photoViewClose: function() {
+        this.photoViewShow = false;
+      },
+      dropPhoto: function(index) {
+        this.fileContenList.splice(index, 1);
+        this.curPhotoName.splice(index, 1);
+        this.photoViewShow = false;
+        console.log('删除图片');
+        console.log(this.curPhotoName);
       }
     },
     computed: {
@@ -329,7 +415,27 @@
         background-color: #4889B4
       &.female-theme
         background-color: #FE706F
+      .select-photo
+        position: relative
+        display: inline-block
+        width: 40px
+        height: 40px
+        line-height: 40px
+        padding-left: 5px
+        text-align: center
+        color: #fff
+        &.disabled
+          color: rgba(255,255,255,0.3)
+        .txt
+          position: absolute
+          top: 0px
+          left: 10px
+          font-size: 14px
+        .file-input
+          width: 100%
+          opacity: 0
       .select-item-wrap
+        float: right
         height: 40px
         padding-right: 20px
         text-align: right
@@ -344,4 +450,26 @@
             color: #fff
             font-weight: bold
 
+    .photo-list-preview
+      position: fixed
+      left: 0
+      bottom: 40px
+      width: 100%
+      height: 50px
+      background-color: rgba(0,0,0,0.3)
+      text-align: center
+      &.photo-list-fade-enter
+        opacity: 0
+      &.photo-list-fade-enter-to
+        opacity: 1
+      &.photo-list-fade-enter-active
+        transition: all .5s ease
+      .img-item
+        display: inline-block
+        width: 50px
+        height: 50px
+        margin: 0 5px
+        img
+          width: 100%
+          height: 100%
 </style>
