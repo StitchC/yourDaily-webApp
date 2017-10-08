@@ -25,25 +25,64 @@
         <p>字</p>
       </div>
       <div class="photo-count">
-        <p>{{userData.info.images}}</p>
+        <p>{{userData.info.images.length}}</p>
         <p>图</p>
       </div>
     </div>
+    <div class="gallary-wrap" ref="gallaryWrap">
+      <div class="gallary">
+        <div class="image-item" v-for="(image, index) in userData.info.images">
+          <div class="inner-img-wrap">
+            <img :src="image" @click="imageSwiperShow($event, index)">
+          </div>
+        </div>
+      </div>
+    </div>
     <modify-user-info :modify-info-show="toggleModifyInfo" :user-data="userData" @modify-info-close="closeModifyInfo"></modify-user-info>
+    <transition name="swiper-fade">
+      <div class="mySwipe-wrap" v-show="swipeWrapShow">
+        <swiper :options="swipeOption" ref="mySwiper">
+          <swiper-slide v-for="(image, index) in userData.info.images" :key="index">
+            <img :src="image" @click="imageWipeHide">
+          </swiper-slide>
+        </swiper>
+      </div>
+    </transition>
   </div>
 </template>
 
 <script type="text/ecmascript-6">
   import modifyUserInfo from 'components/modifyUserInfo/modifyUserInfo.vue';
+  import BetScroll from 'better-scroll';
+  import {swiper, swiperSlide} from 'vue-awesome-swiper';
 
   export default {
     data: function() {
       return {
-        toggleModifyInfo: false
+        toggleModifyInfo: false,
+        swipeWrapShow: false,
+        swipeOption: {
+          autoplay: 0,
+          direction: 'horizontal',
+          setWrapperSize: true
+        }
       };
     },
+    mounted: function() {
+      this.$nextTick(() => {
+        if(!this.scroll) {
+          this.scroll = new BetScroll(this.$refs.gallaryWrap, {
+            click: true
+          });
+        }else {
+          this.scroll.refresh();
+        }
+      });
+    },
     components: {
-      'modify-user-info': modifyUserInfo
+      'modify-user-info': modifyUserInfo,
+      'swiper': swiper,
+      'swiper-slide': swiperSlide
     },
     methods: {
       closeModifyInfo: function() {
@@ -51,10 +90,26 @@
       },
       showModifyInfo: function() {
         this.toggleModifyInfo = true;
+      },
+      imageSwiperShow: function(event, index) {
+        this.$refs.mySwiper.swiper.slideTo(index, 300, false);
+        this.swipeWrapShow = true;
+      },
+      imageWipeHide: function() {
+        this.swipeWrapShow = false;
       }
     },
     computed: {
       userData: function() {
+        this.$nextTick(() => {
+          if(!this.scroll) {
+            this.scroll = new BetScroll(this.$refs.gallaryWrap, {
+              click: true
+            });
+          }else {
+            this.scroll.refresh();
+          }
+        });
         return this.$store.state.userData;
       },
       avatar: function() {
@@ -155,6 +210,58 @@
         text-align: center
         font-size: 14px
         color: #6A6B6A
+
+    .gallary-wrap
+      position: absolute
+      width: 100%
+      top: 280px
+      bottom: 0
+      left: 0
+      overflow: hidden
+      .gallary
+        display: flex
+        flex-wrap: wrap
+        flex-direction: row
+        overflow: hidden
+      .image-item
+        flex: 0 0 33.33%
+        .inner-img-wrap
+          position: relative
+          width: 100%
+          height: 0
+          padding-top: 100%
+          overflow: hidden
+          img
+            position: absolute
+            top: 0
+            left: 0
+            width: 100%
+    .mySwipe-wrap
+      position: fixed
+      top: 0
+      left: 0
+      width: 100%
+      height: 100%
+      background-color: rgba(0,0,0,0.8)
+      z-index: 50
+      &.swiper-fade-enter
+        opacity: 0
+      &.swiper-fade-enter-active
+        transition: all .4s linear
+      &.swiper-fade-enter-to
+        opacity: 1
+      &.swiper-fade-leave-to
+        opacity: 0
+      &.swiper-fade-leave-active
+        transition: all .4s linear
+      .swiper-container
+        vertical-align: middle
+        .swiper-slide
+          display: inline-block
+          vertical-align: middle
+          img
+            width: 100%
+
 
   @media screen and (max-width: 320px)
     .self-wrapper

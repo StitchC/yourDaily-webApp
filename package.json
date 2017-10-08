@@ -16,7 +16,8 @@
     "vue-resource": "^1.0.1",
     "vuex": "^2.3.0",
     "better-scroll": "^0.1.7",
-    "axios": "^0.16.2"
+    "axios": "^0.16.2",
+    "vue-awesome-swiper": "^2.6.5"
   },
   "devDependencies": {
     "stylus": "0.54.5",

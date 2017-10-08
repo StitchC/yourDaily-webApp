@@ -120,7 +120,7 @@
         this.notepadData = {
           editType: 0,
           curTime: new Date(),
-          userSex: this.userSex,
+          userSex: parseInt(this.userData.info.sex),
           title: '',
           content: '',
           moodType: -1,
@@ -221,6 +221,7 @@
     .calendar-main
       position: relative
       width: 100%
+      height: 0
       padding-top: 100%
       background-color: #fff
       &.male-theme

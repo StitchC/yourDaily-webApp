@@ -31,7 +31,7 @@
       <span class="total-daily-num">{{userData.info.count}}篇日记</span>
     </div>
     <daily-notepad :all-data="notepadData" :notepad-show="notepadShow" @notepad-close="notepadClose"></daily-notepad>
-    <daily-detail-dialog :detail-data="dailyDetail" :detail-dialog-show="detailDialogShow" @detail-dialog-close="detailDialogClose" @daily-modify="modifyDaily"></daily-detail-dialog>
+    <daily-detail-dialog :detail-data="dailyDetail" :detail-dialog-show="detailDialogShow" @detail-dialog-close="detailDialogClose"></daily-detail-dialog>
   </div>
 </template>
 
@@ -87,7 +87,6 @@
       toggleNotepadShow: function() {
         // 当在日记组件中点击添加日记按钮的时候对日记编辑组件进行数据的初始化
         this.notepadData = {
-          editType: 0,
           curTime: new Date(),
           userSex: parseInt(this.userData.info.sex),
           title: '',
@@ -98,21 +97,6 @@
         this.notepadShow = true;
       },
       detailDialogClose: function() {
-        this.detailDialogShow = false;
-      },
-      modifyDaily: function(key) {
-        let detail = this.userData.daily[key];
-        this.notepadData = {
-          editType: 1,
-          dailyId: detail.id,
-          curTime: new Date(),
-          userSex: parseInt(detail.sex),
-          title: detail.title,
-          content: detail.content,
-          moodType: parseInt(detail.mood),
-          weatherType: parseInt(detail.weather)
-        };
-        this.notepadShow = true;
         this.detailDialogShow = false;
       },
       outputMoodClass: function(val) {

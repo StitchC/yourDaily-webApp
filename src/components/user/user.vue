@@ -13,7 +13,6 @@
             <img src="./sex-double.png">
           </div>
         </div>
-        <p class="user-title" v-show="headerTitleShow">日记</p>
       </div>
       <div class="user-main">
         <router-view></router-view>
@@ -102,15 +101,6 @@
         });
       }
     },
-    watch: {
-      $route: function(val) {
-        if(val.fullPath === '/user/calendar' || val.fullPath === '/user/self') {
-          this.headerTitleShow = false;
-        }else {
-          this.headerTitleShow = true;
-        }
-      }
-    },
     computed: {
       userData: function() {
         console.log(this.$store.state.userData);
@@ -139,15 +129,15 @@
       background-repeat: no-repeat
       .user-header
         .user-nav
-          display: flex
-          flex: 270px 0 0
           border: 1px solid #4889B4
           border-radius: 5px
           .nav-item
+            display: block
+            flex: 1
             border-right: 1px solid #4889B4
+            font-size: 14px
             color: #4889B4
             &:last-child
-              width: 33%
               border-right: 0
             &.router-link-active
               color: #fff
@@ -189,17 +179,17 @@
       z-index:50
       .user-tool-bar
         display: flex
-        height: 30px
+        height: 40px
+        justify-content: space-between
+        align-items: center
         margin-top: 35px
         .user-nav
-          flex: 270px 0 0
-          width: 270px
+          display: flex
+          flex: 3
           height: 30px
           margin: 0 auto
-          font-size: 0
           .nav-item
-            display: inline-block
-            width: 90px
+            flex: 1
             height: 30px
             line-height: 30px
             text-align: center
@@ -209,24 +199,19 @@
           width: 30px
           height: 30px
           line-height: 30px
-          padding-right: 10px
-          text-align: right
           font-size: 18px
+          text-align: center
         .worm-hold
           flex: 1
           width: 30px
           height: 30px
           line-height: 30px
-          padding-left: 10px
           font-size: 0
+          text-align: center
           img
             width: 20px
             height: 20px
             vertical-align: middle
-      .user-title
-        margin-top: 10px
-        font-size: 16px
-        text-align: center
     .user-main
       width: 100%
       height: 100%

@@ -97,16 +97,17 @@
       position: fixed
       display: flex
       justify-content: space-around
+      align-items: center
       top: 30%
       width: 100%
       font-size: 0
       .sex-btn
-        width: 135px
-        height: 135px
-        line-height: 135px
+        width: 100px
+        height: 100px
+        line-height: 100px
         border: 1px solid #fff
         border-radius: 5px
-        font-size: 100px
+        font-size: 60px
         text-align: center
         color: #fff
         transition: all .3s linear

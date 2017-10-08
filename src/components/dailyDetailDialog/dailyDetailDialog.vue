@@ -21,7 +21,6 @@
         </div>
         <div class="footer" :class="{'male-theme': detailData.sex === 1, 'female-theme': detailData.sex === 0}">
           <div class="delete-btn icon-delete" v-show="selfDaily()" @click="deleteDaily"></div>
-          <div class="edit-btn icon-edit" v-show="selfDaily()" @click="editDaily"></div>
         </div>
       </div>
       <select-dialog :show="selectDialogShow" :txt="selectDialogTxt" @cancel="selectDialogCancel" @confirm="selectDialogConfirm"></select-dialog>
@@ -75,27 +74,30 @@
       }
     },
     mounted: function() {
-      console.log(this.detailData.images);
-      this.$nextTick(() => {
+      setTimeout(() => {
         if(!this.scroll) {
-          this.scroll = new BetScroll(this.$refs.contentScroll);
+          this.scroll = new BetScroll(this.$refs.contentScroll, {
+            click: true
+          });
         }else {
           this.scroll.refresh();
         }
-      });
+      }, 200);
     },
     watch: {
       detailDialogShow: function(val) {
         this.show = val;
       },
       detailData: function() {
-       this.$nextTick(() => {
-         if(!this.scroll) {
-           this.scroll = new BetScroll(this.$refs.contentScroll);
-         }else {
-           this.scroll.refresh();
-         }
-       });
+        setTimeout(() => {
+          if(!this.scroll) {
+            this.scroll = new BetScroll(this.$refs.contentScroll, {
+              click: true
+            });
+          }else {
+            this.scroll.refresh();
+          }
+        }, 200);
       }
     },
     methods: {
@@ -115,9 +117,6 @@
       deleteDaily: function() {
         this.selectDialogShow = true;
         this.selectDialogTxt = '确定要删除日记吗？删了将不会再恢复了';
-      },
-      editDaily: function() {
-        this.$emit('daily-modify', this.detailData.dailyId);
       },
       selectDialogCancel: function() {
         this.selectDialogShow = false;
@@ -262,14 +261,6 @@
           position: absolute
           left: 24px
           display: inline-block
-          height: 40px
-          line-height: 40px
-          font-size: 25px
-          color: #fff
-        .edit-btn
-          position: absolute
-          display: inline-block
-          right: 24px
           height: 40px
           line-height: 40px
           font-size: 25px

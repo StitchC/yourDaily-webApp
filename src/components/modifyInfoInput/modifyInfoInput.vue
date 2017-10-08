@@ -145,7 +145,7 @@
         background-color: #FE706F
       .close-btn
         position: absolute
-        top: 24px
+        top: 36px
         left: 12px
         padding: 5px
         font-size: 18px
