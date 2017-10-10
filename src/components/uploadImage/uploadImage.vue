@@ -27,6 +27,7 @@
 <script type="text/ecmascript-6">
   import alertDialog from 'components/alertDialog/alertdialog.vue';
   import loading from 'components/loading/loading.vue';
+  import {compressImg} from 'common/js/compressPhoto.js';
 
   const SUCCESS_CODE = 200;
 
@@ -53,6 +54,7 @@
       close: function() {
         this.$emit('upload-img-close');
         this.imgURL = '';
+        this.fileContent = null;
       },
       imgChange: function() {
          if(this.$refs.fileInput.files[0]) {
@@ -62,10 +64,14 @@
              this.alertDialogShow = true;
              this.alertDialogTxt = '上传的图片格式只能为 jpg,png,jpeg 哦';
            }else {
-             let reader = new FileReader();
-             reader.readAsDataURL(this.fileContent);
-             reader.addEventListener('load', (event) => {
-               this.imgURL = event.target.result;
+//             let reader = new FileReader();
+//             reader.readAsDataURL(this.fileContent);
+//             reader.addEventListener('load', (event) => {
+//               this.imgURL = event.target.result;
+//             });
+             compressImg(this.fileContent, 80, 80, (val) => {
+               this.imgURL = val.compressImgUrl;
+               this.fileContent = val.compressBlob;
              });
            }
          }
@@ -77,10 +83,8 @@
             return;
         }
         let formdata = new FormData();
-        let actualFileName = this.$store.state.userData.info.avatar.split('/')[3];
         formdata.append('avatar', this.fileContent);
         formdata.append('id', this.$store.state.userData.info.id);
-        formdata.append('curAvatar', actualFileName);
         this.$http.post('/yourdaily/php/user/uploadAvatar.php', formdata, {
           before: function() {
             this.loadingShow = true;

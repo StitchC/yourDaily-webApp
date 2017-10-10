@@ -155,10 +155,9 @@
           line-height: 80px
           margin-left: 24px
           border-radius: 50%
+          overflow: hidden
           img
             width: 100%
-            height: 100%
-            border-radius: 50%
         .detail-content
           display: inline-block
           height: 80px
@@ -210,7 +209,6 @@
         text-align: center
         font-size: 14px
         color: #6A6B6A
-
     .gallary-wrap
       position: absolute
       width: 100%
@@ -235,7 +233,10 @@
             position: absolute
             top: 0
             left: 0
+            right: 0
+            bottom: 0
             width: 100%
+            margin: auto 0
     .mySwipe-wrap
       position: fixed
       top: 0
@@ -255,12 +256,14 @@
       &.swiper-fade-leave-active
         transition: all .4s linear
       .swiper-container
-        vertical-align: middle
-        .swiper-slide
-          display: inline-block
-          vertical-align: middle
-          img
-            width: 100%
+          height: 100%
+        .swiper-wrapper
+          display: flex
+          align-items: center
+          height: 100%
+          .swiper-slide
+            img
+              width: 100%
 
 
   @media screen and (max-width: 320px)

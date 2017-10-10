@@ -196,10 +196,9 @@
             height: 50px
             line-height: 60px
             border-radius: 50%
+            overflow: hidden
             img
               width: 100%
-              height: 100%
-              border-radius: 50%
           &.user-sex-content.icon-male-icon
             height: 60px
             line-height: 60px

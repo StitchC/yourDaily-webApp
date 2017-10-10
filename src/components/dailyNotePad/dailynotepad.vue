@@ -16,7 +16,9 @@
       </div>
       <div class="notepad-footer" :class="{'male-theme': allData.userSex === 1, 'female-theme': allData.userSex === 0}">
         <div class="select-photo" :class="{'disabled': fileContenList.length === 3}">
-          <span class="txt">图片</span>
+          <span class="select-icon">
+            <span class="icon-camera"></span>
+          </span>
           <input type="file" class="file-input" @change="selectImgChange" v-show="fileContenList.length < 3">
         </div>
         <div class="select-item-wrap">
@@ -45,7 +47,6 @@
   import selectDialog from 'components/selectDialog/selectdialog.vue';
   import dailyPhotoView from 'components/dailyPhotoView/dailyPhotoView.vue';
   import {formateDate} from 'common/js/formateDate.js';
-  // import {compressImg} from 'common/js/compressPhoto.js';
 
   const SUCCESS_CODE = 200;
   const ERROR_CODE = 400;
@@ -250,11 +251,6 @@
         }
         // 以上条件均不成立 对文件进行读取显示
         // 保存文件数据 用作上传
-        /*
-        let tempResult = compressImg(file, 50, 50);
-        this.fileContenList.push(tempResult);
-        console.log(file);
-        */
         let reader = new FileReader();
         reader.readAsDataURL(file);
         reader.addEventListener('load', (event) => {
@@ -265,8 +261,6 @@
           this.fileContenList.push(fileObj);
           this.curPhotoName.push(file.name);
           e.target.value = '';
-          console.log(e.target.files[0]);
-          console.log(this.curPhotoName);
         });
       },
       seePhoto: function(event, index) {
@@ -409,11 +403,11 @@
         color: #fff
         &.disabled
           color: rgba(255,255,255,0.3)
-        .txt
+        .select-icon
           position: absolute
           top: 0px
           left: 10px
-          font-size: 14px
+          font-size: 24px
         .file-input
           width: 100%
           opacity: 0
@@ -451,6 +445,10 @@
         display: inline-block
         width: 50px
         height: 50px
+        line-height: 50px
         margin: 0 5px
         overflow: hidden
+        img
+          width: 100%
+          vertical-align: middle
 </style>

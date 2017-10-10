@@ -1,13 +1,15 @@
-export function compressImg(file, maxWidth, maxHeight) {
+export function compressImg(file, maxWidth, maxHeight, callback) {
   /*
   *  创建三个私有变量 用作为返回的数据对象赋值
-  *  1、原始数据的二进制文件 originBlob
-  *  2、原始数据的url        originUrl
-  *  3、压缩后图像的url      compressImgUrl
+  *  1、原始数据的二进制文件     originBlob
+  *  2、原始数据的url            originUrl
+  *  3、压缩后图像的url          compressImgUrl
+  *  4、压缩后图像的二进制文件   compressBlob
   * */
   let originBlob = null;
   let originUrl = '';
   let compressImgUrl = '';
+  let compressBlob = null;
 
   // 定义返回的数据对象
   let result = {};
@@ -58,13 +60,16 @@ export function compressImg(file, maxWidth, maxHeight) {
     context.drawImage(img, 0, 0, maxWidth, maxHeight);
     // 输出图片的url
     let url = canvas.toDataURL('image/jpeg');
-    // 为输出的数据对象写入键值
-    compressImgUrl = url;
-    // 最后返回数据
-    result.originBlob = originBlob;
-    result.originalUrl = originUrl;
-    result.compressImgUrl = compressImgUrl;
-
-    return result;
+    canvas.toBlob(function(blob) {
+      compressBlob = blob;
+      compressImgUrl = url;
+      // 最后返回数据
+      result.originBlob = originBlob;
+      result.originalUrl = originUrl;
+      result.compressImgUrl = compressImgUrl;
+      result.compressBlob = compressBlob;
+  
+      callback(result);
+    });
   };
 };

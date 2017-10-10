@@ -199,7 +199,7 @@
           color: #FE706F
     .daily-list-wrap
       position: absolute
-      top: 110px
+      top: 100px
       bottom: 50px
       width: 100%
       overflow: hidden
@@ -208,7 +208,7 @@
           display: flex
           width: 90%
           height: 70px
-          margin: 0 auto 10px auto
+          margin: 10px auto 0 auto
           padding: 10px
           border-radius: 5px
           background-color: #fff
