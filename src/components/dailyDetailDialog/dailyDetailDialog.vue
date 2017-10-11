@@ -13,8 +13,8 @@
             <p class="title" v-show="detailData.title !== ''">{{detailData.title}}</p>
             <p class="txt">{{detailData.content}}</p>
             <ul class="daily-image-list">
-              <li v-for="item in detailData.images" class="image-item">
-                <img :src="item">
+              <li v-for="(item, index) in detailData.images" class="image-item">
+                <img @click="viewPhoto($event, index)" v-lazy="item">
               </li>
             </ul>
           </div>
@@ -24,6 +24,7 @@
         </div>
       </div>
       <select-dialog :show="selectDialogShow" :txt="selectDialogTxt" @cancel="selectDialogCancel" @confirm="selectDialogConfirm"></select-dialog>
+      <photo-preview-list :images-list="detailData.images" :show="photoListShow" :images-show-index="photoListShowIndex" @photo-preview-list-hide="photoPreviewHide"></photo-preview-list>
     </div>
   </transition>
 </template>
@@ -40,7 +41,8 @@
         title: detail.title,
         content: detail.content,
         userId: detail.userId,
-        sex: parseInt(detail.sex)
+        sex: parseInt(detail.sex),
+        images: detail.images
       }
    *
    * detailDialogShow （组件显示或隐藏的状态切换）
@@ -53,6 +55,7 @@
    */
   import {formateDate} from 'common/js/formateDate.js';
   import selectDialog from 'components/selectDialog/selectdialog.vue';
+  import photoPreviewList from 'components/photoPreviewList/photoPreviewList.vue';
   import BetScroll from 'better-scroll';
 
   const SUCCESS_CODE = 200;
@@ -62,7 +65,9 @@
         show: this.detailDialogShow,
         detail: this.detailData,
         selectDialogShow: false,
-        selectDialogTxt: ''
+        selectDialogTxt: '',
+        photoListShow: false,
+        photoListShowIndex: 0
       };
     },
     props: {
@@ -137,10 +142,18 @@
             });
           }
         });
+      },
+      photoPreviewHide: function() {
+        this.photoListShow = false;
+      },
+      viewPhoto: function(evnet, index) {
+        this.photoListShowIndex = index;
+        this.photoListShow = true;
       }
     },
     components: {
-      'select-dialog': selectDialog
+      'select-dialog': selectDialog,
+      'photo-preview-list': photoPreviewList
     },
     computed: {
       userData: function() {

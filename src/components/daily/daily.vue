@@ -1,5 +1,10 @@
 <template>
   <div class="daily-wrapper">
+    <transition name="loading-icon-slide">
+      <div class="loading-icon" v-show="loadingIconShow">
+        <img src="./loading.gif">
+      </div>
+    </transition>
     <div class="no-daily-hint" v-show="userData.daily.length === 0">
       <h3 class="hint-title">NO Enteries</h3>
       <p class="hint-txt">你还没有写过日记</p>
@@ -55,7 +60,7 @@
   export default {
     data: function() {
       return {
-        userSex: -1,
+        loadingIconShow: false,
         notepadData: {},
         notepadShow: false,
         weatherClassList: ['icon-weather-sunny', 'icon-weather-cloudy', 'icon-weather-rainny', 'icon-weather-snowly'],
@@ -68,10 +73,37 @@
       this.$nextTick(() => {
         if(!this.scroll) {
           this.scroll = new BetScroll(this.$refs.dailylist, {
-            click: true
+            click: true,
+            probeType: 3
+          });
+          this.scroll.on('touchend', (pos) => {
+            if(pos.y > 100) {
+              this.loadingIconShow = true;
+              this.$store.dispatch('requestNewData', {
+                id: this.userData.info.id,
+                connectId: this.userData.info.connect
+              }).then(() => {
+                setTimeout(() => {
+                  this.loadingIconShow = false;
+                }, 800);
+              });
+            }
           });
         }else {
           this.scroll.refresh();
+          this.scroll.on('touchend', (pos) => {
+            if(pos.y > 50) {
+              this.loadingIconShow = true;
+              this.$store.dispatch('requestNewData', {
+                id: this.userData.info.id,
+                connectId: this.userData.info.connect
+              }).then(() => {
+                setTimeout(() => {
+                  this.loadingIconShow = false;
+                }, 800);
+              });
+            }
+          });
         }
       });
     },
@@ -166,6 +198,28 @@
     position: relative
     width: 100%
     height: 100%
+    .loading-icon
+      position: absolute
+      top: 130px
+      left: 50%
+      width: 30px
+      height: 30px
+      line-height: 30px
+      margin-left: -15px
+      border-radius: 50%
+      background-color: #fff
+      box-shadow: 0 0 8px rgba(0,0,0,0.8)
+      text-align: center
+      font-size: 0
+      z-index: 5
+      &.loading-icon-slide-enter
+        top: 0
+      &.loading-icon-slide-enter-to
+        top: 130px
+      &.loading-icon-slide-enter-active
+        transition: all .4s ease
+      img
+        vertical-align: middle
     .no-daily-hint
       position: absolute
       width: 300px

@@ -33,39 +33,29 @@
       <div class="gallary">
         <div class="image-item" v-for="(image, index) in userData.info.images">
           <div class="inner-img-wrap">
-            <img :src="image" @click="imageSwiperShow($event, index)">
+            <img :src="image" @click="photoPreviewShow($event, index)">
           </div>
         </div>
       </div>
     </div>
     <modify-user-info :modify-info-show="toggleModifyInfo" :user-data="userData" @modify-info-close="closeModifyInfo"></modify-user-info>
-    <transition name="swiper-fade">
-      <div class="mySwipe-wrap" v-show="swipeWrapShow">
-        <swiper :options="swipeOption" ref="mySwiper">
-          <swiper-slide v-for="(image, index) in userData.info.images" :key="index">
-            <img :src="image" @click="imageWipeHide">
-          </swiper-slide>
-        </swiper>
-      </div>
-    </transition>
+    <photo-preview-list :images-list="userData.info.images" :show="photoListShow" :images-show-index="photoListShowIndex" @photo-preview-list-hide="photoPreviewHide"></photo-preview-list>
   </div>
 </template>
 
 <script type="text/ecmascript-6">
   import modifyUserInfo from 'components/modifyUserInfo/modifyUserInfo.vue';
+  import photoPreviewList from 'components/photoPreviewList/photoPreviewList.vue';
   import BetScroll from 'better-scroll';
-  import {swiper, swiperSlide} from 'vue-awesome-swiper';
+
 
   export default {
     data: function() {
       return {
         toggleModifyInfo: false,
         swipeWrapShow: false,
-        swipeOption: {
-          autoplay: 0,
-          direction: 'horizontal',
-          setWrapperSize: true
-        }
+        photoListShow: false,
+        photoListShowIndex: 0
       };
     },
     mounted: function() {
@@ -81,8 +71,7 @@
     },
     components: {
       'modify-user-info': modifyUserInfo,
-      'swiper': swiper,
-      'swiper-slide': swiperSlide
+      'photo-preview-list': photoPreviewList
     },
     methods: {
       closeModifyInfo: function() {
@@ -91,12 +80,12 @@
       showModifyInfo: function() {
         this.toggleModifyInfo = true;
       },
-      imageSwiperShow: function(event, index) {
-        this.$refs.mySwiper.swiper.slideTo(index, 300, false);
-        this.swipeWrapShow = true;
+      photoPreviewShow: function(event, index) {
+        this.photoListShowIndex = index;
+        this.photoListShow = true;
       },
-      imageWipeHide: function() {
-        this.swipeWrapShow = false;
+      photoPreviewHide: function() {
+        this.photoListShow = false;
       }
     },
     computed: {
@@ -237,34 +226,6 @@
             bottom: 0
             width: 100%
             margin: auto 0
-    .mySwipe-wrap
-      position: fixed
-      top: 0
-      left: 0
-      width: 100%
-      height: 100%
-      background-color: rgba(0,0,0,0.8)
-      z-index: 50
-      &.swiper-fade-enter
-        opacity: 0
-      &.swiper-fade-enter-active
-        transition: all .4s linear
-      &.swiper-fade-enter-to
-        opacity: 1
-      &.swiper-fade-leave-to
-        opacity: 0
-      &.swiper-fade-leave-active
-        transition: all .4s linear
-      .swiper-container
-          height: 100%
-        .swiper-wrapper
-          display: flex
-          align-items: center
-          height: 100%
-          .swiper-slide
-            img
-              width: 100%
-
 
   @media screen and (max-width: 320px)
     .self-wrapper

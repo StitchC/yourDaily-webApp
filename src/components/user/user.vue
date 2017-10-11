@@ -103,7 +103,6 @@
     },
     computed: {
       userData: function() {
-        console.log(this.$store.state.userData);
         return this.$store.state.userData;
       },
       selectSexShow: function() {
