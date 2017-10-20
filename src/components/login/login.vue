@@ -25,7 +25,7 @@
   import indexPage from 'components/indexPage/indexPage.vue';
   import dialog from 'components/alertDialog/alertdialog.vue';
   import loading from 'components/loading/loading.vue';
-  import {setLocalStorage} from 'common/js/localStorage.js';
+  import {setUserDefaultData} from 'common/js/localStorage.js';
 
 
   const ERROR_CODE = 400;
@@ -67,8 +67,7 @@
               this.dialogShowStatus = true;
             }else if(data.status === SUCCESS_CODE) {
               this.loadingShow = false;
-              let localStr = JSON.stringify(res.body.info);
-              setLocalStorage(localStr);
+              setUserDefaultData(res.body.info);
               this.$router.push('/user');
             }
           });

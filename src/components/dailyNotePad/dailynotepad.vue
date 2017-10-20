@@ -194,8 +194,6 @@
                 this.$store.dispatch('requestNewData', {
                   id: this.userData.info.id,
                   connectId: this.userData.info.connect
-                }).then(() => {
-                  console.log('更新成功');
                 });
               }else if(res.body.status === ERROR_CODE) {
                 this.dialogShowStatus = true;

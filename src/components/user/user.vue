@@ -3,7 +3,7 @@
     <div class="user-wrapper" :class="{'male-theme': userData.info.sex === '1', 'female-theme': userData.info.sex === '0'}">
       <div class="user-header">
         <div class="user-tool-bar">
-          <div class="setting-icon icon-setting"></div>
+          <div class="setting-icon icon-setting" @click="showSetting"></div>
           <div class="user-nav">
             <router-link to="/user/daily" class="nav-item">浏览</router-link>
             <router-link to="/user/calendar" class="nav-item">日历</router-link>
@@ -18,13 +18,15 @@
         <router-view></router-view>
       </div>
       <select-sex :select-show="selectSexShow" :user-id="userId" @select-complete="confirmSex"></select-sex>
+      <user-setting :show="settingShow" @hide-setting="settingHide"></user-setting>
     </div>
   </transition>
 </template>
 
 <script type="text/ecmascript-6">
   import selectsex from 'components/selectSex/selectsex.vue';
-  import {getLocalStorage} from 'common/js/localStorage.js';
+  import userSetting from 'components/setting/setting.vue';
+  import {getUserDefaultData, getUserDailyLock} from 'common/js/localStorage.js';
 
   /**
    * user 组件
@@ -56,14 +58,20 @@
         userSex: -1,
         userAllData: null,
         userConnectId: '',
-        headerTitleShow: true
+        headerTitleShow: true,
+        settingShow: false
       };
     },
     created: function() {
-      let data = getLocalStorage('ohMyDaily');
-      let user = JSON.parse(data.userData);
+      let user = getUserDefaultData();
       this.userId = user.id;
       this.userConnectId = user.connect;
+      let dailyLock = getUserDailyLock(this.userId);
+      if(dailyLock) {
+        if(dailyLock.lockStatus === true) {
+
+        }
+      }
       // 组件第一次加载时发送ajax 请求获取数据
       this.$http.get('/yourdaily/php/user/getUserData.php', {
         params: {
@@ -84,7 +92,8 @@
       });
     },
     components: {
-      'select-sex': selectsex
+      'select-sex': selectsex,
+      'user-setting': userSetting
     },
     methods: {
       confirmSex: function() {
@@ -99,6 +108,12 @@
             this.$router.push('/user/daily');
           });
         });
+      },
+      settingHide: function() {
+        this.settingShow = false;
+      },
+      showSetting: function() {
+        this.settingShow = true;
       }
     },
     computed: {
