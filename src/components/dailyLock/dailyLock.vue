@@ -1,7 +1,7 @@
 <template>
   <transition name="daily-lock-slide">
     <div class="daily-lock-wrapper" v-show="show">
-      <div class="pwd-hint" v-show="status === 1">密码错误</div>
+      <div class="pwd-hint" v-show="pwdError">密码错误</div>
       <div class="complete-btn-wrapper" v-show="curInputNums.length === 4 && status === 0" @click="completeLockSetting"><span class="complete-btn icon-arrow-left"></span>完成</div>
       <div class="num-screen">
         <div class="num-holder" :class="{'has-content': curInputNums.length > 0}"></div>
@@ -19,7 +19,7 @@
 </template>
 
 <script type="text/ecmascript-6">
-   import {setUserDailyLock} from 'common/js/localStorage.js';
+   import {setUserDailyLock, getUserDailyLock} from 'common/js/localStorage.js';
   /**
    *  日记锁组件
    *  参数:
@@ -32,16 +32,17 @@
    *    描述: 控制密码输入组件的状态 1: 验证密码状态，0: 编辑密码状态
    *
    *  事件:
-   *    daily-lock-hide 关闭日记锁界面
+   *    daily-lock-hide 触发父组件事件关闭日记锁界面
    *    daily-lock-settring-complete 日记锁设置完成时关闭日记锁界面
-   *
+   *    daily-lock-success   仅当输入日记锁密码时触发
    * */
 
   export default {
     data: function() {
       return {
         nums: [1, 2, 3, 4, 5, 6, 7, 8, 9, 0],
-        curInputNums: []
+        curInputNums: [],
+        pwdError: false
       };
     },
     props: {
@@ -59,6 +60,7 @@
         }
       },
       closeDailyLock: function() {
+        this.curInputNums = [];
         this.$emit('daily-lock-hide');
       },
       backspace: function() {
@@ -71,7 +73,30 @@
         data.lockStatus = true;
         data.lockNum = this.curInputNums.join('');
         setUserDailyLock(this.userData.info.id, data);
-        this.$emit('daily-lock-settring-complete');
+        this.curInputNums = [];
+        this.$emit('daily-lock-setting-complete');
+      }
+    },
+    watch: {
+      curInputNums: function(val) {
+        if(val.length === 4 && this.status === 1) {
+          // 如果当前是密码验证状态并且输入密码完毕
+          // 检测localStorage 里保存的密码是否一样
+          let dailyLock = getUserDailyLock(this.userData.info.id);
+          let pwdStr = this.curInputNums.join('');
+          let userPwd = dailyLock.lockNum;
+          if(pwdStr === userPwd) {
+            // 如果密码输入正确 隐藏密码锁
+            this.$emit('daily-lock-success');
+          }else {
+            // 如果错误 提示错误 密码清空数组
+            this.pwdError = true;
+            this.curInputNums = [];
+            setTimeout(() => {
+              this.pwdError = false;
+            }, 1000);
+          }
+        }
       }
     },
     computed: {
@@ -90,6 +115,7 @@
     width: 100%
     height: 100%
     background-color: #EEEEEE
+    z-index: 60
     &.daily-lock-slide-enter
       transform: translate3d(0,100%,0)
     &.daily-lock-slide-enter-active
@@ -109,6 +135,11 @@
       font-size: 18px
       .complete-btn
         vertical-align: middle
+    .pwd-hint
+      margin-top: 30px
+      font-size: 18px
+      color: #666
+      text-align: center
     .num-screen
       width: 200px
       height: 60px

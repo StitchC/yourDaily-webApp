@@ -19,6 +19,7 @@
       </div>
       <select-sex :select-show="selectSexShow" :user-id="userId" @select-complete="confirmSex"></select-sex>
       <user-setting :show="settingShow" @hide-setting="settingHide"></user-setting>
+      <daily-lock :show="dailyLockShow" :status="1" @daily-lock-success="dailyLockSuccess"></daily-lock>
     </div>
   </transition>
 </template>
@@ -26,6 +27,7 @@
 <script type="text/ecmascript-6">
   import selectsex from 'components/selectSex/selectsex.vue';
   import userSetting from 'components/setting/setting.vue';
+  import dailyLock from 'components/dailyLock/dailyLock.vue';
   import {getUserDefaultData, getUserDailyLock} from 'common/js/localStorage.js';
 
   /**
@@ -59,20 +61,21 @@
         userAllData: null,
         userConnectId: '',
         headerTitleShow: true,
-        settingShow: false
+        settingShow: false,
+        dailyLockShow: false
       };
     },
     created: function() {
       let user = getUserDefaultData();
       this.userId = user.id;
       this.userConnectId = user.connect;
-      let dailyLock = getUserDailyLock(this.userId);
-      if(dailyLock) {
-        if(dailyLock.lockStatus === true) {
-
-        }
+      let dailyLock = getUserDailyLock(user.id);
+      console.log(dailyLock.lockStatus);
+      // 如果用户有设置到日记锁并且日记锁为启用状态 显示解锁界面
+      if(dailyLock && dailyLock.lockStatus === true) {
+        this.dailyLockShow = true;
       }
-      // 组件第一次加载时发送ajax 请求获取数据
+      // 组件加载时发送ajax 请求获取数据
       this.$http.get('/yourdaily/php/user/getUserData.php', {
         params: {
           id: this.userId,
@@ -93,7 +96,8 @@
     },
     components: {
       'select-sex': selectsex,
-      'user-setting': userSetting
+      'user-setting': userSetting,
+      'daily-lock': dailyLock
     },
     methods: {
       confirmSex: function() {
@@ -114,6 +118,9 @@
       },
       showSetting: function() {
         this.settingShow = true;
+      },
+      dailyLockSuccess: function() {
+        this.dailyLockShow = false;
       }
     },
     computed: {

@@ -64,11 +64,6 @@
              this.alertDialogShow = true;
              this.alertDialogTxt = '上传的图片格式只能为 jpg,png,jpeg 哦';
            }else {
-//             let reader = new FileReader();
-//             reader.readAsDataURL(this.fileContent);
-//             reader.addEventListener('load', (event) => {
-//               this.imgURL = event.target.result;
-//             });
              compressImg(this.fileContent, 80, 80, (val) => {
                this.imgURL = val.compressImgUrl;
                this.fileContent = val.compressBlob;
@@ -102,6 +97,7 @@
               this.$emit('upload-img-close');
             });
           }else {
+            this.loadingShow = false;
             this.alertDialogShow = true;
             this.alertDialogTxt = '你的网络有点小问题请稍候重试哦';
           }

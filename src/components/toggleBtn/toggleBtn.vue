@@ -26,15 +26,6 @@
       toggle: function() {
         this.$emit('toggle-btn-change');
       }
-    },
-    watch: {
-      checked: function(val) {
-        if(this.checked) {
-          this.$refs.btnHook.style.marginLeft = '25px';
-        }else {
-          this.$refs.btnHook.style.marginLeft = '0px';
-        }
-      }
     }
   };
 </script>
@@ -62,7 +53,9 @@
         border-radius: 50%
         transition: all .3s linear
         &.btn-close
+          margin-left: 0
           background-color: #EBEBEB
         &.btn-open
+          margin-left: 25px
           background-color: #009383
 </style>

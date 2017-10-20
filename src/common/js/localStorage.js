@@ -14,9 +14,13 @@ export function setUserDailyLock(userid, obj) {
 }
 
 export function getUserDailyLock(userId) {
-  let storageData = window.localStorage.getItem('ohMyDailyLock');
-  let result = JSON.parse(storageData)[userId];
-  return result;
+  let storageData = window.localStorage.ohMyDailyLock;
+  if(storageData) {
+    let result = JSON.parse(storageData)[userId];
+    return result;
+  }else {
+    return '';
+  }
 }
 
 export function setUserDefaultData(obj) {

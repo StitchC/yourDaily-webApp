@@ -12,7 +12,7 @@
         </div>
         <div class="logout-btn" @click="logout">退出登录</div>
       </div>
-      <daily-lock @daily-lock-hide="hideDailyLock" @daily-lock-settring-complete="completeSet" :show="dailyLockShow" :status="0"></daily-lock>
+      <daily-lock @daily-lock-hide="hideDailyLock" @daily-lock-setting-complete="completeSet" :show="dailyLockShow" :status="0"></daily-lock>
     </div>
   </transition>
 </template>
@@ -40,6 +40,10 @@
         type: Boolean
       }
     },
+    created: function() {
+      let dailyLock = getUserDailyLock(this.userData.info.id);
+      this.toggleBtnChecked = dailyLock.lockStatus;
+    },
     methods: {
       hide: function() {
         this.$emit('hide-setting');
@@ -54,9 +58,9 @@
       btnOnchange: function() {
         this.toggleBtnChecked = !this.toggleBtnChecked;
         if(this.toggleBtnChecked === false) {
-           let lockStatus = getUserDailyLock(this.userData.info.id);
-           lockStatus.lockStatus = false;
-          setUserDailyLock(this.userData.info.id, lockStatus);
+           let dailLock = getUserDailyLock(this.userData.info.id);
+           dailLock.lockStatus = false;
+           setUserDailyLock(this.userData.info.id, dailLock);
         }
       },
       logout: function() {
@@ -74,7 +78,19 @@
     },
     watch: {
       toggleBtnChecked: function(val) {
-        this.dailyLockShow = val;
+        let dailyLock = getUserDailyLock(this.userData.info.id);
+        if((!dailyLock || dailyLock.lockStatus === false) && val === true) {
+          // 如果当前日记密码为关闭或用户未设置日记锁
+          // 而且当时开关按钮是打开状态
+          // 那么显示密码锁组件
+          this.dailyLockShow = val;
+        }
+      },
+      show: function() {
+        // 因为在退出账号后再登录setting 组件会出现加载id 出错问题导致日记密码开关按钮显示与实际不符
+        // 所以在 setting 的show 属性加一个变化监听 这样能获取正确的值 更改按钮状态
+        let dailyLock = getUserDailyLock(this.userData.info.id);
+        this.toggleBtnChecked = dailyLock.lockStatus;
       }
     }
   };

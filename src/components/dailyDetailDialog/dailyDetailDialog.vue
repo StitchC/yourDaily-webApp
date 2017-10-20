@@ -87,13 +87,14 @@
         }else {
           this.scroll.refresh();
         }
-      }, 200);
+      }, 300);
     },
     watch: {
       detailDialogShow: function(val) {
         this.show = val;
       },
       detailData: function() {
+        console.log('change');
         setTimeout(() => {
           if(!this.scroll) {
             this.scroll = new BetScroll(this.$refs.contentScroll, {
@@ -102,7 +103,7 @@
           }else {
             this.scroll.refresh();
           }
-        }, 200);
+        }, 300);
       }
     },
     methods: {
