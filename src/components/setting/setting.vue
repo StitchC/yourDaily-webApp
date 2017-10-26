@@ -90,7 +90,11 @@
         // 因为在退出账号后再登录setting 组件会出现加载id 出错问题导致日记密码开关按钮显示与实际不符
         // 所以在 setting 的show 属性加一个变化监听 这样能获取正确的值 更改按钮状态
         let dailyLock = getUserDailyLock(this.userData.info.id);
-        this.toggleBtnChecked = dailyLock.lockStatus;
+        if(!dailyLock || dailyLock.lockStatus === false) {
+          this.toggleBtnChecked = false;
+        }else {
+          this.toggleBtnChecked = dailyLock.lockStatus;
+        }
       }
     }
   };

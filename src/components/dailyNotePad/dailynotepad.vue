@@ -37,6 +37,7 @@
       <alert-dialog :dialog-show="dialogShowStatus" :txt="dialogTxt" @dialog-show-change="listenDialogShow"></alert-dialog>
       <select-dialog :txt="selectDialogTxt" :show="selectDialogShowStatus" @confirm="confrimClose" @cancel="cancelClose"></select-dialog>
       <daily-photo-view :show="photoViewShow" :photo-url="curPhotoUrl" :photo-index="curPhotoIndex" @close="photoViewClose" @delete-photo="dropPhoto"></daily-photo-view>
+      <loading :show="loadingShow"></loading>
     </div>
   </transition>
 </template>
@@ -46,6 +47,7 @@
   import alertDialog from 'components/alertDialog/alertdialog.vue';
   import selectDialog from 'components/selectDialog/selectdialog.vue';
   import dailyPhotoView from 'components/dailyPhotoView/dailyPhotoView.vue';
+  import loading from 'components/loading/loading.vue';
   import {formateDate} from 'common/js/formateDate.js';
 
   const SUCCESS_CODE = 200;
@@ -113,7 +115,8 @@
         curPhotoUrl: '',                          // 预览图片的 url
         curPhotoIndex: -1,                        // 当前预览图的数组下标 用作删除时的联系
         curPhotoName: [],                         // 保存以选择的图片名
-        photoViewShow: false                      // 大图预览组件的显示 / 隐藏
+        photoViewShow: false,                      // 大图预览组件的显示 / 隐藏
+        loadingShow: false
       };
     },
     props: {
@@ -128,7 +131,8 @@
       'extra-selector': dailyExtraSelector,
       'alert-dialog': alertDialog,
       'select-dialog': selectDialog,
-      'daily-photo-view': dailyPhotoView
+      'daily-photo-view': dailyPhotoView,
+      'loading': loading
     },
     methods: {
       initNotepad: function() {
@@ -252,6 +256,7 @@
         // 以上条件均不成立 对文件进行读取显示
         // 保存文件数据 用作上传
         let reader = new FileReader();
+        this.loadingShow = true;
         reader.readAsDataURL(file);
         reader.addEventListener('load', (event) => {
           let fileObj = {
@@ -261,6 +266,7 @@
           this.fileContenList.push(fileObj);
           this.curPhotoName.push(file.name);
           e.target.value = '';
+          this.loadingShow = false;
         });
       },
       seePhoto: function(event, index) {

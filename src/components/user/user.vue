@@ -70,7 +70,6 @@
       this.userId = user.id;
       this.userConnectId = user.connect;
       let dailyLock = getUserDailyLock(user.id);
-      console.log(dailyLock.lockStatus);
       // 如果用户有设置到日记锁并且日记锁为启用状态 显示解锁界面
       if(dailyLock && dailyLock.lockStatus === true) {
         this.dailyLockShow = true;

@@ -2,7 +2,7 @@
   <transition name="daily-lock-slide">
     <div class="daily-lock-wrapper" v-show="show">
       <div class="pwd-hint" v-show="pwdError">密码错误</div>
-      <div class="complete-btn-wrapper" v-show="curInputNums.length === 4 && status === 0" @click="completeLockSetting"><span class="complete-btn icon-arrow-left"></span>完成</div>
+      <div class="complete-btn-wrapper" :class="{'hasComplete':curInputNums.length === 4 && status === 0}" @click="completeLockSetting"><span class="complete-btn icon-arrow-left"></span>完成</div>
       <div class="num-screen">
         <div class="num-holder" :class="{'has-content': curInputNums.length > 0}"></div>
         <div class="num-holder" :class="{'has-content': curInputNums.length > 1}"></div>
@@ -13,7 +13,7 @@
         <div class="num" v-for="item in nums" @click="numClick($event, item)">{{item}}</div>
       </div>
       <span class="close-btn icon-close" v-show="curInputNums.length === 0 && status === 0" @click="closeDailyLock"></span>
-      <span class="backspace-btn icon-arrow-return" v-show="curInputNums.length !== 0" @click="backspace"></span>
+      <span class="backspace-btn icon-backspace" v-show="curInputNums.length !== 0" @click="backspace"></span>
     </div>
   </transition>
 </template>
@@ -133,6 +133,9 @@
       padding: 10px 0 0 10px
       color: #666
       font-size: 18px
+      visibility: hidden
+      &.hasComplete
+        visibility: visible
       .complete-btn
         vertical-align: middle
     .pwd-hint
