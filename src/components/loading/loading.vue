@@ -2,7 +2,7 @@
   <div class="loading-wrap" v-show="show">
     <div class="loading-logo">
       <span class="loading-txt">请稍候</span>
-      <div class="loading-icon">
+      <div class="loading-icon-wrap">
         <img src="./loading.gif">
       </div>
     </div>

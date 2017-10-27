@@ -93,10 +93,10 @@
       detailDialogShow: function(val) {
         this.show = val;
       },
-      detailData: function() {
-        console.log('change');
+      detailData: function(val) {
         setTimeout(() => {
           if(!this.scroll) {
+            console.log(this.$refs.contentScroll);
             this.scroll = new BetScroll(this.$refs.contentScroll, {
               click: true
             });

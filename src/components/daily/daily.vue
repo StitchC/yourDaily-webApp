@@ -152,7 +152,7 @@
             content: detail.content,
             userId: detail.userId,
             sex: parseInt(detail.sex),
-            images: detail.image.split(',')
+            images: detail.image === '' ? [] : detail.image.split(',')
           };
 
          this.detailDialogShow = true;

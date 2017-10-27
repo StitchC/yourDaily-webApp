@@ -167,7 +167,7 @@
       justify-content: space-around
       flex-wrap: wrap
       width: 240px
-      margin: 50px auto
+      margin: 30px auto
       .num
         width: 60px
         height: 60px
@@ -183,6 +183,8 @@
       margin-left: -25px
       width: 50px
       height: 50px
+      line-height: 50px
       font-size: 30px
+      text-align: center
       color: #666
 </style>

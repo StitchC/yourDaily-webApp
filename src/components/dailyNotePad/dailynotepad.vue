@@ -257,6 +257,7 @@
         // 保存文件数据 用作上传
         let reader = new FileReader();
         this.loadingShow = true;
+        console.log('loading');
         reader.readAsDataURL(file);
         reader.addEventListener('load', (event) => {
           let fileObj = {
@@ -281,8 +282,6 @@
         this.fileContenList.splice(index, 1);
         this.curPhotoName.splice(index, 1);
         this.photoViewShow = false;
-        console.log('删除图片');
-        console.log(this.curPhotoName);
       }
     },
     computed: {

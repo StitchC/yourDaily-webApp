@@ -64,9 +64,12 @@
              this.alertDialogShow = true;
              this.alertDialogTxt = '上传的图片格式只能为 jpg,png,jpeg 哦';
            }else {
-             compressImg(this.fileContent, 80, 80, (val) => {
-               this.imgURL = val.compressImgUrl;
-               this.fileContent = val.compressBlob;
+             compressImg(this.fileContent, 80, 80, () => {
+                 this.loadingShow = true;
+             }, (val) => {
+               this.imgURL = val.compressImgUr || val.originalUrl;
+               this.fileContent = val.compressBlob || val.originBlob;
+               this.loadingShow = false;
              });
            }
          }
