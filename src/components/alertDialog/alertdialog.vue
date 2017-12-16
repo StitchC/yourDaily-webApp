@@ -10,14 +10,14 @@
 </template>
 
 <script type="text/ecmascript-6">
-  /*
-    参数：
-    txt: 警告框提示内容
-    dialogShow: 父组件传递给子组件 控制子组件是否显示
-    子组件内部的局部变量 show 接收dialogShow 父组件的值
-    点击子组件 class="btn" 的按钮会更改局部变量 show 的值
-    show 值的改变会触发父组件的 "dialog-show-change" 事件
-   */
+  /**
+   *  警告框组件
+   *  @param {String} txt - 警告框提示内容
+   *  @param {Boolean} dialogShow - 控制组件是否显示
+   *
+   *  @event show - 触发父组件的 "dialog-show-change" 事件
+   *
+   * */
   export default {
     data: function() {
       return {

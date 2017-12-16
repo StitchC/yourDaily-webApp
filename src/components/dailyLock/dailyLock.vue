@@ -22,19 +22,12 @@
    import {setUserDailyLock, getUserDailyLock} from 'common/js/localStorage.js';
   /**
    *  日记锁组件
-   *  参数:
-   *    show:
-   *    类型: boolean
-   *    描述: 控制日记锁的显示
+   *  @param {Boolean} show - 控制日记锁的显示或隐藏
+   *  @param {Number} status - 控制密码输入组件的状态 1: 验证密码状态，0: 编辑密码状态
    *
-   *    status:
-   *    类型: Number
-   *    描述: 控制密码输入组件的状态 1: 验证密码状态，0: 编辑密码状态
-   *
-   *  事件:
-   *    daily-lock-hide 触发父组件事件关闭日记锁界面
-   *    daily-lock-settring-complete 日记锁设置完成时关闭日记锁界面
-   *    daily-lock-success   仅当输入日记锁密码时触发
+   *  @event - daily-lock-hide              触发父组件事件关闭日记锁界面
+   *  @event - daily-lock-settring-complete 日记锁设置完成时关闭日记锁界面
+   *  @event -  daily-lock-success          仅当输入日记锁密码时触发
    * */
 
   export default {

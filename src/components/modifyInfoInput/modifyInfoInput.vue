@@ -18,6 +18,17 @@
 <script type="text/ecmascript-6">
   import alertDialog from 'components/alertDialog/alertdialog.vue';
 
+  /**
+   *  修改个人信息组件
+   *  @param {Object} initData - 初始化修改个人资料组件的数据
+   *  @param {Boolean} inputShow - 控制组件的显示或隐藏
+   *
+   *
+   *  @event input-close - 关闭组件时触发父组件事件
+   *
+   * */
+
+
   const SUCCESS_CODE = 200;
   const ERR_CODE = 400;
   const MODIFY_USERNAME_CODE = 0;

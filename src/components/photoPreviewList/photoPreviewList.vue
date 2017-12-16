@@ -14,22 +14,13 @@
   import {swiper, swiperSlide} from 'vue-awesome-swiper';
   /*
   * 图片列表预览组件
-  * 参数：
-  * images:
-  *   type: Array
-  *   保存预览图片的内容
+  * @param {Array} images - 保存预览图片的内容
+  * @param {Number} imagesShowIndex - 设置swiper 从第几个item 开始显示
+  * @param {Boolean} show - 控制图片预览组件的显示和隐藏
   *
-  * imagesShowIndex:
-  *   type: Number
-  *   设置swiper 从第几个item 开始显示
   *
-  * show:
-  *   type: Boolean
-  *   控制图片预览组件的显示和隐藏
+  * @event photo-preview-list-hide 触发父组建事件 隐藏组件
   *
-  * 事件:
-  * photo-preview-list-hide
-  *   触发父组建事件 隐藏自身
   * */
   export default {
     data: function() {

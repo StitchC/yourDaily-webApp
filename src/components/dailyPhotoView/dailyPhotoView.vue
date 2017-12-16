@@ -10,14 +10,14 @@
 <script type="text/ecmascript-6">
   /**
    * 日记图片预览组件
-   * 参数：
-   * show: 控制组件的显示或隐藏
-   * photoUrl: 接收图片的url 路径显示图片
-   * photoIndex: 删除图片时通知父组件删除数组对应索引的内容
+   * @param {Boolean} show - 控制组件的显示或隐藏
+   * @param {String} photoUrl - 接收图片的url 路径显示图片
+   * @param {Number} photoIndex - 删除图片时通知父组件删除数组对应索引的内容
    *
-   * 事件：
-   * close: 关闭预览组件
-   * deletePhoto: 删除图片时触发，通知父组件删除对应的图片
+   *
+   *
+   * @event close -  关闭预览组件
+   * @event deletePhoto - 删除图片时触发，通知父组件删除对应的图片
    * */
   export default {
     props: {

@@ -9,12 +9,9 @@
 <script type="text/ecmascript-6">
   /*
   *   开关按钮组件
-  *   参数:
-  *     checked:
-  *     类型: Boolean
-  *     描述: 控制开关按钮的 开/关状态
-  *   事件:
-  *     toggle-btn-change 触发父组件事件控制开关按钮的 关闭 / 打开 情况
+  *   @param {Boolean} checked - 控制开关按钮的 开/关状态
+  *
+  *   @event toggle-btn-change 触发父组件事件控制开关按钮的 关闭 / 打开 情况
   * */
   export default {
     props: {

@@ -32,8 +32,9 @@
 <script type="text/ecmascript-6">
   /**
    * 日记详情组件
-   * 参数：
-   * detailData （日记的数据）
+   *
+   *
+   * @param {Object} - detailData （日记的数据）
    * 格式：
    * {
         dailyId: detail.id,
@@ -45,13 +46,12 @@
         images: detail.images
       }
    *
-   * detailDialogShow （组件显示或隐藏的状态切换）
-   * true / false
+   * @param {Boolean} - detailDialogShow 组件显示或隐藏的状态切换
    *
    * 触发事件：
-   * detail-dialog-close：组件关闭按钮点击时通知父组件将其关闭
-   * daily-has-delete：组件删除按钮点击时通知父组件
-   * daily-modify：组件编辑按钮点击时通知父组件
+   * @event - detail-dialog-close   组件关闭按钮点击时通知父组件将其关闭
+   * @event - daily-has-delete      组件删除按钮点击时通知父组件
+   * @event - daily-modify          组件编辑按钮点击时通知父组件
    */
   import {formateDate} from 'common/js/formateDate.js';
   import selectDialog from 'components/selectDialog/selectdialog.vue';
@@ -111,6 +111,10 @@
         this.$emit('detail-dialog-close');
       },
       selfDaily: function() {
+        // 此函数用作控制日记删除按钮的显示或隐藏
+        // 用户id 会被保存到 localStorage 里面
+        // 判断当前查看日记的用户是否为本人
+        // 如果是本人 那么返回true 否则返回 false
         let curDailyUserId = this.detailData.userId;
         let curLoginUserId = this.$store.state.userData.info.id;
 

@@ -17,6 +17,17 @@
 <script type="text/ecmascript-6">
   import alertdialog from 'components/alertDialog/alertdialog.vue';
 
+
+  /**
+   * 选择性别组件
+   * @param {Boolean} selectShow - 控制组件的显示或隐藏
+   * @param {String} userId - 当选择完性别的时候根据 userId 提交到数据库
+   *
+   *
+   * @event select-complete - 数据提交后台完成后触发此事件通知父组件
+   *
+   * */
+
   const SUCCESS_CODE = 200;
   export default {
     data: function() {

@@ -46,6 +46,8 @@
    import dailyDetailDialog from 'components/dailyDetailDialog/dailyDetailDialog.vue';
    import BetScroll from 'better-scroll';
    /**
+    * 日记列表组件
+    *
     * 当前面user 组件进行了一连串的对用户性别的判断到最后会采用的异步的过程跳转到这个daily 组件中
     * 组件可能还没有获得数据 不过没关系 vue 的响应式数据会为这个组件异步填充数据
     *

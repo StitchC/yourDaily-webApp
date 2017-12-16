@@ -13,6 +13,16 @@
 </template>
 
 <script type="text/ecmascript-6">
+  /**
+   * 选择警告框组件
+   *
+   * @param {String} txt - 警告框的提示文字
+   * @param {Boolean} show - 控制组件的显示或隐藏
+   *
+   *
+   * @event cancel - 点击取消按钮的时候触发此事件
+   * @event confirm - 点击确认按钮的时候触发此事件
+   * */
   export default {
     props: {
       txt: {

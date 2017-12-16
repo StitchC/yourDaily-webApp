@@ -58,23 +58,20 @@
   const MOOD_CLASS_LIST = ['icon-mood-happy', 'icon-mood-normal', 'icon-mood-sadness'];
   const MOOD_SELECT_TYPE = 0;    // 选择心情时的状态码
   const WEATHER_SELECT_TYPE = 1; // 选择天气时的状态码
-  const PHOTO_LIMIT = 3;       // 日记图片的限制数
+  const PHOTO_LIMIT = 3;         // 日记图片的限制数
 
   /**
    *  日记输入组件
    *
-   *  参数：
-   *  allData（初始化日记输入组件的内容）
-   *    类型: Object
+   *  @param {Object} allData - 初始化日记输入组件的内容
    *    格式:
    *    {
-          dailyId: detail.id   如果是编辑状态词属性存在用于保存当前编辑日记的id,
+   *      title: ''              初始化组件的标题
+          content: ''            初始化组件的内容
+          moodType: -1          初始化组件的心情选项为 -1
+          weatherType: -1       初始化组件的天气选项为 -1
           curTime: new Date()  当前日期 用于显示在编辑组件的顶部,
           userSex: parseInt(detail.sex)  用户的性别 用于更改组件的颜色风格,
-          title: detail.title  日记标题，如果是新增日记则填入空内容如果不是填入已有日记的题目,
-          content: detail.content  日记内容用法同上,
-          moodType: parseInt(detail.mood)  心情类型，如果是新增日记填入 -1 如果不是填入对应的心情类型编码,
-          weatherType: parseInt(detail.weather)   天气类型，用法同上
    *    }
    *  notepadShow（控制日记输入组件的关闭或显示）
    *    类型: Boolean
@@ -84,13 +81,13 @@
    *  1、心情和天气的选择
    *  当用户点击心情图标时 会触发 selectMood 函数，此函数将会对 this.curSelectType 和 this.selectorClassList 进行修改。
    *  之后子组件 'extra-selector' 将会根据 this.selectorClassList 里面的类名进行图标的输出
-   *  当子组件 'extra-selector' 选择完之后会触发 ‘selector-change’事件并且传递一个对应 this.selectorClassList 数组的索引下标
+   *  当子组件 'extra-selector' 选择完之后会触发 ‘selector-change’事件并且传递一个对应图标索引给父组件
    *  事件的执行函数 listenSelectorChange 会根据当前的 this.curSelectType 对 curMoodType 或 curWeatherType 附上对应类名数组索引下标，并且当提交数据时也需要这个值指定当前日记心情和天气
    *  当这两个局部变量发生改变的时候 对应的 curMoodClass 或 curWeatherClass 就会发生改变 并在类名前加上了 active 形成高亮状态
    *
    *
    *  2、日记输入组件关闭时会对它进行初始化还原 因此会执行 initNotepad 这个函数
-   *  这也确保了下一次无论是用作修改日记或新增日记时数据的一致性（尤其是在修改日记时尤为明显）
+   *  这也确保了下一次数据的一致性
    */
 
   export default {
@@ -115,7 +112,7 @@
         curPhotoUrl: '',                          // 预览图片的 url
         curPhotoIndex: -1,                        // 当前预览图的数组下标 用作删除时的联系
         curPhotoName: [],                         // 保存以选择的图片名
-        photoViewShow: false,                      // 大图预览组件的显示 / 隐藏
+        photoViewShow: false,                     // 大图预览组件的显示 / 隐藏
         loadingShow: false
       };
     },
@@ -234,7 +231,6 @@
       },
       selectImgChange: function(event) {
         let file = event.target.files[0];
-        // this.curPhotoName.push(file.name);
         let e = event;
         let reg = /image\/(jpg|png|jpeg)/;
         // 判断文件是否存在或数量是否已达到标准

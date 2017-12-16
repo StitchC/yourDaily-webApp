@@ -23,10 +23,10 @@
   import {setUserDailyLock, getUserDailyLock} from 'common/js/localStorage.js';
   /**
    *  用户设置组件
-   *  参数:
-   *    (boolean) show  控制组件显示 / 隐藏
-   *  事件:
-   *    hidden-setting: 触发父组件事件隐藏自身
+   *
+   *  @param (boolean) show - 控制组件显示 / 隐藏
+   *
+   *  @event hidden-setting - 触发父组件事件隐藏自身
    * */
   export default {
     data: function() {

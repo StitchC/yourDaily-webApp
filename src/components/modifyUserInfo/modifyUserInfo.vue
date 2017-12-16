@@ -39,6 +39,14 @@
   import infoInput from 'components/modifyInfoInput/modifyInfoInput.vue';
   import uploadImage from 'components/uploadImage/uploadImage.vue';
 
+
+  /**
+   * 个人资料组件
+   *
+   * @param {Boolean} modifyInfoShow - 个人资料组件显示或隐藏
+   *
+   * */
+
   export default {
     data: function() {
       return {

@@ -28,7 +28,12 @@
   import alertDialog from 'components/alertDialog/alertdialog.vue';
   import loading from 'components/loading/loading.vue';
   import {compressImg} from 'common/js/compressPhoto.js';
-
+  /**
+   * 上传图片组件
+   *
+   * @param {Boolean} show - 控制组件的现实或隐藏
+   *
+   * */
   const SUCCESS_CODE = 200;
 
   export default {

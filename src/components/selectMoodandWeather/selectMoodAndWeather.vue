@@ -12,6 +12,13 @@
   /**
    * selectMoodAndWeather 组件
    *
+   * @param {Array} classList - 需要生成的图标类名
+   * @param {Boolean} selectorToggleShow - 控制组件的显示或隐藏
+   * @param {Number} selectType - 对应的选择类型
+   *
+   * @event selector-change - 选择心情或天气项成功时触发父组件事件
+   * @event selector-show-change - 组件关闭的时候通知父组件将其隐藏
+   *
    * 通过遍历对 select-item-wrap 元素中的每一个item 增加类名生成icon
    * 每一个icon 点击会触发父组件的监听事件 selector-change
    * 而触发事件将由 itemSelected 方法处理 它会将对应icon 的index 传递给父组件
