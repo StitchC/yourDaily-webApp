@@ -14,6 +14,8 @@
 </script>
 
 <style lang="stylus" rel="stylesheet/stylus">
+  @import "../../common/stylus/theme.styl"
+
   .index-wrapper
     width: 100%
     height: 100%

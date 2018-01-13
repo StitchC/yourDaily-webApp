@@ -134,6 +134,8 @@
 </script>
 
 <style lang="stylus" rel="stylesheet/stylus">
+  @import "../../common/stylus/theme.styl"
+
   .user-wrapper
     width: 100%
     height: 100%
@@ -149,23 +151,23 @@
       background-repeat: no-repeat
       .user-header
         .user-nav
-          border: 1px solid #4889B4
+          border: 1px solid $male-color
           border-radius: 5px
           .nav-item
             display: block
             flex: 1
-            border-right: 1px solid #4889B4
-            font-size: 14px
-            color: #4889B4
+            border-right: 1px solid $male-color
+            font-size: $font-size-middle
+            color: $male-color
             &:last-child
               border-right: 0
             &.router-link-active
               color: #fff
-              background-color: #4889B4
+              background-color: $male-color
         .setting-icon
-          color: #4889B4
+          color: $male-color
       .user-title
-        color: #4889B4
+        color: $male-color
     &.female-theme
       background-image: url("./female-bg.jpg")
       background-size: cover
@@ -174,21 +176,21 @@
         .user-nav
           display: flex
           flex: 270px 0 0
-          border: 1px solid #FE706F
+          border: 1px solid $female-color
           border-radius: 5px
           .nav-item
-            border-right: 1px solid #FE706F
-            color: #FE706F
+            border-right: 1px solid $female-color
+            color: $female-color
             &:last-child
               width: 33%
               border-right: 0
             &.router-link-active
               color: #fff
-              background-color: #FE706F
+              background-color: $female-color
         .setting-icon
-          color: #FE706F
+          color: $female-color
       .user-title
-        color: #FE706F
+        color: $female-color
     .user-header
       position: fixed
       width: 100%
@@ -213,7 +215,7 @@
             height: 30px
             line-height: 30px
             text-align: center
-            font-size: 14px
+            font-size: $font-size-middle
         .setting-icon
           flex: 1
           width: 30px

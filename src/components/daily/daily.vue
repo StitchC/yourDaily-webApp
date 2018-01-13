@@ -196,6 +196,8 @@
 </script>
 
 <style lang="stylus" rel="stylesheet/stylus">
+  @import "../../common/stylus/theme.styl"
+
   .daily-wrapper
     position: relative
     width: 100%
@@ -246,13 +248,13 @@
         text-align: center
       .begin-write-daily
         margin-top: 40px
-        font-size: 16px
+        font-size: $font-size-large
         text-align: center
         text-decoration: underline
         &.male-theme
-          color: #4889B4
+          color: $male-color;
         &.female-theme
-          color: #FE706F
+          color: $female-color
     .daily-list-wrap
       position: absolute
       top: 100px
@@ -269,9 +271,9 @@
           border-radius: 5px
           background-color: #fff
           &.male-theme
-            color: #4889B4
+            color: $male-color
           &.female-theme
-            color: #FE706F
+            color: $female-color
           .date-time
             flex: 50px 0 0
             margin-right: 12px
@@ -290,20 +292,20 @@
               display: flex
               .time
                 flex: 1
-                font-size: 14px
+                font-size: $font-size-middle
               .mood-weather
                 flex: 1
                 text-align: right
                 font-size: 15px
             .daily-title
               width: 100%
-              font-size: 16px
+              font-size: $font-size-large
               white-space: nowrap
               overflow: hidden
               text-overflow: ellipsis
             .daily-txt
               width: 100%
-              font-size: 14px
+              font-size: $font-size-middle
               white-space: nowrap
               overflow: hidden
               text-overflow: ellipsis
@@ -314,13 +316,13 @@
       width: 100%
       height: 50px
       &.male-theme
-        background-color: #4889B4
+        background-color: $male-color
         .write-daily-btn
-          color: #4889B4
+          color: $male-color
       &.female-theme
-        background-color: #FE706F
+        background-color: $female-color
         .write-daily-btn
-          color: #FE706F
+          color: $female-color
       .write-daily-btn
         position: absolute
         display: inline-block

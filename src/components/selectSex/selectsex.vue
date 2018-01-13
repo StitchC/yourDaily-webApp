@@ -80,6 +80,8 @@
 </script>
 
 <style lang="stylus" rel="stylesheet/stylus">
+  @import "../../common/stylus/theme.styl"
+
   .select-sex-wrapper
     position: fixed
     top: 0
@@ -102,7 +104,7 @@
     .title
       margin-top: 10%
       color: #fff
-      font-size: 24px
+      font-size: $font-size-large-X
       text-align: center
     .sex-option
       position: fixed
@@ -138,13 +140,13 @@
         text-align: center
         color: #fff
   .female-style
-    background-color: #FE706F
+    background-color: $female-color
     .female-btn
       background-color: #fff
-      color: #FE706F !important
+      color: $female-color !important
   .male-style
-    background-color: #4889B4
+    background-color: $male-color
     .male-btn
       background-color: #fff
-      color: #4889B4 !important
+      color: $male-color !important
 </style>

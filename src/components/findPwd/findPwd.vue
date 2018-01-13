@@ -46,6 +46,8 @@
 
 <style lang="stylus" rel="stylesheet/stylus">
   @import "../../common/stylus/mixin.styl"
+  @import "../../common/stylus/theme.styl"
+
   .findpwd-wrapper
     position: fixed
     width: 100%
@@ -64,7 +66,7 @@
       transition: all linear .6s
     .title
       margin-top: 15px
-      font-size: 24px
+      font-size: $font-size-large-X
       color: #fff
       span
         margin: 0 6px
@@ -96,7 +98,7 @@
         border-radius: 5px
         background-color: #549DCD
         color: #fff
-        font-size: 18px
+        font-size: $font-size-large
       .login-link
         display: inline-block
         margin-top: 15px

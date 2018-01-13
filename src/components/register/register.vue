@@ -95,6 +95,7 @@
 
 <style lang="stylus" rel="stylesheet/stylus">
   @import "../../common/stylus/mixin.styl"
+  @import "../../common/stylus/theme.styl"
 
   .register-wrapper
     position: fixed
@@ -104,7 +105,7 @@
     left: 0
     .title
       margin-top: 5px
-      font-size: 24px
+      font-size: $font-size-large-X
       color: #fff
       span
         margin: 0 6px

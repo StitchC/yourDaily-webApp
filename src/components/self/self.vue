@@ -117,6 +117,8 @@
 </script>
 
 <style lang="stylus" rel="stylesheet/stylus">
+  @import "../../common/stylus/theme.styl"
+
   .self-wrapper
     width: 100%
     height: 100%
@@ -128,9 +130,9 @@
       height: 120px
       padding-top: 1px
       &.male-theme
-        background-color: #4889B4
+        background-color: $male-color
       &.female-theme
-        background-color: #FE706F
+        background-color: $female-color
       .user-detail-main
         width: 100%
         height: 80px
@@ -151,13 +153,13 @@
           display: inline-block
           height: 80px
           margin-left: 12px
-          font-size: 14px
+          font-size: $font-size-middle
           .user-name
             line-height: 50px
             font-size: 16px
             color: #fff
           .user-motto
-            font-size: 12px
+            font-size: $font-size-small
             color: rgba(255,255,255,0.4)
       .edit-user-info-wrap
         position: absolute
@@ -181,7 +183,7 @@
         padding-top: 10px
         border-right: 1px solid #ccc
         text-align: center
-        font-size: 14px
+        font-size: $font-size-middle
         color: #6A6B6A
       .word-count
         flex: 1
@@ -189,14 +191,14 @@
         padding-top: 10px
         border-right: 1px solid #ccc
         text-align: center
-        font-size: 14px
+        font-size: $font-size-middle
         color: #6A6B6A
       .photo-count
         flex: 1
         line-height: 20px
         padding-top: 10px
         text-align: center
-        font-size: 14px
+        font-size: $font-size-middle
         color: #6A6B6A
     .gallary-wrap
       position: absolute
@@ -239,11 +241,11 @@
           .detail-content
             .user-name
               line-height: 50px
-              font-size: 14px
+              font-size: $font-size-middle
             .user-motto
-              font-size: 12px
+              font-size: $font-size-small
               line-height: 10px
       .edit-user-info-wrap
           width: 50px !important
-          font-size: 12px
+          font-size: $font-size-small
 </style>

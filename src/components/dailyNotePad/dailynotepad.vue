@@ -348,9 +348,9 @@
       text-align: center
       color: #fff
       &.male-theme
-        background-color: #4889B4
+        background-color: $male-color
       &.female-theme
-        background-color: #FE706F
+        background-color: $female-color
       .close-btn
         flex: 1
         font-size: 20px
@@ -378,7 +378,7 @@
         .daily-content
           width: 100%
           height: 100%
-          font-size: 16px
+          font-size: $font-size-large
           border: 0
           font-family: "Microsoft YaHei"
           &:focus
@@ -390,9 +390,9 @@
       bottom: 0
       left: 0
       &.male-theme
-        background-color: #4889B4
+        background-color: $male-color
       &.female-theme
-        background-color: #FE706F
+        background-color: $female-color
       .select-photo
         position: relative
         display: inline-block
@@ -408,7 +408,7 @@
           position: absolute
           top: 0px
           left: 10px
-          font-size: 24px
+          font-size: $font-size-large-X
         .file-input
           width: 100%
           opacity: 0

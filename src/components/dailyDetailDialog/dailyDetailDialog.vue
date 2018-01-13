@@ -193,6 +193,8 @@
 </script>
 
 <style lang="stylus" rel="stylesheet/stylus">
+  @import "../../common/stylus/theme.styl"
+
   .detail-dialog-wrapper
     position: fixed
     top: 0
@@ -227,17 +229,17 @@
         border-top-left-radius: 20px
         border-top-right-radius: 20px
         &.male-theme
-          background-color: #4889B4
+          background-color: $male-color
         &.female-theme
-          background-color: #FE706F
+          background-color: $female-color
         .close-btn
           position: absolute
           top: 24px
           right: 12px
-          font-size: 24px
+          font-size: $font-size-large-X
           color: #fff
         .year-month
-          font-size: 14px
+          font-size: $font-size-middle
           text-align: center
           color: #fff
         .date
@@ -247,7 +249,7 @@
           color: #fff
         .week-time
           margin-top: 16px
-          font-size: 14px
+          font-size: $font-size-middle
           text-align: center
           color: #fff
       .content-scroll
@@ -260,7 +262,7 @@
             line-height: 38px
           .txt
             line-height: 30px
-            font-size: 14px
+            font-size: $font-size-middle
           .daily-image-list
             .image-item
               img
@@ -272,16 +274,16 @@
         border-bottom-left-radius: 20px
         border-bottom-right-radius: 20px
         &.male-theme
-          background-color: #4889B4
+          background-color: $male-color
         &.female-theme
-          background-color: #FE706F
+          background-color: $female-color
         .delete-btn
           position: absolute
           left: 24px
           display: inline-block
           height: 40px
           line-height: 40px
-          font-size: 25px
+          font-size: $font-size-large-X
           color: #fff
 
   @media screen and (max-width: 320px)

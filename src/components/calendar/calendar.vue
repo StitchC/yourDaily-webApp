@@ -214,6 +214,8 @@
 </script>
 
 <style lang="stylus" rel="stylesheet/stylus">
+  @import "../../common/stylus/theme.styl"
+
   .calendar-wrapper
     width: 100%
     height: 100%
@@ -228,12 +230,12 @@
         .reward-btn,
         .next-btn,
         .date-txt
-          color: #4889B4
+          color: $male-color
       &.female-theme
         .reward-btn,
         .next-btn,
         .date-txt
-          color: #FE706F
+          color: $female-color
       .reward-btn
         position: absolute
         display: inline-block
@@ -242,7 +244,7 @@
         width: 40px
         height: 120px
         line-height: 120px
-        font-size: 24px
+        font-size: $font-size-large-X
         font-weight: bold
         z-index: 20
       .next-btn
@@ -253,7 +255,7 @@
         width: 40px
         height: 120px
         line-height: 120px
-        font-size: 24px
+        font-size: $font-size-large-X
         font-weight: bold
         z-index: 20
       .date-txt
@@ -263,11 +265,11 @@
         width: 100%
         text-align: center
         .month
-          font-size: 24px
+          font-size: $font-size-large-X
         .date
           font-size: 96px
         .week
-          font-size: 20px
+          font-size: $font-size-large
     .no-match-daily-hint
       width: 90%
       height: 80px
@@ -286,17 +288,17 @@
           text-align: center
           color: #fff
         .txt
-          font-size: 18px
+          font-size: $font-size-large
         &.male-theme
           .icon
-            background-color: #4889B4
+            background-color: $male-color
           .txt
-            color: #4889B4
+            color: $male-color
         &.female-theme
           .icon
-            background-color: #FE706F
+            background-color: $female-color
           .txt
-            color: #FE706F
+            color: $female-color
     .match-daily-list-wrap
       width: 100%
       height: 300px
@@ -312,18 +314,18 @@
           border-radius: 5px
           background-color: #fff
           &.male-theme
-            color: #4889B4
+            color: $male-color
           &.female-theme
-            color: #FE706F
+            color: $female-color
           .date-time
             flex: 50px 0 0
             margin-right: 12px
             .date
               line-height: 40px
-              font-size: 25px
+              font-size: $font-size-large-X
               text-align: center
             .day
-              font-size: 14px
+              font-size: $font-size-middle
               text-align: center
           .daily-main
             flex: 1
@@ -333,20 +335,20 @@
               display: flex
               .time
                 flex: 1
-                font-size: 14px
+                font-size: $font-size-middle
               .mood-weather
                 flex: 1
                 text-align: right
-                font-size: 15px
+                font-size: $font-size-middle
             .daily-title
               width: 100%
-              font-size: 16px
+              font-size: $font-size-large
               white-space: nowrap
               overflow: hidden
               text-overflow: ellipsis
             .daily-txt
               width: 100%
-              font-size: 14px
+              font-size: $font-size-middle
               white-space: nowrap
               overflow: hidden
               text-overflow: ellipsis

@@ -20,6 +20,8 @@
 </script>
 
 <style lang="stylus">
+  @import "../../common/stylus/theme.styl"
+
   .loading-wrap
     position: fixed
     top: 0
@@ -43,7 +45,7 @@
       .loading-txt
         display: inline-block
         margin-top: 48px
-        font-size: 14px
+        font-size: $font-size-middle
       img
         width: 50px
 </style>

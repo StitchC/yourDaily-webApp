@@ -133,6 +133,8 @@
 </script>
 
 <style lang="stylus" rel="stylesheet/stylus">
+  @import "../../common/stylus/theme.styl"
+
   .modify-user-info-wrapper
     position: fixed
     top: 0
@@ -156,9 +158,9 @@
       width: 100%
       height: 100px
       &.male-theme
-        background-color:  #4889B4
+        background-color: $male-color
       &.female-theme
-        background-color:  #FE706F
+        background-color: $female-color
       .close-btn
         position: absolute
         top: 50%
@@ -187,14 +189,14 @@
           display: inline-block
           vertical-align: middle
           width: 80px
-          font-size: 16px
+          font-size: $font-size-large
         .info-content
           display: inline-block
           vertical-align: middle
           padding-left: 12px
           height: 60px
           line-height: 60px
-          font-size: 14px
+          font-size: $font-size-middle
           &.avatar-wrap
             display: inline-block
             vertical-align: middle
@@ -210,13 +212,13 @@
           &.user-sex-content.icon-male-icon
             height: 60px
             line-height: 60px
-            font-size: 24px
-            color: #4889B4
+            font-size: $font-size-large-X
+            color: $male-color
           &.user-sex-content.icon-female-icon
             height: 60px
             line-height: 60px
-            font-size: 24px
-            color: #FE706F
+            font-size: $female-color
+            color: $female-color
 
         .edit-btn
           position: absolute
@@ -227,7 +229,7 @@
           line-height: 40px
           font-size: 18px
           &.male-theme
-            color: #4889B4
+            color: $male-color
           &.female-theme
-            color: #FE706F
+            color: $female-color
 </style>

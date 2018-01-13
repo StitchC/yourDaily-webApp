@@ -43,6 +43,8 @@
 </script>
 
 <style lang="stylus">
+  @import "../../common/stylus/theme.styl"
+
   .photo-view-wrapper
     position: fixed
     top: 0
@@ -73,7 +75,7 @@
       line-height: 40px
       text-align: center
       color: #e41c21
-      font-size: 18px
+      font-size: $font-size-large
       background-color: #fff
       border-radius: 5px
     img

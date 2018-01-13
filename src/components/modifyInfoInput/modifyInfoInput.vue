@@ -128,6 +128,8 @@
 </script>
 
 <style lang="stylus" rel="stylesheet/stylus">
+  @import "../../common/stylus/theme.styl"
+
   .modify-input-wrap
     position: fixed
     width: 100%
@@ -151,9 +153,9 @@
       height: 100px
       line-height: 100px
       &.male-theme
-        background-color: #4889B4
+        background-color: $male-color
       &.female-theme
-        background-color: #FE706F
+        background-color: $female-color
       .close-btn
         position: absolute
         top: 36px
@@ -179,15 +181,15 @@
       margin-top: 100px
       background-color: #fff
       &.male-theme
-        border-bottom: 2px solid #4889B4
+        border-bottom: 2px solid $male-color
       &.female-theme
-        border-bottom: 2px solid #FE706F
+        border-bottom: 2px solid $female-color
       .limit
         position: absolute
         top: 13px
         right:5px
         padding: 5px
-        font-size: 14px
+        font-size: $font-size-middle
       .content-input
         width: 100%
         height: 50px

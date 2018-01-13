@@ -60,6 +60,8 @@
 </script>
 
 <style lang="stylus">
+  @import "../../common/stylus/theme.styl"
+
   .selector-wrapper
     position: fixed
     top: 0

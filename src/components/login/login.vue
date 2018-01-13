@@ -87,6 +87,8 @@
 
 <style lang="stylus" rel="stylesheet/stylus">
    @import "../../common/stylus/mixin.styl"
+   @import "../../common/stylus/theme.styl"
+
   .login-wrapper
     position: fixed
     width: 100%
@@ -94,7 +96,7 @@
     top: 0
     left: 0
     .title
-      font-size: 24px
+      font-size: $font-size-large-X
       color: #fff
     .input-group
       position: fixed
@@ -126,7 +128,7 @@
         border-radius: 5px
         background-color: #549DCD
         color: #fff
-        font-size: 18px
+        font-size: $font-size-large
       .register-link
         display: inline-block
         margin-top: 15px

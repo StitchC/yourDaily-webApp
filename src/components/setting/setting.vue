@@ -101,6 +101,8 @@
 </script>
 
 <style lang="stylus" rel="stylesheet/stylus">
+  @import "../../common/stylus/theme.styl"
+
   .setting-wrapper
     position: fixed
     top: 0
@@ -124,9 +126,9 @@
       width: 100%
       height: 100px
       &.male-theme
-        background-color: #4889B4
+        background-color: $male-color
       &.female-theme
-        background-color: #FE706F
+        background-color: $female-color
       .setting-title
         height: 100px
         line-height: 100px

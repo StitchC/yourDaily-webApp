@@ -45,6 +45,7 @@
 
 <style lang="stylus" rel="stylesheet/stylus">
   @import "../../common/stylus/mixin.styl"
+  @import "../../common/stylus/theme.styl"
 
   .select-dialog-wrapper
     position: fixed
@@ -92,7 +93,7 @@
           width: 50%
           height: 38px
           line-height: 38px
-          font-size: 14px
+          font-size: $font-size-middle
           &.cancel-btn
             color: #3473bc
           &.confirm-btn

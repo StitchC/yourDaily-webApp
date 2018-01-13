@@ -124,6 +124,8 @@
 </script>
 
 <style lang="stylus">
+  @import "../../common/stylus/theme.styl"
+
   .upload-image-wrapper
     position: fixed
     width: 100%
@@ -143,14 +145,14 @@
       transition: all .5s ease
     &.male-theme
       .upload-image-header
-        background-color: #4889B4
+        background-color: $male-color
       .select-img-btn
-        background-color: #4889B4
+        background-color: $male-color
     &.female-theme
       .upload-image-header
-        background-color:  #FE706F
+        background-color:  $female-color
       .select-img-btn
-        background-color:  #FE706F
+        background-color:  $female-color
     .upload-image-header
       width: 100%
       height: 80px
@@ -159,7 +161,7 @@
         line-height: 80px
         text-align: center
         color: #fff
-        font-size: 14px
+        font-size: $font-size-middle
       .close-btn
         position: absolute
         width: 25px
@@ -186,7 +188,7 @@
           margin-left: -75px
           border: 1px dashed #ccc
           color: #ccc
-          font-size: 14px
+          font-size: $font-size-middle
           text-align: center
           &.previewArea-slide-leave-to
             opacity: 0
@@ -229,7 +231,7 @@
           height: 40px
           line-height: 40px
           color: #fff
-          font-size: 14px
+          font-size: $font-size-middle
       .upload-btn
         width: 150px
         height: 40px
@@ -239,5 +241,5 @@
         background-color: #5cb45d
         text-align: center
         color: #fff
-        font-size: 14px
+        font-size: $font-size-middle
 </style>
