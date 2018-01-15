@@ -44,14 +44,14 @@
 
 <script type="text/ecmascript-6">
   import dailyExtraSelector from 'components/selectMoodandWeather/selectMoodAndWeather.vue';
-  import alertDialog from 'components/alertDialog/alertdialog.vue';
-  import selectDialog from 'components/selectDialog/selectdialog.vue';
+  import alertDialog from 'base/alertDialog/alertdialog.vue';
+  import selectDialog from 'base/selectDialog/selectdialog.vue';
   import dailyPhotoView from 'components/dailyPhotoView/dailyPhotoView.vue';
-  import loading from 'components/loading/loading.vue';
+  import loading from 'base/loading/loading.vue';
   import {formateDate} from 'common/js/formateDate.js';
+  import {SUCCESS_CODE, ERROR_CODE} from 'api/statusCode.js';
 
-  const SUCCESS_CODE = 200;
-  const ERROR_CODE = 400;
+
   const DAILY_HAS_SAVE = 1;  // 日记已保存的状态码
   const DAILY_NOT_SAVE = 0;  // 日记未保存的状态码
   const WEATHER_CLASS_LIST = ['icon-weather-sunny', 'icon-weather-cloudy', 'icon-weather-rainny', 'icon-weather-snowly'];
@@ -68,9 +68,9 @@
    *    {
    *      title: ''              初始化组件的标题
           content: ''            初始化组件的内容
-          moodType: -1          初始化组件的心情选项为 -1
-          weatherType: -1       初始化组件的天气选项为 -1
-          curTime: new Date()  当前日期 用于显示在编辑组件的顶部,
+          moodType: -1           初始化组件的心情选项为 -1
+          weatherType: -1        初始化组件的天气选项为 -1
+          curTime: new Date()    当前日期 用于显示在编辑组件的顶部,
           userSex: parseInt(detail.sex)  用户的性别 用于更改组件的颜色风格,
    *    }
    *  notepadShow（控制日记输入组件的关闭或显示）
@@ -91,7 +91,7 @@
    */
 
   export default {
-    data: function() {
+    data() {
       return {
         show: this.notepadShow,                   // 编辑日记组件 显示 / 隐藏
         saveBtnStatus: DAILY_NOT_SAVE,            // 保存日记按钮的状态 0为 '未保存' 1为'已保存'
@@ -132,7 +132,7 @@
       'loading': loading
     },
     methods: {
-      initNotepad: function() {
+      initNotepad() {
         this.curSelectType = -1;
         this.curMoodType = -1;
         this.curWeatherType = -1;
@@ -144,7 +144,7 @@
         this.fileContenList = [];
         this.curPhotoName = [];
       },
-      closeNotepad: function() {
+      closeNotepad() {
         if((this.contentVal === '' && this.fileContenList.length === 0) || this.saveBtnStatus === DAILY_HAS_SAVE) {
           this.$emit('notepad-close');
           // 初始化日记输入组件
@@ -154,16 +154,16 @@
           this.selectDialogTxt = '你确定要离开编辑日记吗';
         }
       },
-      confrimClose: function() {
+      confrimClose() {
         this.selectDialogShowStatus = false;
         // 初始化日记输入组件
         this.initNotepad();
         this.$emit('notepad-close');
       },
-      cancelClose: function() {
+      cancelClose() {
         this.selectDialogShowStatus = false;
       },
-      uploadDaily: function() {
+      uploadDaily() {
         if(this.saveBtnStatus !== DAILY_HAS_SAVE) {
           if(this.contentVal === '') {
             this.dialogShowStatus = true;
@@ -204,17 +204,17 @@
           }
         }
       },
-      selectMood: function() {
+      selectMood() {
         this.curSelectType = MOOD_SELECT_TYPE;
         this.selectorClassList = MOOD_CLASS_LIST;
         this.selectorShow = true;
       },
-      selectWeather: function() {
+      selectWeather() {
         this.curSelectType = WEATHER_SELECT_TYPE;
         this.selectorClassList = WEATHER_CLASS_LIST;
         this.selectorShow = true;
       },
-      listenSelectorChange: function(val) {
+      listenSelectorChange(val) {
         if(this.curSelectType === MOOD_SELECT_TYPE) {
           this.curMoodType = val;
         }
@@ -223,13 +223,13 @@
           this.curWeatherType = val;
         }
       },
-      listenSelectorShow: function(bool) {
+      listenSelectorShow(bool) {
         this.selectorShow = bool;
       },
-      listenDialogShow: function(bool) {
+      listenDialogShow(bool) {
         this.dialogShowStatus = bool;
       },
-      selectImgChange: function(event) {
+      selectImgChange(event) {
         let file = event.target.files[0];
         let e = event;
         let reg = /image\/(jpg|png|jpeg)/;
@@ -253,7 +253,6 @@
         // 保存文件数据 用作上传
         let reader = new FileReader();
         this.loadingShow = true;
-        console.log('loading');
         reader.readAsDataURL(file);
         reader.addEventListener('load', (event) => {
           let fileObj = {
@@ -266,47 +265,47 @@
           this.loadingShow = false;
         });
       },
-      seePhoto: function(event, index) {
+      seePhoto(event, index) {
         this.curPhotoUrl = this.fileContenList[index].url;
         this.photoViewShow = true;
         this.curPhotoIndex = index;
       },
-      photoViewClose: function() {
+      photoViewClose() {
         this.photoViewShow = false;
       },
-      dropPhoto: function(index) {
+      dropPhoto(index) {
         this.fileContenList.splice(index, 1);
         this.curPhotoName.splice(index, 1);
         this.photoViewShow = false;
       }
     },
     computed: {
-      userData: function() {
+      userData() {
         return this.$store.state.userData;
       }
     },
     filters: {
-      formateTime: function(val) {
+      formateTime(val) {
         return formateDate(val, 'yyyy-MM-dd');
       }
     },
     watch: {
-      notepadShow: function(val) {
+      notepadShow(val) {
         this.show = val;
       },
-      curMoodType: function(val) {
+      curMoodType(val) {
         if(val !== -1) {
           let curClass = MOOD_CLASS_LIST[val];
           this.curMoodClass = 'active ' + curClass;
         }
       },
-      curWeatherType: function(val) {
+      curWeatherType(val) {
         if(val !== -1) {
           let curClass = WEATHER_CLASS_LIST[val];
           this.curWeatherClass = 'active ' + curClass;
         }
       },
-      allData: function(val) {
+      allData(val) {
         this.editType = val.editType;
         this.titleVal = val.title;
         this.contentVal = val.content;
@@ -319,6 +318,7 @@
 
 <style lang="stylus" rel="stylesheet/stylus">
   @import "../../common/stylus/mixin.styl"
+  @import "../../common/stylus/theme.styl"
 
   .notepad-wrapper
     position: fixed

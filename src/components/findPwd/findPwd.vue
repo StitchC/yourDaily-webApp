@@ -19,7 +19,7 @@
 <script type="text/ecmascript-6">
   import router from '../../router/index.js';
   import indexPage from 'components/indexPage/indexPage.vue';
-  import dialog from 'components/alertDialog/alertdialog.vue';
+  import dialog from 'base/alertDialog/alertdialog.vue';
 
   export default {
     data: function() {

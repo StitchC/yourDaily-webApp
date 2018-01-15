@@ -1,7 +1,7 @@
 <template>
   <transition name="modify-info-slide">
     <div class="modify-user-info-wrapper" v-show="show">
-      <div class="modify-user-info-header" :class="{'male-theme': userData.info.sex === '1', 'female-theme': userData.info.sex === '0'}">
+      <div class="modify-user-info-header" :class="{'male-theme': userInfo.sex === '1', 'female-theme': userInfo.sex === '0'}">
         <span class="close-btn icon-close" @click="close"></span>
         <h3 class="header-title">修改信息</h3>
       </div>
@@ -10,23 +10,23 @@
           <span class="title">头像</span>
           <div class="info-content avatar-wrap">
             <img :src="avatar">
-            <span class="edit-btn icon-arrow-right" :class="{'male-theme': userData.info.sex === '1', 'female-theme': userData.info.sex === '0'}" @click="modifyUserAvatar"></span>
+            <span class="edit-btn icon-arrow-right" :class="{'male-theme': userInfo.sex === '1', 'female-theme': userInfo.sex === '0'}" @click="modifyUserAvatar"></span>
           </div>
         </div>
         <div class="info-content-wrap user-name">
           <span class="title">你的名字</span>
-          <span class="info-content user-name-content">{{userData.info.username}}</span>
-          <span class="edit-btn icon-arrow-right" :class="{'male-theme': userData.info.sex === '1', 'female-theme': userData.info.sex === '0'}" @click="modifyUserName"></span>
+          <span class="info-content user-name-content">{{userInfo.username}}</span>
+          <span class="edit-btn icon-arrow-right" :class="{'male-theme': userInfo.sex === '1', 'female-theme': userInfo.sex === '0'}" @click="modifyUserName"></span>
         </div>
         <div class="info-content-wrap user-motto">
           <span class="title">格言</span>
-          <span class="info-content user-otto-content">{{userData.info.motto}}</span>
-          <span class="edit-btn icon-arrow-right" :class="{'male-theme': userData.info.sex === '1', 'female-theme': userData.info.sex === '0'}" @click="modifyMotto"></span>
+          <span class="info-content user-otto-content">{{userInfo.motto}}</span>
+          <span class="edit-btn icon-arrow-right" :class="{'male-theme': userInfo.sex === '1', 'female-theme': userInfo.sex === '0'}" @click="modifyMotto"></span>
         </div>
         <div class="info-content-wrap user-sex">
           <span class="title">身份</span>
-          <span class="info-content user-sex-content" :class="{'icon-male-icon': userData.info.sex === '1', 'icon-female-icon': userData.info.sex === '0'}"></span>
-          <span class="edit-btn icon-arrow-right" :class="{'male-theme': userData.info.sex === '1', 'female-theme': userData.info.sex === '0'}" @click="modifySex"></span>
+          <span class="info-content user-sex-content" :class="{'icon-male-icon': userInfo.sex === '1', 'icon-female-icon': userInfo.sex === '0'}"></span>
+          <span class="edit-btn icon-arrow-right" :class="{'male-theme': userInfo.sex === '1', 'female-theme': userInfo.sex === '0'}" @click="modifySex"></span>
         </div>
       </div>
       <info-input :init-data="initInfoInput" :input-show="toggleInput" @input-close="closeInput"></info-input>
@@ -38,6 +38,7 @@
 <script type="text/ecmascript-6">
   import infoInput from 'components/modifyInfoInput/modifyInfoInput.vue';
   import uploadImage from 'components/uploadImage/uploadImage.vue';
+  import {mapGetters, mapMutations} from 'vuex';
 
 
   /**
@@ -48,7 +49,7 @@
    * */
 
   export default {
-    data: function() {
+    data() {
       return {
         show: this.modifyInfoShow,
         initInfoInput: {},
@@ -66,67 +67,70 @@
       'upload-image': uploadImage
     },
     methods: {
-      close: function() {
+      ...mapMutations({
+        toggleSelectSex: 'TOGGLE_SELECT_SEX'
+      }),
+      close() {
         this.$emit('modify-info-close');
       },
-      toggleUploadImage: function() {
+      toggleUploadImage() {
         this.uploadImgShow = false;
       },
-      modifyUserAvatar: function() {
+      modifyUserAvatar() {
         this.uploadImgShow = true;
       },
-      modifyUserName: function() {
+      modifyUserName() {
         this.initInfoInput = {
           title: '修改用户名',
           modifyType: 0,
-          content: this.userData.info.username,
-          userSex: parseInt(this.userData.info.sex),
-          userId: this.userData.info.id,
-          connect: this.userData.info.connect,
+          content: this.userInfo.username,
+          userSex: parseInt(this.userInfo.sex),
+          userId: this.userInfo.id,
+          connect: this.userInfo.connect,
           limit: 15
         };
         this.toggleInput = true;
       },
-      modifyMotto: function() {
+      modifyMotto() {
         this.initInfoInput = {
           title: '修改格言',
           modifyType: 1,
-          content: this.userData.info.motto,
-          userSex: parseInt(this.userData.info.sex),
-          userId: this.userData.info.id,
-          connect: this.userData.info.connect,
+          content: this.userInfo.motto,
+          userSex: parseInt(this.userInfo.sex),
+          userId: this.userInfo.id,
+          connect: this.userInfo.connect,
           limit: 30
         };
         this.toggleInput = true;
         this.$emit('update-data');
       },
-      modifySex: function() {
+      modifySex() {
         // 个人信息修改性别 将vuex toggleSelectSex 修改为true 弹出选择性别组件
-        this.$store.commit('toggleSelectSex', true);
+        this.toggleSelectSex(true);
       },
-      closeInput: function() {
+      closeInput() {
         this.toggleInput = false;
       }
     },
     watch: {
-      modifyInfoShow: function(val) {
+      modifyInfoShow(val) {
         this.show = val;
       }
     },
     computed: {
-      avatar: function() {
-        if(this.userData.info.avatar === '') {
-          if(this.userData.info.sex === '1') {
+      ...mapGetters({
+        userInfo: 'getInfo'
+      }),
+      avatar() {
+        if(this.userInfo.avatar === '') {
+          if(this.userInfo.sex === '1') {
             return '/static/images/male-avatar.jpg';
           }else {
             return '/static/images/female-avatar.jpg';
           }
         }else {
-          return this.userData.info.avatar;
+          return this.userInfo.avatar;
         }
-      },
-      userData: function() {
-        return this.$store.state.userData;
       }
     }
   };

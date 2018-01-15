@@ -54,9 +54,10 @@
    * @event - daily-modify          组件编辑按钮点击时通知父组件
    */
   import {formateDate} from 'common/js/formateDate.js';
-  import selectDialog from 'components/selectDialog/selectdialog.vue';
+  import selectDialog from 'base/selectDialog/selectdialog.vue';
   import photoPreviewList from 'components/photoPreviewList/photoPreviewList.vue';
   import BetScroll from 'better-scroll';
+  import {mapGetters} from 'vuex';
 
   const SUCCESS_CODE = 200;
   export default {
@@ -116,7 +117,7 @@
         // 判断当前查看日记的用户是否为本人
         // 如果是本人 那么返回true 否则返回 false
         let curDailyUserId = this.detailData.userId;
-        let curLoginUserId = this.$store.state.userData.info.id;
+        let curLoginUserId = this.userInfo.id;
 
         if(curDailyUserId === curLoginUserId) {
           return true;
@@ -161,6 +162,9 @@
       'photo-preview-list': photoPreviewList
     },
     computed: {
+      ...mapGetters({
+        userInfo: 'getInfo'
+      }),
       userData: function() {
         return this.$store.state.userData;
       }

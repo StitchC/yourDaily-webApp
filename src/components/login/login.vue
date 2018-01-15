@@ -21,18 +21,16 @@
 </template>
 
 <script type="text/ecmascript-6">
-  import router from '../../router/index.js';
   import indexPage from 'components/indexPage/indexPage.vue';
-  import dialog from 'components/alertDialog/alertdialog.vue';
-  import loading from 'components/loading/loading.vue';
-  import {setUserDefaultData} from 'common/js/localStorage.js';
+  import dialog from 'base/alertDialog/alertdialog.vue';
+  import loading from 'base/loading/loading.vue';
+  import {setLocalstorage, baseDataKey} from 'common/js/localStorage.js';
+  import {SUCCESS_CODE, ERROR_CODE} from 'api/statusCode.js';
+  import {netWorkError} from 'common/js/dialog.js';
 
-
-  const ERROR_CODE = 400;
-  const SUCCESS_CODE = 200;
 
   export default {
-    data: function() {
+    data() {
       return {
         loadingShow: false,
         dialogShowStatus: false,
@@ -41,15 +39,21 @@
         pwdVal: ''
       };
     },
-    router: router,
     methods: {
-      toRegister: function() {
+      toRegister() {
         this.$router.push('/register');
       },
-      login: function() {
+      _setDialog(options) {
+        // 设置提示框的显示和内容
+        this.dialogTxt = options.dialogTxt;
+        this.dialogShowStatus = options.showStatus;
+      },
+      login() {
         if(this.accountVal === '' || this.pwdVal === '') {
-          this.dialogTxt = '账号或密码不能为空哦';
-          this.dialogShowStatus = true;
+          this._setDialog({
+            showStatus: true,
+            dialogTxt: '账号或密码不能为空哦'
+          });
         }else {
           this.$http.get('/yourdaily/php/login/check.php', {
             params: {
@@ -63,18 +67,27 @@
             let data = res.body;
             if(data.status === ERROR_CODE) {
               this.loadingShow = false;
-              this.dialogTxt = '你的账号或密码有错误哦';
-              this.dialogShowStatus = true;
+              this._setDialog({
+                showStatus: true,
+                dialogTxt: '你的账号或密码有错误哦'
+              });
             }else if(data.status === SUCCESS_CODE) {
               this.loadingShow = false;
-              setUserDefaultData(res.body.info);
+              // 在localstorage 中保存用户的数据
+              setLocalstorage(baseDataKey, res.body.info);
               this.$router.push('/user');
             }
+          }).catch(() => {
+            this.loadingShow = false;
+            this._setDialog({
+              showStatus: true,
+              dialogTxt: netWorkError
+            });
           });
         }
       },
-      listenDialogStatus: function(bool) {
-        this.dialogShowStatus = bool;
+      listenDialogStatus() {
+        this.dialogShowStatus = false;
       }
     },
     components: {

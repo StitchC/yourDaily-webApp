@@ -5,14 +5,14 @@
         <img src="./loading.gif">
       </div>
     </transition>
-    <div class="no-daily-hint" v-show="userData.daily.length === 0">
+    <div class="no-daily-hint" v-show="userDaily.length === 0">
       <h3 class="hint-title">NO Enteries</h3>
       <p class="hint-txt">你还没有写过日记</p>
-      <p class="begin-write-daily" :class="{'male-theme': userData.info.sex === '1', 'female-theme': userData.info.sex === '0'}" @click="toggleNotepadShow">开始写日记</p>
+      <p class="begin-write-daily" :class="{'male-theme': userInfo.sex === '1', 'female-theme': userInfo.sex === '0'}" @click="toggleNotepadShow">开始写日记</p>
     </div>
     <div class="daily-list-wrap" ref="dailylist">
       <ul class="daily-list">
-        <li v-for="(daily, key) in userData.daily" class="daily-item" :class="{'male-theme': daily.sex === '1', 'female-theme': daily.sex === '0'}" @click="enterDailyDetail($event, key)">
+        <li v-for="(daily, key) in userDaily" class="daily-item" :class="{'male-theme': daily.sex === '1', 'female-theme': daily.sex === '0'}" @click="enterDailyDetail($event, key)">
           <div class="date-time">
             <div class="date">{{daily.publicTime | translateDate}}</div>
             <div class="day">{{daily.publicTime | translateDay}}</div>
@@ -31,9 +31,9 @@
         </li>
       </ul>
     </div>
-    <div class="daily-bottom-bar" :class="{'male-theme': userData.info.sex === '1', 'female-theme': userData.info.sex === '0'}" v-show="userData.daily.length !== 0">
+    <div class="daily-bottom-bar" :class="{'male-theme': userInfo.sex === '1', 'female-theme': userInfo.sex === '0'}" v-show="userDaily.length !== 0">
       <span class="write-daily-btn icon-pen" @click="toggleNotepadShow"></span>
-      <span class="total-daily-num">{{userData.info.count}}篇日记</span>
+      <span class="total-daily-num">{{userInfo.count}}篇日记</span>
     </div>
     <daily-notepad :all-data="notepadData" :notepad-show="notepadShow" @notepad-close="notepadClose"></daily-notepad>
     <daily-detail-dialog :detail-data="dailyDetail" :detail-dialog-show="detailDialogShow" @detail-dialog-close="detailDialogClose"></daily-detail-dialog>
@@ -45,6 +45,7 @@
    import dailyNotePad from 'components/dailyNotePad/dailynotepad.vue';
    import dailyDetailDialog from 'components/dailyDetailDialog/dailyDetailDialog.vue';
    import BetScroll from 'better-scroll';
+   import {mapGetters, mapActions} from 'vuex';
    /**
     * 日记列表组件
     *
@@ -72,7 +73,7 @@
       };
     },
     mounted: function() {
-      this.$nextTick(() => {
+      setTimeout(() => {
         if(!this.scroll) {
           this.scroll = new BetScroll(this.$refs.dailylist, {
             click: true,
@@ -81,9 +82,9 @@
           this.scroll.on('touchend', (pos) => {
             if(pos.y > 100) {
               this.loadingIconShow = true;
-              this.$store.dispatch('requestNewData', {
-                id: this.userData.info.id,
-                connectId: this.userData.info.connect
+              this.reloadData({
+                id: this.userInfo.id,
+                connectId: this.userInfo.connect
               }).then(() => {
                 setTimeout(() => {
                   this.loadingIconShow = false;
@@ -96,9 +97,9 @@
           this.scroll.on('touchend', (pos) => {
             if(pos.y > 50) {
               this.loadingIconShow = true;
-              this.$store.dispatch('requestNewData', {
-                id: this.userData.info.id,
-                connectId: this.userData.info.connect
+              this.reloadData({
+                id: this.userInfo.id,
+                connectId: this.userInfo.connect
               }).then(() => {
                 setTimeout(() => {
                   this.loadingIconShow = false;
@@ -107,22 +108,25 @@
             }
           });
         }
-      });
+      }, 50);
     },
     components: {
       'daily-notepad': dailyNotePad,
       'daily-detail-dialog': dailyDetailDialog
     },
     methods: {
-      notepadClose: function() {
+      ...mapActions([
+        'reloadData'
+      ]),
+      notepadClose() {
         this.notepadShow = false;
         this.detailDialogShow = false;
       },
-      toggleNotepadShow: function() {
+      toggleNotepadShow() {
         // 当在日记组件中点击添加日记按钮的时候对日记编辑组件进行数据的初始化
         this.notepadData = {
           curTime: new Date(),
-          userSex: parseInt(this.userData.info.sex),
+          userSex: parseInt(this.userInfo.sex),
           title: '',
           content: '',
           moodType: -1,
@@ -130,22 +134,22 @@
         };
         this.notepadShow = true;
       },
-      detailDialogClose: function() {
+      detailDialogClose() {
         this.detailDialogShow = false;
       },
-      outputMoodClass: function(val) {
+      outputMoodClass(val) {
         if(val !== -1) {
           return this.moodClassList[val];
         }
       },
-      outputWeatherClass: function(val) {
+      outputWeatherClass(val) {
         if(val !== -1) {
           return this.weatherClassList[val];
         }
       },
-      enterDailyDetail: function(event, key) {
+      enterDailyDetail(event, key) {
         if(event._constructed) {
-          let detail = this.userData.daily[key];
+          let detail = this.userDaily[key];
 
           this.dailyDetail = {
             dailyId: detail.id,
@@ -162,31 +166,23 @@
       }
     },
     computed: {
-     userData: function() {
-       this.$nextTick(() => {
-         if(!this.scroll) {
-           this.scroll = new BetScroll(this.$refs.dailylist, {
-             click: true
-           });
-         }else {
-           this.scroll.refresh();
-         }
-       });
-       return this.$store.state.userData;
-     }
+      ...mapGetters({
+        userDaily: 'getDaily',
+        userInfo: 'getInfo'
+      })
     },
     filters: {
-     translateDate: function(val) {
+     translateDate(val) {
        let date = new Date(val);
        return date.getDate();
      },
-     translateDay: function(val) {
+     translateDay(val) {
        let date = new Date(val);
        let chinese = ['日', '一', '二', '三', '四', '五', '六'];
        let str = '星期' + chinese[date.getDay()];
        return str;
      },
-     translateTime: function(val) {
+     translateTime(val) {
        let date = new Date(val);
        let str = formateDate(date, 'hh:mm');
        return str;

@@ -1,6 +1,6 @@
 <template>
   <transition name="dialog-fade">
-    <div class="dialog-wrapper" v-show="show">
+    <div class="dialog-wrapper" v-show="dialogShow">
       <div class="dialog-main">
         <p class="txt">{{txt}}</p>
         <div class="btn" @click="hide">好的</div>
@@ -19,11 +19,6 @@
    *
    * */
   export default {
-    data: function() {
-      return {
-        show: this.dialogShow
-      };
-    },
     props: {
       txt: {
         type: String,
@@ -36,7 +31,7 @@
     },
     methods: {
       hide: function() {
-        this.$emit('dialog-show-change', !this.show);
+        this.$emit('dialog-show-change');
       }
     },
     watch: {

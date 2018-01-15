@@ -1,6 +1,6 @@
 <template>
   <transition name="user-fade">
-    <div class="user-wrapper" :class="{'male-theme': userData.info.sex === '1', 'female-theme': userData.info.sex === '0'}">
+    <div class="user-wrapper" :class="{'male-theme': getUserInfo.sex === '1', 'female-theme': getUserInfo.sex === '0'}">
       <div class="user-header">
         <div class="user-tool-bar">
           <div class="setting-icon icon-setting" @click="showSetting"></div>
@@ -28,7 +28,8 @@
   import selectsex from 'components/selectSex/selectsex.vue';
   import userSetting from 'components/setting/setting.vue';
   import dailyLock from 'components/dailyLock/dailyLock.vue';
-  import {getUserDefaultData, getUserDailyLock} from 'common/js/localStorage.js';
+  import {getLocalstorage, baseDataKey, getUserDailyLock} from 'common/js/localStorage.js';
+  import {mapGetters, mapMutations, mapActions} from 'vuex';
 
   /**
    * user 组件
@@ -59,39 +60,41 @@
         userId: '',
         userSex: -1,
         userAllData: null,
-        userConnectId: '',
         headerTitleShow: true,
         settingShow: false,
         dailyLockShow: false
       };
     },
     created: function() {
-      let user = getUserDefaultData();
+      let user = getLocalstorage(baseDataKey);
       this.userId = user.id;
+      // 创建一个组件内部的变量
       this.userConnectId = user.connect;
       let dailyLock = getUserDailyLock(user.id);
       // 如果用户有设置到日记锁并且日记锁为启用状态 显示解锁界面
       if(dailyLock && dailyLock.lockStatus === true) {
         this.dailyLockShow = true;
       }
-      // 组件加载时发送ajax 请求获取数据
-      this.$http.get('/yourdaily/php/user/getUserData.php', {
-        params: {
-          id: this.userId,
-          connectId: this.userConnectId
-        }
-      }).then(res => {
-        this.$store.commit('updateData', res.body);
-        let userSex = parseInt(this.$store.state.userData.info.sex);
-        // 如果性别为2 表示未被初始化 需要显示性别选择组件
-        if(userSex === SEX_NOTINIT) {
-          this.$store.commit('toggleSelectSex', true);
-        }else {
+      // 如果用户是新注册用户
+      if(parseInt(user.sex) === SEX_NOTINIT) {
+        this.toggleSexSelect(true);
+      }else {
+        // 否则发送请求 请求用户数据
+        // 组件加载时发送ajax 请求获取数据
+        this.$http.get('/yourdaily/php/user/getUserData.php', {
+          params: {
+            id: this.userId,
+            connectId: this.userConnectId
+          }
+        }).then(res => {
+          // 修改 vuex 的用户数据
+          this.updateDaily(res.body.daily);
+          this.updateUserInfo(res.body.info);
           this.$nextTick(() => {
             this.$router.push('/user/daily');
           });
-        }
-      });
+        });
+      }
     },
     components: {
       'select-sex': selectsex,
@@ -99,17 +102,25 @@
       'daily-lock': dailyLock
     },
     methods: {
+      ...mapMutations({
+        toggleSexSelect: 'TOGGLE_SELECT_SEX',
+        updateDaily: 'UPDATE_DAILY',
+        updateUserInfo: 'UPDATE_USER_INFO'
+      }),
+      ...mapActions([
+        'reloadData'
+      ]),
+      _toDaily() {
+        this.$router.push('/user/daily');
+      },
       confirmSex: function() {
         // 选择完性别之后发送ajax 更新 vuex 数据
-        this.$store.dispatch('requestNewData', {
+        this.reloadData({
           id: this.userId,
           connectId: this.userConnectId
         }).then(() => {
-          // 更新数据完毕后关闭性别选择组件
-          this.$store.commit('toggleSelectSex', false);
-          this.$nextTick(() => {
-            this.$router.push('/user/daily');
-          });
+          this.toggleSexSelect(false);
+          this._toDaily();
         });
       },
       settingHide: function() {
@@ -123,6 +134,10 @@
       }
     },
     computed: {
+      ...mapGetters({
+        getUserInfo: 'getInfo',
+        selectSexShow: 'getSelectSexShowStatus'
+      }),
       userData: function() {
         return this.$store.state.userData;
       },

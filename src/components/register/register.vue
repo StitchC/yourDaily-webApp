@@ -17,74 +17,115 @@
         </div>
       </index-page>
       <alert-dialog :dialog-show="dialogShowStatus" :txt="dialogTxt" @dialog-show-change="listenDialogStatus"></alert-dialog>
+    <loading :show="loadingShow"></loading>
     </div>
 </template>
 
 <script type="text/ecmascript-6">
-  import router from '../../router/index.js';
   import indexPage from 'components/indexPage/indexPage.vue';
-  import dialog from 'components/alertDialog/alertdialog.vue';
+  import dialog from 'base/alertDialog/alertdialog.vue';
+  import loading from 'base/loading/loading.vue';
+  import {SUCCESS_CODE, ERROR_CODE} from 'api/statusCode';
+  import {netWorkError} from 'common/js/dialog.js';
 
-  const SUCCESS_CODE = 200;
 
   export default {
     data: function() {
       return {
+        loadingShow: false,
         dialogShowStatus: false,
         dialogTxt: '',
         accountVal: '',
         pwdVal: ''
       };
     },
-    router: router,
+    created() {
+      this.registerStatus = 0; // 注册状态 0: 还没注册或注册失败  1: 注册成功
+    },
     components: {
       'index-page': indexPage,
-      'alert-dialog': dialog
+      'alert-dialog': dialog,
+      loading
     },
     methods: {
-      toLogin: function() {
+      toLogin() {
         this.$router.push('/login');
       },
-      toFindPwd: function() {
+      toFindPwd() {
         this.$router.push('/findpwd');
       },
-      listenDialogStatus: function(bool) {
-        this.dialogShowStatus = bool;
-        if(this.dialogTxt === '注册成功啦') {
+      listenDialogStatus() {
+        this.dialogShowStatus = false;
+        if(this.registerStatus === 1) {
           this.$router.push('/login');
         }
       },
-      register: function() {
+      _setDialog(options) {
+        this.dialogShowStatus = options.showStatus;
+        this.dialogTxt = options.dialogTxt;
+      },
+      _registerSuccess() {
+        this.loadingShow = false;
+        this.accountVal = '';
+        this.pwdVal = '';
+        this.registerStatus = 1;
+      },
+      _registerError() {
+        this.loadingShow = false;
+        this.pwdVal = '';
+        this.registerStatus = 0;
+      },
+      register() {
         let reg = /^[A-Za-z\d]+([-_.][A-Za-z\d]+)*@([A-Za-z\d]+[-.])+[A-Za-z\d]{2,4}$/;
         if(this.accountVal === '' || this.pwdVal === '') {
-          this.dialogShowStatus = true;
-          this.dialogTxt = '注册的邮箱或密码不能为空哦';
+          this._setDialog({
+            showStatus: true,
+            dialogTxt: '注册的邮箱或密码不能为空哦'
+          });
         }
         if(!reg.test(this.accountVal)) {
-          this.dialogShowStatus = true;
-          this.dialogTxt = '请填写正确的邮箱地址哦';
+            this._setDialog({
+              showStatus: true,
+              dialogTxt: '请填写正确的邮箱地址哦'
+            });
         }else if(reg.test(this.accountVal) && this.pwdVal !== '') {
           if(this.pwdVal.length >= 16) {
-            this.dialogShowStatus = true;
-            this.dialogTxt = '你的密码太长了哦最多只能输入16位英文，数字或特殊字符';
+            this._setDialog({
+              showStatus: true,
+              dialogTxt: '你的密码太长了哦最多只能输入16位英文，数字或特殊字符'
+            });
             this.pwdVal = '';
           }else {
             this.$http.post('/yourdaily/php/register/check.php', {
               account: this.accountVal,
               pwd: this.pwdVal
-            }, {emulateJSON: true}).then(res => {
+            }, {
+              emulateJSON: true,
+              before() {
+                this.loadingShow = true;
+              }
+            }).then(res => {
               let data = res.body;
 
               if(data.status === SUCCESS_CODE) {
-                this.dialogShowStatus = true;
-                this.dialogTxt = '注册成功啦';
-                this.accountVal = '';
-                this.pwdVal = '';
-              }else {
-                this.dialogShowStatus = true;
-                this.dialogTxt = '啊哦，这个账号貌似已被人注册了';
-                this.pwdVal = '';
+                this._setDialog({
+                  showStatus: true,
+                  dialogTxt: '注册成功啦'
+                });
+                this._registerSuccess();
+              }else if(data.status === ERROR_CODE) {
+                this._setDialog({
+                  showStatus: true,
+                  dialogTxt: '啊哦，这个账号貌似已被人注册了'
+                });
+                this._registerError();
               }
+            }).catch(() => {
+              this._registerError();
+              this._setDialog({
+                showStatus: true,
+                dialogTxt: netWorkError
+              });
             });
           }
         }

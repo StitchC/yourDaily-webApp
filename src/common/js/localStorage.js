@@ -23,10 +23,12 @@ export function getUserDailyLock(userId) {
   }
 }
 
-export function setUserDefaultData(obj) {
-  window.localStorage.DailyuserDefaultData = JSON.stringify(obj);
+export const baseDataKey = 'yourDailyBase';
+
+export function setLocalstorage(key, obj) {
+  window.localStorage[key] = JSON.stringify(obj);
 }
 
-export function getUserDefaultData() {
-  return JSON.parse(window.localStorage.DailyuserDefaultData);
+export function getLocalstorage(key) {
+  return JSON.parse(window.localStorage[key]);
 }

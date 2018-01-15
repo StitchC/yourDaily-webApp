@@ -1,13 +1,13 @@
 <template>
   <div class="self-wrapper">
-    <div class="user-detail" :class="{'male-theme': userData.info.sex === '1', 'female-theme': userData.info.sex === '0'}">
+    <div class="user-detail" :class="{'male-theme': userInfo.sex === '1', 'female-theme': userInfo.sex === '0'}">
       <div class="user-detail-main">
         <div class="avatar-wrap">
           <img :src="avatar">
         </div>
         <div class="detail-content">
-          <p class="user-name">{{userData.info.username}}</p>
-          <p class="user-motto">{{userData.info.motto}}</p>
+          <p class="user-name">{{userInfo.username}}</p>
+          <p class="user-motto">{{userInfo.motto}}</p>
         </div>
       </div>
       <div class="edit-user-info-wrap" @click="showModifyInfo">
@@ -17,29 +17,29 @@
     </div>
     <div class="user-info">
       <div class="daily-count">
-        <p>{{userData.info.count}}</p>
+        <p>{{userInfo.count}}</p>
         <p>篇</p>
       </div>
       <div class="word-count">
-        <p>{{userData.info.words}}</p>
+        <p>{{userInfo.words}}</p>
         <p>字</p>
       </div>
       <div class="photo-count">
-        <p>{{userData.info.images.length}}</p>
+        <p>{{userInfo.images.length}}</p>
         <p>图</p>
       </div>
     </div>
     <div class="gallary-wrap" ref="gallaryWrap">
       <div class="gallary">
-        <div class="image-item" v-for="(image, index) in userData.info.images">
+        <div class="image-item" v-for="(image, index) in userInfo.images">
           <div class="inner-img-wrap">
             <img :src="image" @click="photoPreviewShow($event, index)">
           </div>
         </div>
       </div>
     </div>
-    <modify-user-info :modify-info-show="toggleModifyInfo" :user-data="userData" @modify-info-close="closeModifyInfo"></modify-user-info>
-    <photo-preview-list :images-list="userData.info.images" :show="photoListShow" :images-show-index="photoListShowIndex" @photo-preview-list-hide="photoPreviewHide"></photo-preview-list>
+    <modify-user-info :modify-info-show="toggleModifyInfo" :user-data="userInfo" @modify-info-close="closeModifyInfo"></modify-user-info>
+    <photo-preview-list :images-list="userInfo.images" :show="photoListShow" :images-show-index="photoListShowIndex" @photo-preview-list-hide="photoPreviewHide"></photo-preview-list>
   </div>
 </template>
 
@@ -47,10 +47,11 @@
   import modifyUserInfo from 'components/modifyUserInfo/modifyUserInfo.vue';
   import photoPreviewList from 'components/photoPreviewList/photoPreviewList.vue';
   import BetScroll from 'better-scroll';
+  import {mapGetters} from 'vuex';
 
 
   export default {
-    data: function() {
+    data() {
       return {
         toggleModifyInfo: false,
         swipeWrapShow: false,
@@ -58,7 +59,7 @@
         photoListShowIndex: 0
       };
     },
-    mounted: function() {
+    mounted() {
       this.$nextTick(() => {
         if(!this.scroll) {
           this.scroll = new BetScroll(this.$refs.gallaryWrap, {
@@ -74,42 +75,33 @@
       'photo-preview-list': photoPreviewList
     },
     methods: {
-      closeModifyInfo: function() {
+      closeModifyInfo() {
         this.toggleModifyInfo = false;
       },
-      showModifyInfo: function() {
+      showModifyInfo() {
         this.toggleModifyInfo = true;
       },
-      photoPreviewShow: function(event, index) {
+      photoPreviewShow(event, index) {
         this.photoListShowIndex = index;
         this.photoListShow = true;
       },
-      photoPreviewHide: function() {
+      photoPreviewHide() {
         this.photoListShow = false;
       }
     },
     computed: {
-      userData: function() {
-        this.$nextTick(() => {
-          if(!this.scroll) {
-            this.scroll = new BetScroll(this.$refs.gallaryWrap, {
-              click: true
-            });
-          }else {
-            this.scroll.refresh();
-          }
-        });
-        return this.$store.state.userData;
-      },
-      avatar: function() {
-        if(this.userData.info.avatar === '') {
-          if(this.userData.info.sex === '1') {
+      ...mapGetters({
+        userInfo: 'getInfo'
+      }),
+      avatar() {
+        if(this.userInfo.avatar === '') {
+          if(this.userInfo.sex === '1') {
             return '/static/images/male-avatar.jpg';
           }else {
             return '/static/images/female-avatar.jpg';
           }
         }else {
-          return this.userData.info.avatar;
+          return this.userInfo.avatar;
         }
       }
     }

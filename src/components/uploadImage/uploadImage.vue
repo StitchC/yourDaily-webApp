@@ -1,6 +1,6 @@
 <template>
   <transition name="upload-image-slide">
-    <div class="upload-image-wrapper" :class="{'male-theme': userData.info.sex === '1', 'female-theme': userData.info.sex === '0'}" v-show="show">
+    <div class="upload-image-wrapper" :class="{'male-theme': userInfo.sex === '1', 'female-theme': userInfo.sex === '0'}" v-show="show">
       <div class="upload-image-header">
         <h3 class="title">上传文件</h3>
         <span class="close-btn icon-close" @click="close"></span>
@@ -25,19 +25,20 @@
 </template>
 
 <script type="text/ecmascript-6">
-  import alertDialog from 'components/alertDialog/alertdialog.vue';
-  import loading from 'components/loading/loading.vue';
+  import alertDialog from 'base/alertDialog/alertdialog.vue';
+  import loading from 'base/loading/loading.vue';
   import {compressImg} from 'common/js/compressPhoto.js';
+  import {SUCCESS_CODE} from 'api/statusCode.js';
+  import {mapGetters, mapActions} from 'vuex';
   /**
    * 上传图片组件
    *
    * @param {Boolean} show - 控制组件的现实或隐藏
    *
    * */
-  const SUCCESS_CODE = 200;
 
   export default {
-    data: function() {
+    data() {
       return {
         imgURL: '',
         fileContent: null,
@@ -56,12 +57,15 @@
       'loading': loading
     },
     methods: {
-      close: function() {
+      ...mapActions([
+        'reloadData'
+      ]),
+      close() {
         this.$emit('upload-img-close');
         this.imgURL = '';
         this.fileContent = null;
       },
-      imgChange: function() {
+      imgChange() {
          if(this.$refs.fileInput.files[0]) {
            let reg = /image\/(jpg|png|jpeg)/;
            this.fileContent = this.$refs.fileInput.files[0];
@@ -79,7 +83,7 @@
            }
          }
       },
-      uploadImg: function() {
+      uploadImg() {
         if(!this.fileContent) {
             this.alertDialogShow = true;
             this.alertDialogTxt = '你还没有选择图片喔';
@@ -87,7 +91,7 @@
         }
         let formdata = new FormData();
         formdata.append('avatar', this.fileContent);
-        formdata.append('id', this.$store.state.userData.info.id);
+        formdata.append('id', this.userInfo.id);
         this.$http.post('/yourdaily/php/user/uploadAvatar.php', formdata, {
           before: function() {
             this.loadingShow = true;
@@ -95,9 +99,9 @@
         }).then((res) => {
           let data = res.body;
           if(data.status === SUCCESS_CODE) {
-            this.$store.dispatch('requestNewData', {
-              id: this.$store.state.userData.info.id,
-              connectId: this.$store.state.userData.info.connect
+            this.reloadData({
+              id: this.userInfo.id,
+              connectId: this.userInfo.connect
             }).then(() => {
               this.loadingShow = false;
               this.imgURL = '';
@@ -111,14 +115,14 @@
           }
         });
       },
-      toggleAlertDialog: function() {
+      toggleAlertDialog() {
         this.alertDialogShow = false;
       }
     },
     computed: {
-      userData: function() {
-        return this.$store.state.userData;
-      }
+      ...mapGetters({
+        userInfo: 'getInfo'
+      })
     }
   };
 </script>

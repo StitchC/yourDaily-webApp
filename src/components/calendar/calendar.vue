@@ -1,6 +1,6 @@
 <template>
   <div class="calendar-wrapper">
-    <div class="calendar-main" :class="{'male-theme': userData.info.sex === '1', 'female-theme': userData.info.sex === '0'}">
+    <div class="calendar-main" :class="{'male-theme':userInfo.sex === '1', 'female-theme': userInfo.sex === '0'}">
       <div class="reward-btn icon-arrow-left" @click="rewardDate"></div>
       <div class="date-txt">
         <p class="month">{{curDate | translateMonth}}月</p>
@@ -10,7 +10,7 @@
       <div class="next-btn icon-arrow-right" @click="nextDate"></div>
     </div>
     <div class="no-match-daily-hint" v-show="matchDailys.length === 0 && isToday">
-      <div class="hint-content" :class="{'male-theme': userData.info.sex === '1', 'female-theme': userData.info.sex === '0'}" @click="addDaily">
+      <div class="hint-content" :class="{'male-theme': userInfo.sex === '1', 'female-theme': userInfo.sex === '0'}" @click="addDaily">
         <span class="icon icon-pen"></span>
         <span class="txt">添加日记</span>
       </div>
@@ -46,9 +46,10 @@
   import BetScroll from 'better-scroll';
   import dailyDetailDialog from 'components/dailyDetailDialog/dailyDetailDialog.vue';
   import dailyNotepad from 'components/dailyNotePad/dailynotepad.vue';
+  import {mapGetters} from 'vuex';
 
   export default {
-    data: function() {
+    data() {
       return {
         userSex: -1,
         curDate: new Date().getTime(),
@@ -59,7 +60,7 @@
         notepadShow: false
       };
     },
-    mounted: function() {
+    mounted() {
       this.$nextTick(() => {
         if(!this.scroll) {
           this.scroll = new BetScroll(this.$refs.matchDailyWrap, {
@@ -75,7 +76,7 @@
       'daily-notepad': dailyNotepad
     },
     methods: {
-      rewardDate: function() {
+      rewardDate() {
         let date = new Date(this.curDate);
         this.curDate = date.setDate(date.getDate() - 1);
 
@@ -89,7 +90,7 @@
           }
         });
       },
-      nextDate: function() {
+      nextDate() {
         let date = new Date(this.curDate);
         this.curDate = date.setDate(date.getDate() + 1);
         this.$nextTick(() => {
@@ -102,25 +103,25 @@
           }
         });
       },
-      outputMoodClass: function(moodType) {
+      outputMoodClass(moodType) {
         let type = parseInt(moodType);
         if(type !== -1) {
           let moodClassList = ['icon-mood-happy', 'icon-mood-normal', 'icon-mood-sadness'];
           return moodClassList[type];
         }
       },
-      outputWeatherClass: function(weatherType) {
+      outputWeatherClass(weatherType) {
         let type = parseInt(weatherType);
         if(type !== -1) {
           let weatherClassList = ['icon-weather-sunny', 'icon-weather-cloudy', 'icon-weather-rainny', 'icon-weather-snowly'];
           return weatherClassList[type];
         }
       },
-      addDaily: function() {
+      addDaily() {
         this.notepadData = {
           editType: 0,
           curTime: new Date(),
-          userSex: parseInt(this.userData.info.sex),
+          userSex: parseInt(this.userInfo.sex),
           title: '',
           content: '',
           moodType: -1,
@@ -128,9 +129,9 @@
         };
         this.notepadShow = true;
       },
-      enterDailyDetail: function(event, key) {
+      enterDailyDetail(event, key) {
         if(event._constructed) {
-          let data = this.userData.daily[key];
+          let data = this.userDaily[key];
           this.dailyDetail = {
             dailyId: data.id,
             time: data.publicTime,
@@ -143,10 +144,10 @@
           this.detailDialogShow = true;
         };
       },
-      detailDialogClose: function() {
+      detailDialogClose() {
         this.detailDialogShow = false;
       },
-      modifyDaily: function(dailyId) {
+      modifyDaily(dailyId) {
         let data = this.userData.daily[dailyId];
         this.notepadData = {
           editType: 1,
@@ -160,53 +161,57 @@
         };
         this.notepadShow = true;
       },
-      notepadClose: function() {
+      notepadClose() {
         this.notepadShow = false;
         this.detailDialogShow = false;
       }
     },
     computed: {
-      userData: function() {
+      ...mapGetters({
+        userInfo: 'getInfo',
+        userDaily: 'getDaily'
+      }),
+      userData() {
         return this.$store.state.userData;
       },
-      matchDailys: function() {
+      matchDailys() {
         let curDateStr = formateDate(this.curDate, 'yyyy-MM-dd');
         let resultList = [];
 
-        for(let key in this.userData.daily) {
-          let tempArr = this.userData.daily[key].publicTime.split(' ');
+        for(let key in this.userDaily) {
+          let tempArr = this.userDaily[key].publicTime.split(' ');
           let tempItem = tempArr[0];
           if(tempItem === curDateStr) {
-            resultList.push(this.userData.daily[key]);
+            resultList.push(this.userDaily[key]);
           }
         }
         return resultList;
       },
-      isToday: function() {
+      isToday() {
         let todayStr = formateDate(new Date().getTime(), 'yyyy-MM-dd');
         let curDateStr = formateDate(this.curDate, 'yyyy-MM-dd');
         return todayStr === curDateStr;
       }
     },
     filters: {
-      translateMonth: function(val) {
+      translateMonth(val) {
         let date = new Date(val);
         let month = date.getMonth();
         let monthChar = ['一', '二', '三', '四', '五', '六', '七', '八', '九', '十', '十一', '十二'];
         return monthChar[month];
       },
-      translateDate: function(val) {
+      translateDate(val) {
         let date = new Date(val);
         let d = date.getDate();
         return d;
       },
-      translateWeek: function(val) {
+      translateWeek(val) {
         let date = new Date(val);
         let week = date.getDay();
         let weekChar = ['日', '一', '二', '三', '四', '五', '六'];
         return weekChar[week];
       },
-      translateTime: function(val) {
+      translateTime(val) {
         return formateDate(val, 'hh:mm');
       }
     }

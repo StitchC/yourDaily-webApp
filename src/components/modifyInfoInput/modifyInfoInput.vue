@@ -16,7 +16,9 @@
 </template>
 
 <script type="text/ecmascript-6">
-  import alertDialog from 'components/alertDialog/alertdialog.vue';
+  import alertDialog from 'base/alertDialog/alertdialog.vue';
+  import {SUCCESS_CODE, ERROR_CODE} from 'api/statusCode.js';
+  import {mapActions} from 'vuex';
 
   /**
    *  修改个人信息组件
@@ -29,12 +31,10 @@
    * */
 
 
-  const SUCCESS_CODE = 200;
-  const ERR_CODE = 400;
   const MODIFY_USERNAME_CODE = 0;
   const MODIFY_MOTTO_CODE = 1;
   export default {
-    data: function() {
+    data() {
       return {
         show: this.inputShow,
         modifyContent: this.initData.content,
@@ -56,10 +56,13 @@
       'alert-dialog': alertDialog
     },
     methods: {
-      close: function() {
+      ...mapActions([
+        'reloadData'
+      ]),
+      close() {
         this.$emit('input-close');
       },
-      saveClick: function() {
+      saveClick() {
         if(this.btnTxt === '保存') {
           if(this.initData.modifyType === MODIFY_USERNAME_CODE) {
             this.$http.post('/yourdaily/php/user/modifyUserName.php', {
@@ -70,11 +73,11 @@
               if(data.status === SUCCESS_CODE) {
                 this.btnTxt = '已保存';
                 // 修改成功后 发送ajax 请求 更新vuex 数据
-                this.$store.dispatch('requestNewData', {
+                this.reloadData({
                   id: this.initData.userId,
                   connectId: this.initData.connect
                 });
-              }else if(data.status === ERR_CODE) {
+              }else if(data.status === ERROR_CODE) {
                 this.alertDialogShow = true;
                 this.dialogTxt = '抱歉，你的网络出了点小问题哦，请稍候重试';
               }
@@ -88,11 +91,11 @@
               if(data.status === SUCCESS_CODE) {
                 this.btnTxt = '已保存';
                 // 修改成功后 发送ajax 请求 更新vuex 数据
-                this.$store.dispatch('requestNewData', {
+                this.reloadData({
                   id: this.initData.userId,
                   connectId: this.initData.connect
                 });
-              }else if(data.status === ERR_CODE) {
+              }else if(data.status === ERROR_CODE) {
                 this.alertDialogShow = true;
                 this.dialogTxt = '抱歉，你的网络出了点小问题哦，请稍候重试';
               }
@@ -100,27 +103,27 @@
           }
         }
       },
-      alertDialogShowChange: function() {
+      alertDialogShowChange() {
         this.alertDialogShow = false;
       }
     },
     watch: {
-      inputShow: function(val) {
+      inputShow(val) {
         this.show = val;
       },
-      initData: function(val) {
+      initData(val) {
         this.limit = val.limit;
         this.modifyContent = val.content;
         this.btnTxt = '保存';
       },
-      modifyContent: function(val) {
+      modifyContent(val) {
         if(val.length >= this.limit) {
           this.modifyContent = val.slice(0, this.limit);
         }
       }
     },
     computed: {
-      resetLimit: function() {
+      resetLimit() {
         return this.limit - parseInt(this.modifyContent.length);
       }
     }

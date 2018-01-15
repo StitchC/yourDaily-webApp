@@ -1,7 +1,7 @@
 <template>
   <transition name="setting-wrapper-slide">
     <div class="setting-wrapper" v-show="show">
-      <div class="setting-header" :class="{'male-theme': userData.info.sex === '1', 'female-theme': userData.info.sex === '0'}">
+      <div class="setting-header" :class="{'male-theme': userInfo.sex === '1', 'female-theme': userInfo.sex === '0'}">
         <span class="close-btn icon-close" @click="hide"></span>
         <h3 class="setting-title">设置</h3>
       </div>
@@ -18,9 +18,10 @@
 </template>
 
 <script type="text/ecmascript-6">
-  import toggleBtn from 'components/toggleBtn/toggleBtn.vue';
+  import toggleBtn from 'base/toggleBtn/toggleBtn.vue';
   import dailyLock from 'components/dailyLock/dailyLock.vue';
   import {setUserDailyLock, getUserDailyLock} from 'common/js/localStorage.js';
+  import {mapGetters} from 'vuex';
   /**
    *  用户设置组件
    *
@@ -29,7 +30,7 @@
    *  @event hidden-setting - 触发父组件事件隐藏自身
    * */
   export default {
-    data: function() {
+    data() {
       return {
         dailyLockShow: false,
         toggleBtnChecked: false
@@ -40,8 +41,8 @@
         type: Boolean
       }
     },
-    created: function() {
-      let dailyLock = getUserDailyLock(this.userData.info.id);
+    created() {
+      let dailyLock = getUserDailyLock(this.userInfo.id);
       this.toggleBtnChecked = dailyLock.lockStatus;
     },
     methods: {
@@ -72,6 +73,9 @@
       'daily-lock': dailyLock
     },
     computed: {
+      ...mapGetters({
+        userInfo: 'getInfo'
+      }),
       userData: function() {
         return this.$store.state.userData;
       }

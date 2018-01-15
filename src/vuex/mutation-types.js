@@ -1,0 +1,5 @@
+export const TOGGLE_SELECT_SEX = 'TOGGLE_SELECT_SEX';
+
+export const UPDATE_DAILY = 'UPDATE_DAILY';
+
+export const UPDATE_USER_INFO = 'UPDATE_USER_INFO';

@@ -10,13 +10,16 @@
         <div class="enter" v-show="curSex !== 2" @click="enterDaily">进入你的日记</div>
       </div>
       <alert-dialog :dialog-show="dialogShowStatus" :txt="dialogTxt" @dialog-show-change="listenDialogStatus"></alert-dialog>
+      <loading :show="loadingShow"></loading>
     </div>
   </transition>
 </template>
 
 <script type="text/ecmascript-6">
-  import alertdialog from 'components/alertDialog/alertdialog.vue';
-
+  import alertdialog from 'base/alertDialog/alertdialog.vue';
+  import loading from 'base/loading/loading.vue';
+  import {SUCCESS_CODE} from 'api/statusCode';
+  import {netWorkError} from 'common/js/dialog';
 
   /**
    * 选择性别组件
@@ -28,30 +31,39 @@
    *
    * */
 
-  const SUCCESS_CODE = 200;
   export default {
-    data: function() {
+    data() {
       return {
         curSex: 2,
         dialogShowStatus: false,
-        dialogTxt: ''
+        dialogTxt: '',
+        loadingShow: false
       };
     },
     methods: {
-      sexSelect: function(val) {
+      sexSelect(val) {
         this.curSex = val;
       },
-      enterDaily: function() {
+      _toggleLoading() {
+        this.loadingShow = !this.loadingShow;
+      },
+      enterDaily() {
         this.$http.post('/yourdaily/php/user/modifySex.php', {
           sex: this.curSex,
           id: this.userId
-        }, {emulateJSON: true}).then(res => {
+        }, {
+          emulateJSON: true,
+          before() {
+            this._toggleLoading();
+          }
+        }).then(res => {
           let data = res.body;
           if(data.status === SUCCESS_CODE) {
             this.$emit('select-complete');
+            this._toggleLoading();
           }else {
             this.dialogShowStatus = true;
-            this.dialogTxt = '抱歉，你的网络当前可能有问题请稍后重试哦';
+            this.dialogTxt = netWorkError;
           }
         });
       },
@@ -69,7 +81,8 @@
       }
     },
     components: {
-      'alert-dialog': alertdialog
+      'alert-dialog': alertdialog,
+      loading
     },
     computed: {
       show: function() {
