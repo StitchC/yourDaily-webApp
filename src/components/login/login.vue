@@ -27,6 +27,8 @@
   import {setLocalstorage, baseDataKey} from 'common/js/localStorage.js';
   import {SUCCESS_CODE, ERROR_CODE} from 'api/statusCode.js';
   import {netWorkError} from 'common/js/dialog.js';
+  import {login, getAllData} from 'api/allApi.js';
+  import {mapMutations} from 'vuex';
 
 
   export default {
@@ -40,13 +42,23 @@
       };
     },
     methods: {
+      ...mapMutations({
+        saveDaily: 'UPDATE_DAILY',
+        saveInfo: 'UPDATE_USER_INFO'
+      }),
       toRegister() {
         this.$router.push('/register');
+      },
+      _toUser() {
+        this.$router.push('/user');
       },
       _setDialog(options) {
         // 设置提示框的显示和内容
         this.dialogTxt = options.dialogTxt;
         this.dialogShowStatus = options.showStatus;
+      },
+      _toggleLoadingShow() {
+        this.loadingShow = !this.loadingShow;
       },
       login() {
         if(this.accountVal === '' || this.pwdVal === '') {
@@ -55,30 +67,37 @@
             dialogTxt: '账号或密码不能为空哦'
           });
         }else {
-          this.$http.get('/yourdaily/php/login/check.php', {
-            params: {
-              account: this.accountVal,
-              pwd: this.pwdVal
-            },
-            before: function() {
-              this.loadingShow = true;
-            }
-          }).then(res => {
-            let data = res.body;
-            if(data.status === ERROR_CODE) {
-              this.loadingShow = false;
+          this._toggleLoadingShow();
+          login('/yourdaily/php/login/check.php', {
+            account: this.accountVal,
+            pwd: this.pwdVal
+          }).then((res) => {
+            if(res.data.status === SUCCESS_CODE) {
+              // 登录成功
+              // 在localstorage 中保存用户的数据
+              setLocalstorage(baseDataKey, res.data.info);
+
+              // 发送请求获取用户数据
+              getAllData('/yourdaily/php/user/getUserData.php', {
+                id: res.data.info.id,
+                connectId: res.data.info.connect
+              }).then((res) => {
+                this.saveDaily(res.data.daily);
+                this.saveInfo(res.data.info);
+                this._toggleLoadingShow();
+                this._toUser();
+              });
+            }else if(res.data.status === ERROR_CODE) {
+              // 登录错误
+              this._toggleLoadingShow();
               this._setDialog({
                 showStatus: true,
                 dialogTxt: '你的账号或密码有错误哦'
               });
-            }else if(data.status === SUCCESS_CODE) {
-              this.loadingShow = false;
-              // 在localstorage 中保存用户的数据
-              setLocalstorage(baseDataKey, res.body.info);
-              this.$router.push('/user');
             }
           }).catch(() => {
-            this.loadingShow = false;
+            // 网络错误
+            this._toggleLoadingShow();
             this._setDialog({
               showStatus: true,
               dialogTxt: netWorkError

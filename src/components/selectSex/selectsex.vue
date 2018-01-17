@@ -28,7 +28,7 @@
    *
    *
    * @event select-complete - 数据提交后台完成后触发此事件通知父组件
-   *
+   * @event before-select - 发送更改性别请求之前触发父组件事件
    * */
 
   export default {
@@ -54,13 +54,13 @@
         }, {
           emulateJSON: true,
           before() {
-            this._toggleLoading();
+           this.$emit('before-select');
           }
         }).then(res => {
           let data = res.body;
           if(data.status === SUCCESS_CODE) {
-            this.$emit('select-complete');
-            this._toggleLoading();
+            this.$emit('select-complete', this.curSex);
+            this.curSex = 2;
           }else {
             this.dialogShowStatus = true;
             this.dialogTxt = netWorkError;
@@ -102,18 +102,18 @@
     width: 100%
     height: 100%
     background-color: #888988
-    transition: all .3s linear
+    transition: all .4s linear
     z-index: 60
     &.selectSex-fade-enter
       opacity: 0
     &.selectSex-fade-enter-active
-      transition: all .5s linear
+      transition: all .4s linear
     &.selectSex-fade-enter-to
       opacity: 1
     &.selectSex-fade-leave
       opacity: 0
     &.selectSex-fade-leave-active
-      transition: all .5s linear
+      transition: all .3s linear
     .title
       margin-top: 10%
       color: #fff

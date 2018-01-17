@@ -37,29 +37,13 @@
       <alert-dialog :dialog-show="dialogShowStatus" :txt="dialogTxt" @dialog-show-change="listenDialogShow"></alert-dialog>
       <select-dialog :txt="selectDialogTxt" :show="selectDialogShowStatus" @confirm="confrimClose" @cancel="cancelClose"></select-dialog>
       <daily-photo-view :show="photoViewShow" :photo-url="curPhotoUrl" :photo-index="curPhotoIndex" @close="photoViewClose" @delete-photo="dropPhoto"></daily-photo-view>
+      <hint-dialog :show="hintDialogShow" :hint-txt="hintTxt" :delay="hintDialogDelay" @will-hide="hintDialogWillHide"></hint-dialog>
       <loading :show="loadingShow"></loading>
     </div>
   </transition>
 </template>
 
 <script type="text/ecmascript-6">
-  import dailyExtraSelector from 'components/selectMoodandWeather/selectMoodAndWeather.vue';
-  import alertDialog from 'base/alertDialog/alertdialog.vue';
-  import selectDialog from 'base/selectDialog/selectdialog.vue';
-  import dailyPhotoView from 'components/dailyPhotoView/dailyPhotoView.vue';
-  import loading from 'base/loading/loading.vue';
-  import {formateDate} from 'common/js/formateDate.js';
-  import {SUCCESS_CODE, ERROR_CODE} from 'api/statusCode.js';
-
-
-  const DAILY_HAS_SAVE = 1;  // 日记已保存的状态码
-  const DAILY_NOT_SAVE = 0;  // 日记未保存的状态码
-  const WEATHER_CLASS_LIST = ['icon-weather-sunny', 'icon-weather-cloudy', 'icon-weather-rainny', 'icon-weather-snowly'];
-  const MOOD_CLASS_LIST = ['icon-mood-happy', 'icon-mood-normal', 'icon-mood-sadness'];
-  const MOOD_SELECT_TYPE = 0;    // 选择心情时的状态码
-  const WEATHER_SELECT_TYPE = 1; // 选择天气时的状态码
-  const PHOTO_LIMIT = 3;         // 日记图片的限制数
-
   /**
    *  日记输入组件
    *
@@ -90,6 +74,26 @@
    *  这也确保了下一次数据的一致性
    */
 
+
+  import dailyExtraSelector from 'components/selectMoodandWeather/selectMoodAndWeather.vue';
+  import alertDialog from 'base/alertDialog/alertdialog.vue';
+  import selectDialog from 'base/selectDialog/selectdialog.vue';
+  import dailyPhotoView from 'components/dailyPhotoView/dailyPhotoView.vue';
+  import loading from 'base/loading/loading.vue';
+  import hintDialog from 'base/hintDialog/hintDialog.vue';
+  import {formateDate} from 'common/js/formateDate.js';
+  import {SUCCESS_CODE, ERROR_CODE} from 'api/statusCode.js';
+  import {mapGetters, mapActions} from 'vuex';
+
+
+  const DAILY_HAS_SAVE = 1;  // 日记已保存的状态码
+  const DAILY_NOT_SAVE = 0;  // 日记未保存的状态码
+  const WEATHER_CLASS_LIST = ['icon-weather-sunny', 'icon-weather-cloudy', 'icon-weather-rainny', 'icon-weather-snowly'];
+  const MOOD_CLASS_LIST = ['icon-mood-happy', 'icon-mood-normal', 'icon-mood-sadness'];
+  const MOOD_SELECT_TYPE = 0;    // 选择心情时的状态码
+  const WEATHER_SELECT_TYPE = 1; // 选择天气时的状态码
+  const PHOTO_LIMIT = 3;         // 日记图片的限制数
+
   export default {
     data() {
       return {
@@ -113,7 +117,10 @@
         curPhotoIndex: -1,                        // 当前预览图的数组下标 用作删除时的联系
         curPhotoName: [],                         // 保存以选择的图片名
         photoViewShow: false,                     // 大图预览组件的显示 / 隐藏
-        loadingShow: false
+        loadingShow: false,
+        hintDialogShow: false,
+        hintTxt: '',
+        hintDialogDelay: 800
       };
     },
     props: {
@@ -129,9 +136,20 @@
       'alert-dialog': alertDialog,
       'select-dialog': selectDialog,
       'daily-photo-view': dailyPhotoView,
+      'hint-dialog': hintDialog,
       'loading': loading
     },
     methods: {
+      ...mapActions([
+        'reloadData'
+      ]),
+      _toggleLoadingShow() {
+        this.loadingShow = !this.loadingShow;
+      },
+      _toggleHintDialogShow(txt = '') {
+        this.hintDialogShow = !this.hintDialogShow;
+        this.hintTxt = txt;
+      },
       initNotepad() {
         this.curSelectType = -1;
         this.curMoodType = -1;
@@ -163,46 +181,72 @@
       cancelClose() {
         this.selectDialogShowStatus = false;
       },
+      _doUploadDaily(url, args) {
+        return this.$http.post(url, args, {
+          before() {
+            this._toggleLoadingShow();
+          }
+        });
+      },
+      _formatForm() {
+        let formdata = new FormData();
+        // 遍历所有文件保存到 formdata
+        if(this.fileContenList.length > 0) {
+          for(let i = 0; i < this.fileContenList.length; i++) {
+            formdata.append('file[]', this.fileContenList[i].content);
+          };
+        }
+        // 保存所有除图片外的日记信息
+        let baseData = {
+          id: this.userInfo.id,
+          title: this.titleVal,
+          content: this.contentVal,
+          mood: this.curMoodType,
+          weather: this.curWeatherType
+        };
+        // 遍历日记信息 保存到 formdata
+        for(let key in baseData) {
+          formdata.append(key, baseData[key]);
+        };
+
+        return formdata;
+      },
       uploadDaily() {
         if(this.saveBtnStatus !== DAILY_HAS_SAVE) {
           if(this.contentVal === '') {
             this.dialogShowStatus = true;
             this.dialogTxt = '你还没有输入日记内容哦';
           }else {
-            let formdata = new FormData();
-            // 遍历所有文件保存到 formdata
-            if(this.fileContenList.length > 0) {
-              for(let i = 0; i < this.fileContenList.length; i++) {
-                formdata.append('file[]', this.fileContenList[i].content);
-              };
-            }
-            // 保存所有除图片外的日记信息
-            let baseData = {
-              id: this.userData.info.id,
-              title: this.titleVal,
-              content: this.contentVal,
-              mood: this.curMoodType,
-              weather: this.curWeatherType
-            };
-            // 遍历日记信息 保存到 formdata
-            for(let key in baseData) {
-              formdata.append(key, baseData[key]);
-            };
-            this.$http.post('/yourdaily/php/user/uploadDaily.php', formdata).then(res => {
+            let formdata = this._formatForm();
+
+            this._doUploadDaily('/yourdaily/php/user/uploadDaily.php', formdata).then(res => {
               if(res.body.status === SUCCESS_CODE) {
                 this.saveBtnStatus = DAILY_HAS_SAVE;
                 // 发布成功后 发送ajax 请求 更新vuex 数据
-                this.$store.dispatch('requestNewData', {
-                  id: this.userData.info.id,
-                  connectId: this.userData.info.connect
+                this.reloadData({
+                  id: this.userInfo.id,
+                  connectId: this.userInfo.connect
+                }).then(() => {
+                  // 隐藏加载提示框
+                  this._toggleLoadingShow();
+                  // 显示提醒框
+                  this._toggleHintDialogShow('保存成功');
                 });
               }else if(res.body.status === ERROR_CODE) {
+                // 隐藏加载提示框
+                this._toggleLoadingShow();
                 this.dialogShowStatus = true;
                 this.dialogTxt = '很抱歉，日记未能保存请检查你的网络';
               }
             });
           }
         }
+      },
+      hintDialogWillHide(promise) {
+        promise.then(() => {
+          // 隐藏提示对话框
+          this._toggleHintDialogShow();
+        });
       },
       selectMood() {
         this.curSelectType = MOOD_SELECT_TYPE;
@@ -280,9 +324,9 @@
       }
     },
     computed: {
-      userData() {
-        return this.$store.state.userData;
-      }
+      ...mapGetters({
+        userInfo: 'getInfo'
+      })
     },
     filters: {
       formateTime(val) {

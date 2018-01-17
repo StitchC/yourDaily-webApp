@@ -17,20 +17,17 @@
       <div class="user-main">
         <router-view></router-view>
       </div>
-      <select-sex :select-show="selectSexShow" :user-id="userId" @select-complete="confirmSex"></select-sex>
+      <select-sex :select-show="selectSexShow" :user-id="userId" @before-select="beforeConfirmSex" @select-complete="confirmSex"></select-sex>
       <user-setting :show="settingShow" @hide-setting="settingHide"></user-setting>
       <daily-lock :show="dailyLockShow" :status="1" @daily-lock-success="dailyLockSuccess"></daily-lock>
+      <hint-dialog :show="hintDialogShow" :hint-txt="hintTxt" :delay="hintDialogDelay" @will-hide="hintDialogWillHide"></hint-dialog>
+      <loading :show="loadingShow"></loading>
+      <!--hintTxt-->
     </div>
   </transition>
 </template>
 
 <script type="text/ecmascript-6">
-  import selectsex from 'components/selectSex/selectsex.vue';
-  import userSetting from 'components/setting/setting.vue';
-  import dailyLock from 'components/dailyLock/dailyLock.vue';
-  import {getLocalstorage, baseDataKey, getUserDailyLock} from 'common/js/localStorage.js';
-  import {mapGetters, mapMutations, mapActions} from 'vuex';
-
   /**
    * user 组件
    * 登录跳转到这个组件的时候或通过 localStorage 获取用户的性别及id
@@ -52,6 +49,13 @@
    *    然后更新 vuex 里的共享数据
    *    最后跳转到 /user/daily 组件下
    */
+  import selectsex from 'components/selectSex/selectsex.vue';
+  import userSetting from 'components/setting/setting.vue';
+  import dailyLock from 'components/dailyLock/dailyLock.vue';
+  import {getLocalstorage, setLocalstorage, baseDataKey, getUserDailyLock} from 'common/js/localStorage.js';
+  import {mapGetters, mapMutations, mapActions} from 'vuex';
+  import loading from 'base/loading/loading.vue';
+  import hintDialog from 'base/hintDialog/hintDialog.vue';
   const SEX_NOTINIT = 2;
 
   export default {
@@ -62,7 +66,11 @@
         userAllData: null,
         headerTitleShow: true,
         settingShow: false,
-        dailyLockShow: false
+        dailyLockShow: false,
+        loadingShow: false,
+        hintDialogShow: false,
+        hintTxt: '',
+        hintDialogDelay: 400
       };
     },
     created: function() {
@@ -70,36 +78,33 @@
       this.userId = user.id;
       // 创建一个组件内部的变量
       this.userConnectId = user.connect;
-      let dailyLock = getUserDailyLock(user.id);
+      let dailyLock = getUserDailyLock(this.userId);
       // 如果用户有设置到日记锁并且日记锁为启用状态 显示解锁界面
       if(dailyLock && dailyLock.lockStatus === true) {
         this.dailyLockShow = true;
       }
-      // 如果用户是新注册用户
+      if(!this.getUserInfo.id) {
+        // 用户刷新页面的时候重新加载vuex 数据
+        this.reloadData({
+          id: this.userId,
+          connectId: this.userConnectId
+        });
+      }
       if(parseInt(user.sex) === SEX_NOTINIT) {
+        // 如果用户是新注册用户
         this.toggleSexSelect(true);
       }else {
-        // 否则发送请求 请求用户数据
-        // 组件加载时发送ajax 请求获取数据
-        this.$http.get('/yourdaily/php/user/getUserData.php', {
-          params: {
-            id: this.userId,
-            connectId: this.userConnectId
-          }
-        }).then(res => {
-          // 修改 vuex 的用户数据
-          this.updateDaily(res.body.daily);
-          this.updateUserInfo(res.body.info);
-          this.$nextTick(() => {
-            this.$router.push('/user/daily');
-          });
-        });
+        setTimeout(() => {
+          this._toDaily();
+        }, 50);
       }
     },
     components: {
       'select-sex': selectsex,
       'user-setting': userSetting,
-      'daily-lock': dailyLock
+      'daily-lock': dailyLock,
+      'hint-dialog': hintDialog,
+      loading
     },
     methods: {
       ...mapMutations({
@@ -110,17 +115,39 @@
       ...mapActions([
         'reloadData'
       ]),
+      _backToLogin() {
+        this.$router.replace('/login');
+      },
+      _toggleLoadingShow() {
+        this.loadingShow = !this.loadingShow;
+      },
+      _toggleHintDialogShow(txt = '') {
+        this.hintDialogShow = !this.hintDialogShow;
+        this.hintTxt = txt;
+      },
       _toDaily() {
         this.$router.push('/user/daily');
       },
-      confirmSex: function() {
+      beforeConfirmSex() {
+        // 选择性别前显示加载提示组件
+        this._toggleLoadingShow();
+      },
+      confirmSex: function(sex) {
         // 选择完性别之后发送ajax 更新 vuex 数据
         this.reloadData({
           id: this.userId,
           connectId: this.userConnectId
         }).then(() => {
+          // 确认选择性别后 隐藏性别选择组件
           this.toggleSexSelect(false);
-          this._toDaily();
+          // 隐藏加载组件
+          this._toggleLoadingShow();
+          // 显示提示组件
+          this._toggleHintDialogShow('修改成功');
+          // 设置localStorage 中的用户数据
+          let userData = getLocalstorage(baseDataKey);
+          userData.sex = sex;
+          setLocalstorage(baseDataKey, userData);
         });
       },
       settingHide: function() {
@@ -128,6 +155,17 @@
       },
       showSetting: function() {
         this.settingShow = true;
+      },
+      hintDialogWillHide(promise) {
+        // 当提示框达到指定时间隐藏的时候
+        promise.then(() => {
+          // 隐藏提示框
+          this._toggleHintDialogShow();
+          // 进入 /user/daily 组件
+          setTimeout(() => {
+            this._toDaily();
+          }, 100);
+        });
       },
       dailyLockSuccess: function() {
         this.dailyLockShow = false;
@@ -137,13 +175,7 @@
       ...mapGetters({
         getUserInfo: 'getInfo',
         selectSexShow: 'getSelectSexShowStatus'
-      }),
-      userData: function() {
-        return this.$store.state.userData;
-      },
-      selectSexShow: function() {
-        return this.$store.state.selectSexShow;
-      }
+      })
     }
   };
 </script>

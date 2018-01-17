@@ -11,15 +11,13 @@
         <span class="limit">{{resetLimit}}</span>
       </div>
       <alert-dialog :dialog-show="alertDialogShow" :txt="dialogTxt" @dialog-show-change="alertDialogShowChange"></alert-dialog>
+      <loading :show="loadingShow"></loading>
+      <hint-dialog :show="hintDialogShow" :hint-txt="hintTxt" :delay="hintDialogDelay" @will-hide="hintDialogWillHide"></hint-dialog>
     </div>
   </transition>
 </template>
 
 <script type="text/ecmascript-6">
-  import alertDialog from 'base/alertDialog/alertdialog.vue';
-  import {SUCCESS_CODE, ERROR_CODE} from 'api/statusCode.js';
-  import {mapActions} from 'vuex';
-
   /**
    *  修改个人信息组件
    *  @param {Object} initData - 初始化修改个人资料组件的数据
@@ -31,6 +29,13 @@
    * */
 
 
+  import alertDialog from 'base/alertDialog/alertdialog.vue';
+  import loading from 'base/loading/loading.vue';
+  import hintDialog from 'base/hintDialog/hintDialog.vue';
+  import {SUCCESS_CODE, ERROR_CODE} from 'api/statusCode.js';
+  import {mapActions} from 'vuex';
+
+
   const MODIFY_USERNAME_CODE = 0;
   const MODIFY_MOTTO_CODE = 1;
   export default {
@@ -38,10 +43,14 @@
       return {
         show: this.inputShow,
         modifyContent: this.initData.content,
-        btnTxt: '保存',
+        saveStatus: 0,
         limit: this.initData.limit,
         alertDialogShow: false,
-        dialogTxt: ''
+        dialogTxt: '',
+        loadingShow: false,
+        hintDialogShow: false,
+        hintTxt: '',
+        hintDialogDelay: 800
       };
     },
     props: {
@@ -53,52 +62,97 @@
       }
     },
     components: {
-      'alert-dialog': alertDialog
+      'alert-dialog': alertDialog,
+      loading,
+      'hint-dialog': hintDialog
     },
     methods: {
       ...mapActions([
-        'reloadData'
+        'reloadUserInfo'
       ]),
       close() {
         this.$emit('input-close');
       },
+      _toggleLoadingShow() {
+        this.loadingShow = !this.loadingShow;
+      },
+      _toggleHintDialogShow(txt = '') {
+        this.hintDialogShow = !this.hintDialogShow;
+        this.hintTxt = txt;
+      },
+      _modifyUserName(url, args) {
+        return this.$http.post(url, args, {
+          emulateJSON: true,
+          before() {
+            // 显示加载提示框
+            this._toggleLoadingShow();
+          }
+        });
+      },
+      _modifyMotto(url, args) {
+        return this.$http.post(url, args, {
+          emulateJSON: true,
+          before() {
+            // 显示加载提示框
+            this._toggleLoadingShow();
+          }
+        });
+      },
+      _modifySuccess() {
+        // 修改成功之后要做的事情
+        this.saveStatus = 1;
+        // 修改成功后 发送ajax 请求 更新vuex 数据
+        this.reloadUserInfo({
+          id: this.initData.userId,
+          connectId: this.initData.connect
+        }).then(() => {
+          // 隐藏加载框
+          this._toggleLoadingShow();
+          // 显示提示框
+          this._toggleHintDialogShow('修改成功');
+        });
+      },
+      _modifyFailed() {
+        // 隐藏加载组件
+        this._toggleLoadingShow();
+        this.alertDialogShow = true;
+        this.dialogTxt = '抱歉, 网络出了点小问题哦, 请稍候重试';
+      },
+      hintDialogWillHide(promise) {
+        promise.then(() => {
+          // 隐藏提示组件
+          this._toggleHintDialogShow();
+        });
+      },
       saveClick() {
-        if(this.btnTxt === '保存') {
+        if(this.saveStatus === 0) {
           if(this.initData.modifyType === MODIFY_USERNAME_CODE) {
-            this.$http.post('/yourdaily/php/user/modifyUserName.php', {
+            this._modifyUserName('/yourdaily/php/user/modifyUserName.php', {
               id: this.initData.userId,
               username: this.modifyContent
-            }, {emulateJSON: true}).then(res => {
+            }).then(res => {
               let data = res.body;
               if(data.status === SUCCESS_CODE) {
-                this.btnTxt = '已保存';
-                // 修改成功后 发送ajax 请求 更新vuex 数据
-                this.reloadData({
-                  id: this.initData.userId,
-                  connectId: this.initData.connect
-                });
+                this._modifySuccess();
               }else if(data.status === ERROR_CODE) {
-                this.alertDialogShow = true;
-                this.dialogTxt = '抱歉，你的网络出了点小问题哦，请稍候重试';
+                this._modifyFailed();
               }
+            }).catch(() => {
+              this._modifyFailed();
             });
           }else if(this.initData.modifyType === MODIFY_MOTTO_CODE) {
-            this.$http.post('/yourdaily/php/user/modifyMotto.php', {
+            this._modifyMotto('/yourdaily/php/user/modifyMotto.php', {
               id: this.initData.userId,
               motto: this.modifyContent
-            }, {emulateJSON: true}).then(res => {
+            }).then(res => {
               let data = res.body;
               if(data.status === SUCCESS_CODE) {
-                this.btnTxt = '已保存';
-                // 修改成功后 发送ajax 请求 更新vuex 数据
-                this.reloadData({
-                  id: this.initData.userId,
-                  connectId: this.initData.connect
-                });
+                this._modifySuccess();
               }else if(data.status === ERROR_CODE) {
-                this.alertDialogShow = true;
-                this.dialogTxt = '抱歉，你的网络出了点小问题哦，请稍候重试';
+                this._modifyFailed();
               }
+            }).catch(() => {
+              this._modifyFailed();
             });
           }
         }
@@ -114,7 +168,7 @@
       initData(val) {
         this.limit = val.limit;
         this.modifyContent = val.content;
-        this.btnTxt = '保存';
+        this.saveStatus = 0;
       },
       modifyContent(val) {
         if(val.length >= this.limit) {
@@ -123,8 +177,13 @@
       }
     },
     computed: {
+      btnTxt() {
+        return this.saveStatus === 0 ? '保存' : '已保存';
+      },
       resetLimit() {
-        return this.limit - parseInt(this.modifyContent.length);
+        if(this.modifyContent) {
+          return this.limit - parseInt(this.modifyContent.length);
+        }
       }
     }
   };

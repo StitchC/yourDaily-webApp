@@ -1,10 +1,10 @@
 <template>
   <div class="loading-wrap" v-show="show">
     <div class="loading-logo">
-      <span class="loading-txt">请稍候</span>
       <div class="loading-icon-wrap">
         <img src="./loading.gif">
       </div>
+      <span class="loading-txt">请稍候</span>
     </div>
   </div>
 </template>
@@ -42,10 +42,13 @@
       background-color: rgba(0,0,0,0.6)
       text-align: center
       color: #fff
+      .loading-icon-wrap
+        margin-top: 35px
       .loading-txt
         display: inline-block
-        margin-top: 48px
+        margin-top: 10px
         font-size: $font-size-middle
+        color: #fff;
       img
         width: 50px
 </style>

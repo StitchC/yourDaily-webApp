@@ -9,15 +9,19 @@
           <p class="week-time">星期{{detailData.time | translateWeek}} {{detailData.time | translateTime}}</p>
         </div>
         <div class="content-scroll" ref="contentScroll">
-          <div class="content">
-            <p class="title" v-show="detailData.title !== ''">{{detailData.title}}</p>
-            <p class="txt">{{detailData.content}}</p>
-            <ul class="daily-image-list">
-              <li v-for="(item, index) in detailData.images" class="image-item">
-                <img @click="viewPhoto($event, index)" v-lazy="item">
-              </li>
-            </ul>
-          </div>
+          <scroll-view :content="detailData" ref="scroll">
+            <div>
+              <div class="content">
+                <p class="title" v-show="detailData.title !== ''">{{detailData.title}}</p>
+                <p class="txt">{{detailData.content}}</p>
+                <ul class="daily-image-list">
+                  <li v-for="(item, index) in detailData.images" class="image-item">
+                    <img @click="viewPhoto($event, index)" @load="imgLoad" v-lazy="item">
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </scroll-view>
         </div>
         <div class="footer" :class="{'male-theme': detailData.sex === 1, 'female-theme': detailData.sex === 0}">
           <div class="delete-btn icon-delete" v-show="selfDaily()" @click="deleteDaily"></div>
@@ -56,8 +60,9 @@
   import {formateDate} from 'common/js/formateDate.js';
   import selectDialog from 'base/selectDialog/selectdialog.vue';
   import photoPreviewList from 'components/photoPreviewList/photoPreviewList.vue';
-  import BetScroll from 'better-scroll';
-  import {mapGetters} from 'vuex';
+  // import BetScroll from 'better-scroll';
+  import {mapGetters, mapActions} from 'vuex';
+  import scrollView from 'base/scrollView/scrollView.vue';
 
   const SUCCESS_CODE = 200;
   export default {
@@ -80,34 +85,19 @@
       }
     },
     mounted: function() {
-      setTimeout(() => {
-        if(!this.scroll) {
-          this.scroll = new BetScroll(this.$refs.contentScroll, {
-            click: true
-          });
-        }else {
-          this.scroll.refresh();
-        }
-      }, 300);
     },
     watch: {
       detailDialogShow: function(val) {
         this.show = val;
       },
       detailData: function(val) {
-        setTimeout(() => {
-          if(!this.scroll) {
-            console.log(this.$refs.contentScroll);
-            this.scroll = new BetScroll(this.$refs.contentScroll, {
-              click: true
-            });
-          }else {
-            this.scroll.refresh();
-          }
-        }, 300);
+
       }
     },
     methods: {
+      ...mapActions([
+        'reloadData'
+      ]),
       closeDialog: function() {
         this.$emit('detail-dialog-close');
       },
@@ -139,9 +129,9 @@
           let msg = res.body;
           if(msg.status === SUCCESS_CODE) {
             // 删除成功后发送ajax 请求更新 vuex 数据
-            this.$store.dispatch('requestNewData', {
-              id: this.userData.info.id,
-              connectId: this.userData.info.connect
+            this.reloadData({
+              id: this.userInfo.id,
+              connectId: this.userInfo.connect
             }).then(() => {
               this.selectDialogShow = false;
               this.$emit('detail-dialog-close');
@@ -155,11 +145,15 @@
       viewPhoto: function(evnet, index) {
         this.photoListShowIndex = index;
         this.photoListShow = true;
+      },
+      imgLoad() {
+        this.$refs.scroll.refresh();
       }
     },
     components: {
       'select-dialog': selectDialog,
-      'photo-preview-list': photoPreviewList
+      'photo-preview-list': photoPreviewList,
+      'scroll-view': scrollView
     },
     computed: {
       ...mapGetters({
@@ -267,6 +261,7 @@
           .txt
             line-height: 30px
             font-size: $font-size-middle
+            word-break: break-word
           .daily-image-list
             .image-item
               img

@@ -10,43 +10,32 @@
       <div class="next-btn icon-arrow-right" @click="nextDate"></div>
     </div>
     <div class="no-match-daily-hint" v-show="matchDailys.length === 0 && isToday">
-      <div class="hint-content" :class="{'male-theme': userInfo.sex === '1', 'female-theme': userInfo.sex === '0'}" @click="addDaily">
+      <div class="hint-content" :class="{'male-theme': userInfo.sex === '1', 'female-theme': userInfo.sex === '0'}"
+           @click="addDaily">
         <span class="icon icon-pen"></span>
         <span class="txt">添加日记</span>
       </div>
     </div>
-    <div class="match-daily-list-wrap" ref="matchDailyWrap">
-      <ul class="match-daily-list">
-        <li v-for="daily in matchDailys" class="match-daily-item" :class="{'male-theme': daily.sex === '1', 'female-theme': daily.sex === '0'}" @click="enterDailyDetail($event, daily.id)">
-          <div class="date-time">
-            <div class="date">{{daily.publicTime | translateDate}}</div>
-            <div class="day">星期{{daily.publicTime | translateWeek}}</div>
-          </div>
-          <div class="daily-main">
-            <div class="header">
-              <div class="time">{{daily.publicTime | translateTime}}</div>
-              <div class="mood-weather" v-show="daily.mood !== -1 && daily.weather !== -1">
-                <span class="mood" :class="outputMoodClass(daily.mood)"></span>
-                <span class="weather" :class="outputWeatherClass(daily.weather)"></span>
-              </div>
-            </div>
-            <div class="daily-title">{{daily.title}}</div>
-            <div class="daily-txt">{{daily.content}}</div>
-          </div>
-        </li>
-      </ul>
+    <div class="match-daily-list-wrap">
+      <scroll-view :content="matchDailys" ref="scroll">
+        <ul class="match-daily-list">
+          <daily-item v-for="daily in matchDailys" :daily="daily" :dailykey="daily.id" :key="daily.id" @enter-dailydetail="enterDailyDetail"></daily-item>
+        </ul>
+      </scroll-view>
     </div>
-    <daily-detail-dialog :detail-data="dailyDetail" :detail-dialog-show="detailDialogShow" @detail-dialog-close="detailDialogClose" @daily-modify="modifyDaily"></daily-detail-dialog>
+    <daily-detail-dialog :detail-data="dailyDetail" :detail-dialog-show="detailDialogShow"
+                         @detail-dialog-close="detailDialogClose" @daily-modify="modifyDaily"></daily-detail-dialog>
     <daily-notepad :all-data="notepadData" :notepad-show="notepadShow" @notepad-close="notepadClose"></daily-notepad>
   </div>
 </template>
 
 <script type="text/ecmascript-6">
   import {formateDate} from 'common/js/formateDate.js';
-  import BetScroll from 'better-scroll';
   import dailyDetailDialog from 'components/dailyDetailDialog/dailyDetailDialog.vue';
   import dailyNotepad from 'components/dailyNotePad/dailynotepad.vue';
+  import dailyItem from 'base/dailyItem/dailyItem.vue';
   import {mapGetters} from 'vuex';
+  import scrollView from 'base/scrollView/scrollView.vue';
 
   export default {
     data() {
@@ -60,62 +49,26 @@
         notepadShow: false
       };
     },
-    mounted() {
-      this.$nextTick(() => {
-        if(!this.scroll) {
-          this.scroll = new BetScroll(this.$refs.matchDailyWrap, {
-            click: true
-          });
-        }else {
-          this.scroll.refresh();
-        }
-      });
-    },
     components: {
       'daily-detail-dialog': dailyDetailDialog,
-      'daily-notepad': dailyNotepad
+      'daily-notepad': dailyNotepad,
+      'scroll-view': scrollView,
+      'daily-item': dailyItem
     },
     methods: {
       rewardDate() {
         let date = new Date(this.curDate);
         this.curDate = date.setDate(date.getDate() - 1);
-
         this.$nextTick(() => {
-          if(!this.scroll) {
-            this.scroll = new BetScroll(this.$refs.matchDailyWrap, {
-              click: true
-            });
-          }else {
-            this.scroll.refresh();
-          }
+          this.$refs.scroll.refresh();
         });
       },
       nextDate() {
         let date = new Date(this.curDate);
         this.curDate = date.setDate(date.getDate() + 1);
         this.$nextTick(() => {
-          if(!this.scroll) {
-            this.scroll = new BetScroll(this.$refs.matchDailyWrap, {
-              click: true
-            });
-          }else {
-            this.scroll.refresh();
-          }
+          this.$refs.scroll.refresh();
         });
-      },
-      outputMoodClass(moodType) {
-        let type = parseInt(moodType);
-        if(type !== -1) {
-          let moodClassList = ['icon-mood-happy', 'icon-mood-normal', 'icon-mood-sadness'];
-          return moodClassList[type];
-        }
-      },
-      outputWeatherClass(weatherType) {
-        let type = parseInt(weatherType);
-        if(type !== -1) {
-          let weatherClassList = ['icon-weather-sunny', 'icon-weather-cloudy', 'icon-weather-rainny', 'icon-weather-snowly'];
-          return weatherClassList[type];
-        }
       },
       addDaily() {
         this.notepadData = {
@@ -129,8 +82,9 @@
         };
         this.notepadShow = true;
       },
-      enterDailyDetail(event, key) {
-        if(event._constructed) {
+      enterDailyDetail(key) {
+        if (event._constructed) {
+          console.log(key);
           let data = this.userDaily[key];
           this.dailyDetail = {
             dailyId: data.id,
@@ -142,7 +96,8 @@
             images: data.image.split(',')
           };
           this.detailDialogShow = true;
-        };
+        }
+        ;
       },
       detailDialogClose() {
         this.detailDialogShow = false;
@@ -178,13 +133,14 @@
         let curDateStr = formateDate(this.curDate, 'yyyy-MM-dd');
         let resultList = [];
 
-        for(let key in this.userDaily) {
+        for (let key in this.userDaily) {
           let tempArr = this.userDaily[key].publicTime.split(' ');
           let tempItem = tempArr[0];
-          if(tempItem === curDateStr) {
+          if (tempItem === curDateStr) {
             resultList.push(this.userDaily[key]);
           }
         }
+        console.log(resultList);
         return resultList;
       },
       isToday() {
@@ -310,51 +266,4 @@
       overflow: hidden
       .match-daily-list
         padding-bottom: 20px
-        .match-daily-item
-          display: flex
-          width: 90%
-          height: 70px
-          margin: 10px auto 0 auto
-          padding: 10px
-          border-radius: 5px
-          background-color: #fff
-          &.male-theme
-            color: $male-color
-          &.female-theme
-            color: $female-color
-          .date-time
-            flex: 50px 0 0
-            margin-right: 12px
-            .date
-              line-height: 40px
-              font-size: $font-size-large-X
-              text-align: center
-            .day
-              font-size: $font-size-middle
-              text-align: center
-          .daily-main
-            flex: 1
-            width: 80%
-            .header
-              width: 100%
-              display: flex
-              .time
-                flex: 1
-                font-size: $font-size-middle
-              .mood-weather
-                flex: 1
-                text-align: right
-                font-size: $font-size-middle
-            .daily-title
-              width: 100%
-              font-size: $font-size-large
-              white-space: nowrap
-              overflow: hidden
-              text-overflow: ellipsis
-            .daily-txt
-              width: 100%
-              font-size: $font-size-middle
-              white-space: nowrap
-              overflow: hidden
-              text-overflow: ellipsis
 </style>

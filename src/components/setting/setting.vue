@@ -21,7 +21,7 @@
   import toggleBtn from 'base/toggleBtn/toggleBtn.vue';
   import dailyLock from 'components/dailyLock/dailyLock.vue';
   import {setUserDailyLock, getUserDailyLock} from 'common/js/localStorage.js';
-  import {mapGetters} from 'vuex';
+  import {mapGetters, mapMutations} from 'vuex';
   /**
    *  用户设置组件
    *
@@ -41,11 +41,11 @@
         type: Boolean
       }
     },
-    created() {
-      let dailyLock = getUserDailyLock(this.userInfo.id);
-      this.toggleBtnChecked = dailyLock.lockStatus;
-    },
     methods: {
+      ...mapMutations({
+        clearDaily: 'UPDATE_DAILY',
+        clearInfo: 'UPDATE_USER_INFO'
+      }),
       hide: function() {
         this.$emit('hide-setting');
       },
@@ -59,12 +59,14 @@
       btnOnchange: function() {
         this.toggleBtnChecked = !this.toggleBtnChecked;
         if(this.toggleBtnChecked === false) {
-           let dailLock = getUserDailyLock(this.userData.info.id);
+           let dailLock = getUserDailyLock(this.userInfo.id);
            dailLock.lockStatus = false;
-           setUserDailyLock(this.userData.info.id, dailLock);
+           setUserDailyLock(this.userInfo.id, dailLock);
         }
       },
       logout: function() {
+        this.clearDaily({});
+        this.clearInfo({});
         this.$router.push('/login');
       }
     },
@@ -82,7 +84,7 @@
     },
     watch: {
       toggleBtnChecked: function(val) {
-        let dailyLock = getUserDailyLock(this.userData.info.id);
+        let dailyLock = getUserDailyLock(this.userInfo.id);
         if((!dailyLock || dailyLock.lockStatus === false) && val === true) {
           // 如果当前日记密码为关闭或用户未设置日记锁
           // 而且当时开关按钮是打开状态
@@ -93,7 +95,7 @@
       show: function() {
         // 因为在退出账号后再登录setting 组件会出现加载id 出错问题导致日记密码开关按钮显示与实际不符
         // 所以在 setting 的show 属性加一个变化监听 这样能获取正确的值 更改按钮状态
-        let dailyLock = getUserDailyLock(this.userData.info.id);
+        let dailyLock = getUserDailyLock(this.userInfo.id);
         if(!dailyLock || dailyLock.lockStatus === false) {
           this.toggleBtnChecked = false;
         }else {

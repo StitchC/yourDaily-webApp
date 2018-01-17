@@ -20,6 +20,7 @@
 
 <script type="text/ecmascript-6">
    import {setUserDailyLock, getUserDailyLock} from 'common/js/localStorage.js';
+   import {mapGetters} from 'vuex';
   /**
    *  日记锁组件
    *  @param {Boolean} show - 控制日记锁的显示或隐藏
@@ -65,7 +66,7 @@
         let data = {};
         data.lockStatus = true;
         data.lockNum = this.curInputNums.join('');
-        setUserDailyLock(this.userData.info.id, data);
+        setUserDailyLock(this.userInfo.id, data);
         this.curInputNums = [];
         this.$emit('daily-lock-setting-complete');
       }
@@ -75,7 +76,7 @@
         if(val.length === 4 && this.status === 1) {
           // 如果当前是密码验证状态并且输入密码完毕
           // 检测localStorage 里保存的密码是否一样
-          let dailyLock = getUserDailyLock(this.userData.info.id);
+          let dailyLock = getUserDailyLock(this.userInfo.id);
           let pwdStr = this.curInputNums.join('');
           let userPwd = dailyLock.lockNum;
           if(pwdStr === userPwd) {
@@ -93,9 +94,9 @@
       }
     },
     computed: {
-      userData: function() {
-        return this.$store.state.userData;
-      }
+      ...mapGetters({
+        userInfo: 'getInfo'
+      })
     }
   };
 </script>

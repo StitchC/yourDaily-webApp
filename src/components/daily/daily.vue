@@ -8,111 +8,63 @@
     <div class="no-daily-hint" v-show="userDaily.length === 0">
       <h3 class="hint-title">NO Enteries</h3>
       <p class="hint-txt">你还没有写过日记</p>
-      <p class="begin-write-daily" :class="{'male-theme': userInfo.sex === '1', 'female-theme': userInfo.sex === '0'}" @click="toggleNotepadShow">开始写日记</p>
+      <p class="begin-write-daily" :class="{'male-theme': userInfo.sex === '1', 'female-theme': userInfo.sex === '0'}"
+         @click="showNotepad">开始写日记</p>
     </div>
-    <div class="daily-list-wrap" ref="dailylist">
-      <ul class="daily-list">
-        <li v-for="(daily, key) in userDaily" class="daily-item" :class="{'male-theme': daily.sex === '1', 'female-theme': daily.sex === '0'}" @click="enterDailyDetail($event, key)">
-          <div class="date-time">
-            <div class="date">{{daily.publicTime | translateDate}}</div>
-            <div class="day">{{daily.publicTime | translateDay}}</div>
-          </div>
-          <div class="daily-main">
-            <div class="header">
-              <div class="time">{{daily.publicTime | translateTime}}</div>
-              <div class="mood-weather" v-show="daily.mood !== -1 && daily.weather !== -1">
-                <span class="mood" :class="outputMoodClass(daily.mood)"></span>
-                <span class="weather" :class="outputWeatherClass(daily.weather)"></span>
-              </div>
-            </div>
-            <div class="daily-title">{{daily.title}}</div>
-            <div class="daily-txt">{{daily.content}}</div>
-          </div>
-        </li>
-      </ul>
+    <div class="daily-list-wrap">
+      <scroll-view :content="userDaily" ref="scroll" @ontouchend="refreshDaily">
+        <ul class="daily-list">
+          <daily-item v-for="(daily, key) in userDaily" :daily="daily" :dailykey="key" :key="key" @enter-dailydetail="enterDailyDetail"></daily-item>
+        </ul>
+      </scroll-view>
     </div>
-    <div class="daily-bottom-bar" :class="{'male-theme': userInfo.sex === '1', 'female-theme': userInfo.sex === '0'}" v-show="userDaily.length !== 0">
-      <span class="write-daily-btn icon-pen" @click="toggleNotepadShow"></span>
+    <div class="daily-bottom-bar" :class="{'male-theme': userInfo.sex === '1', 'female-theme': userInfo.sex === '0'}"
+         v-show="userDaily.length !== 0">
+      <span class="write-daily-btn icon-pen" @click="showNotepad"></span>
       <span class="total-daily-num">{{userInfo.count}}篇日记</span>
     </div>
     <daily-notepad :all-data="notepadData" :notepad-show="notepadShow" @notepad-close="notepadClose"></daily-notepad>
-    <daily-detail-dialog :detail-data="dailyDetail" :detail-dialog-show="detailDialogShow" @detail-dialog-close="detailDialogClose"></daily-detail-dialog>
+    <daily-detail-dialog :detail-data="dailyDetail" :detail-dialog-show="detailDialogShow"
+                         @detail-dialog-close="detailDialogClose"></daily-detail-dialog>
   </div>
 </template>
 
 <script type="text/ecmascript-6">
-   import {formateDate} from 'common/js/formateDate.js';
-   import dailyNotePad from 'components/dailyNotePad/dailynotepad.vue';
-   import dailyDetailDialog from 'components/dailyDetailDialog/dailyDetailDialog.vue';
-   import BetScroll from 'better-scroll';
-   import {mapGetters, mapActions} from 'vuex';
-   /**
-    * 日记列表组件
-    *
-    * 当前面user 组件进行了一连串的对用户性别的判断到最后会采用的异步的过程跳转到这个daily 组件中
-    * 组件可能还没有获得数据 不过没关系 vue 的响应式数据会为这个组件异步填充数据
-    *
-    * 而这个组件会执行如下一系列的初始化动作：
-    *   1、 通过 vuex共享数据userData 获取用户的性别 初始化组件各部分的样式 实现不同性别用户不同风格
-    *
-    *   2、判断用户数据中的日记内容是否为空 为空会显示class 为 no-daily-hint 这个元素 否则隐藏
-    *
-    * 写日记的功能：
-    *   写日记功能基本在dailynotepad 组件中实现 请看dailynotepad 组件的注释
-    */
+  import dailyNotePad from 'components/dailyNotePad/dailynotepad.vue';
+  import dailyDetailDialog from 'components/dailyDetailDialog/dailyDetailDialog.vue';
+  import dailyItem from 'base/dailyItem/dailyItem.vue';
+  import scrollView from 'base/scrollView/scrollView.vue';
+  import {mapGetters, mapActions} from 'vuex';
+
+  /**
+   * 日记列表组件
+   *
+   * 当前面user 组件进行了一连串的对用户性别的判断到最后会采用的异步的过程跳转到这个daily 组件中
+   * 组件可能还没有获得数据 不过没关系 vue 的响应式数据会为这个组件异步填充数据
+   *
+   * 而这个组件会执行如下一系列的初始化动作：
+   *   1、 通过 vuex共享数据userData 获取用户的性别 初始化组件各部分的样式 实现不同性别用户不同风格
+   *
+   *   2、判断用户数据中的日记内容是否为空 为空会显示class 为 no-daily-hint 这个元素 否则隐藏
+   *
+   * 写日记的功能：
+   *   写日记功能基本在dailynotepad 组件中实现 请看dailynotepad 组件的注释
+   */
   export default {
-    data: function() {
+    data: function () {
       return {
         loadingIconShow: false,
         notepadData: {},
         notepadShow: false,
-        weatherClassList: ['icon-weather-sunny', 'icon-weather-cloudy', 'icon-weather-rainny', 'icon-weather-snowly'],
-        moodClassList: ['icon-mood-happy', 'icon-mood-normal', 'icon-mood-sadness'],
         dailyDetail: {},
         detailDialogShow: false
       };
     },
-    mounted: function() {
-      setTimeout(() => {
-        if(!this.scroll) {
-          this.scroll = new BetScroll(this.$refs.dailylist, {
-            click: true,
-            probeType: 3
-          });
-          this.scroll.on('touchend', (pos) => {
-            if(pos.y > 100) {
-              this.loadingIconShow = true;
-              this.reloadData({
-                id: this.userInfo.id,
-                connectId: this.userInfo.connect
-              }).then(() => {
-                setTimeout(() => {
-                  this.loadingIconShow = false;
-                }, 800);
-              });
-            }
-          });
-        }else {
-          this.scroll.refresh();
-          this.scroll.on('touchend', (pos) => {
-            if(pos.y > 50) {
-              this.loadingIconShow = true;
-              this.reloadData({
-                id: this.userInfo.id,
-                connectId: this.userInfo.connect
-              }).then(() => {
-                setTimeout(() => {
-                  this.loadingIconShow = false;
-                }, 800);
-              });
-            }
-          });
-        }
-      }, 50);
-    },
     components: {
       'daily-notepad': dailyNotePad,
-      'daily-detail-dialog': dailyDetailDialog
+      'daily-detail-dialog': dailyDetailDialog,
+      'scroll-view': scrollView,
+      'daily-item': dailyItem
     },
     methods: {
       ...mapActions([
@@ -122,7 +74,7 @@
         this.notepadShow = false;
         this.detailDialogShow = false;
       },
-      toggleNotepadShow() {
+      showNotepad() {
         // 当在日记组件中点击添加日记按钮的时候对日记编辑组件进行数据的初始化
         this.notepadData = {
           curTime: new Date(),
@@ -138,17 +90,17 @@
         this.detailDialogShow = false;
       },
       outputMoodClass(val) {
-        if(val !== -1) {
+        if (val !== -1) {
           return this.moodClassList[val];
         }
       },
       outputWeatherClass(val) {
-        if(val !== -1) {
+        if (val !== -1) {
           return this.weatherClassList[val];
         }
       },
-      enterDailyDetail(event, key) {
-        if(event._constructed) {
+      enterDailyDetail(key) {
+        if (event._constructed) {
           let detail = this.userDaily[key];
 
           this.dailyDetail = {
@@ -161,8 +113,30 @@
             images: detail.image === '' ? [] : detail.image.split(',')
           };
 
-         this.detailDialogShow = true;
-        };
+          this.detailDialogShow = true;
+        }
+        ;
+      },
+      _toggleLoadingIconShow() {
+        this.loadingIconShow = !this.loadingIconShow;
+      },
+      refreshDaily(pos) {
+        if (pos.y > 50) {
+          this._toggleLoadingIconShow();
+          this.reloadData({
+            id: this.userInfo.id,
+            connectId: this.userInfo.connect
+          }).then(() => {
+            setTimeout(() => {
+              this._toggleLoadingIconShow();
+            }, 800);
+          });
+        }
+      }
+    },
+    watch: {
+      userDaily(val) {
+        this.$refs.scroll.refresh();
       }
     },
     computed: {
@@ -170,24 +144,7 @@
         userDaily: 'getDaily',
         userInfo: 'getInfo'
       })
-    },
-    filters: {
-     translateDate(val) {
-       let date = new Date(val);
-       return date.getDate();
-     },
-     translateDay(val) {
-       let date = new Date(val);
-       let chinese = ['日', '一', '二', '三', '四', '五', '六'];
-       let str = '星期' + chinese[date.getDay()];
-       return str;
-     },
-     translateTime(val) {
-       let date = new Date(val);
-       let str = formateDate(date, 'hh:mm');
-       return str;
-     }
-   }
+    }
   };
 </script>
 
@@ -208,7 +165,7 @@
       margin-left: -15px
       border-radius: 50%
       background-color: #fff
-      box-shadow: 0 0 8px rgba(0,0,0,0.8)
+      box-shadow: 0 0 8px rgba(0, 0, 0, 0.8)
       text-align: center
       font-size: 0
       z-index: 5
@@ -258,53 +215,7 @@
       width: 100%
       overflow: hidden
       .daily-list
-        .daily-item
-          display: flex
-          width: 90%
-          height: 70px
-          margin: 10px auto 0 auto
-          padding: 10px
-          border-radius: 5px
-          background-color: #fff
-          &.male-theme
-            color: $male-color
-          &.female-theme
-            color: $female-color
-          .date-time
-            flex: 50px 0 0
-            margin-right: 12px
-            .date
-              line-height: 40px
-              font-size: 25px
-              text-align: center
-            .day
-              font-size: 14px
-              text-align: center
-          .daily-main
-            flex: 1
-            width: 80%
-            .header
-              width: 100%
-              display: flex
-              .time
-                flex: 1
-                font-size: $font-size-middle
-              .mood-weather
-                flex: 1
-                text-align: right
-                font-size: 15px
-            .daily-title
-              width: 100%
-              font-size: $font-size-large
-              white-space: nowrap
-              overflow: hidden
-              text-overflow: ellipsis
-            .daily-txt
-              width: 100%
-              font-size: $font-size-middle
-              white-space: nowrap
-              overflow: hidden
-              text-overflow: ellipsis
+        padding-bottom: 20px
     .daily-bottom-bar
       position: fixed
       left: 0

@@ -29,14 +29,16 @@
         <p>图</p>
       </div>
     </div>
-    <div class="gallary-wrap" ref="gallaryWrap">
-      <div class="gallary">
-        <div class="image-item" v-for="(image, index) in userInfo.images">
-          <div class="inner-img-wrap">
-            <img :src="image" @click="photoPreviewShow($event, index)">
+    <div class="gallary-wrap">
+      <scroll-view :content="userInfo.images" ref="scroll">
+        <div class="gallary">
+          <div class="image-item" v-for="(image, index) in userInfo.images">
+            <div class="inner-img-wrap">
+              <img :src="image" @click="photoPreviewShow($event, index)">
+            </div>
           </div>
         </div>
-      </div>
+      </scroll-view>
     </div>
     <modify-user-info :modify-info-show="toggleModifyInfo" :user-data="userInfo" @modify-info-close="closeModifyInfo"></modify-user-info>
     <photo-preview-list :images-list="userInfo.images" :show="photoListShow" :images-show-index="photoListShowIndex" @photo-preview-list-hide="photoPreviewHide"></photo-preview-list>
@@ -46,7 +48,7 @@
 <script type="text/ecmascript-6">
   import modifyUserInfo from 'components/modifyUserInfo/modifyUserInfo.vue';
   import photoPreviewList from 'components/photoPreviewList/photoPreviewList.vue';
-  import BetScroll from 'better-scroll';
+  import scrollView from 'base/scrollView/scrollView.vue';
   import {mapGetters} from 'vuex';
 
 
@@ -59,20 +61,10 @@
         photoListShowIndex: 0
       };
     },
-    mounted() {
-      this.$nextTick(() => {
-        if(!this.scroll) {
-          this.scroll = new BetScroll(this.$refs.gallaryWrap, {
-            click: true
-          });
-        }else {
-          this.scroll.refresh();
-        }
-      });
-    },
     components: {
       'modify-user-info': modifyUserInfo,
-      'photo-preview-list': photoPreviewList
+      'photo-preview-list': photoPreviewList,
+      'scroll-view': scrollView
     },
     methods: {
       closeModifyInfo() {
