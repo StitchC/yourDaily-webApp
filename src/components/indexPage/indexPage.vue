@@ -36,6 +36,11 @@
       &:focus
         outline: none
 
+  @media screen and (max-width: 320px)
+    .index-wrapper
+      .logo
+        .logo-icon
+          width: 60px
   @media screen and (max-height: 450px)
     .index-wrapper
       .logo

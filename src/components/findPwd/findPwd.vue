@@ -72,7 +72,7 @@
         margin: 0 6px
     .input-group
       position: fixed
-      top: 60%
+      bottom: 141px
       width: 100%
       transition: all .3s linear
       .input-wrap
@@ -87,9 +87,10 @@
             color: rgba(255,255,255,0.8)
     .btn-group
       position: fixed
-      top: 80%
+      bottom: 30px
       width: 100%
       text-align: center
+      transition: all .3s linear
       .get-email-btn
         width: 80%
         height: 45px
@@ -107,5 +108,8 @@
   @media screen and (max-height: 450px)
     .findpwd-wrapper
       .input-group
-        top: 20%
+        top: 30px
+      .btn-group
+        display: none
+        opacity: 0
 </style>

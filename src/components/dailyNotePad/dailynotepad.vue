@@ -57,8 +57,7 @@
           curTime: new Date()    当前日期 用于显示在编辑组件的顶部,
           userSex: parseInt(detail.sex)  用户的性别 用于更改组件的颜色风格,
    *    }
-   *  notepadShow（控制日记输入组件的关闭或显示）
-   *    类型: Boolean
+   *  @param {Boolean} notepadShow - 控制日记输入组件的关闭或显示
    *
    *
    *  重要：

@@ -10,7 +10,7 @@
             <router-link to="/user/self" class="nav-item">我</router-link>
           </div>
           <div class="worm-hold">
-            <img src="./sex-double.png">
+            <img src="./sex-double.png" @click="showWormHole">
           </div>
         </div>
       </div>
@@ -22,7 +22,7 @@
       <daily-lock :show="dailyLockShow" :status="1" @daily-lock-success="dailyLockSuccess"></daily-lock>
       <hint-dialog :show="hintDialogShow" :hint-txt="hintTxt" :delay="hintDialogDelay" @will-hide="hintDialogWillHide"></hint-dialog>
       <loading :show="loadingShow"></loading>
-      <!--hintTxt-->
+      <worm-hole :show="holeShow" @close-hole="hideWormHole"></worm-hole>
     </div>
   </transition>
 </template>
@@ -52,10 +52,13 @@
   import selectsex from 'components/selectSex/selectsex.vue';
   import userSetting from 'components/setting/setting.vue';
   import dailyLock from 'components/dailyLock/dailyLock.vue';
-  import {getLocalstorage, setLocalstorage, baseDataKey, getUserDailyLock} from 'common/js/localStorage.js';
-  import {mapGetters, mapMutations, mapActions} from 'vuex';
+  import wormHole from 'components/wormHole/wormHole.vue';
   import loading from 'base/loading/loading.vue';
   import hintDialog from 'base/hintDialog/hintDialog.vue';
+  import {getLocalstorage, setLocalstorage, baseDataKey, getUserDailyLock} from 'common/js/localStorage.js';
+  import {mapGetters, mapMutations, mapActions} from 'vuex';
+
+
   const SEX_NOTINIT = 2;
 
   export default {
@@ -70,7 +73,8 @@
         loadingShow: false,
         hintDialogShow: false,
         hintTxt: '',
-        hintDialogDelay: 400
+        hintDialogDelay: 400,
+        holeShow: false
       };
     },
     created: function() {
@@ -104,6 +108,7 @@
       'user-setting': userSetting,
       'daily-lock': dailyLock,
       'hint-dialog': hintDialog,
+      'worm-hole': wormHole,
       loading
     },
     methods: {
@@ -124,6 +129,9 @@
       _toggleHintDialogShow(txt = '') {
         this.hintDialogShow = !this.hintDialogShow;
         this.hintTxt = txt;
+      },
+      _toggleWormHoleShow() {
+        this.holeShow = !this.holeShow;
       },
       _toDaily() {
         this.$router.push('/user/daily');
@@ -166,6 +174,12 @@
             this._toDaily();
           }, 100);
         });
+      },
+      showWormHole() {
+        this._toggleWormHoleShow();
+      },
+      hideWormHole() {
+        this._toggleWormHoleShow();
       },
       dailyLockSuccess: function() {
         this.dailyLockShow = false;

@@ -66,7 +66,7 @@
 
   const SUCCESS_CODE = 200;
   export default {
-    data: function() {
+    data() {
       return {
         show: this.detailDialogShow,
         detail: this.detailData,
@@ -84,8 +84,6 @@
         type: Boolean
       }
     },
-    mounted: function() {
-    },
     watch: {
       detailDialogShow: function(val) {
         this.show = val;
@@ -98,10 +96,10 @@
       ...mapActions([
         'reloadData'
       ]),
-      closeDialog: function() {
+      closeDialog() {
         this.$emit('detail-dialog-close');
       },
-      selfDaily: function() {
+      selfDaily() {
         // 此函数用作控制日记删除按钮的显示或隐藏
         // 用户id 会被保存到 localStorage 里面
         // 判断当前查看日记的用户是否为本人
@@ -115,14 +113,14 @@
           return false;
         }
       },
-      deleteDaily: function() {
+      deleteDaily() {
         this.selectDialogShow = true;
         this.selectDialogTxt = '确定要删除日记吗？删了将不会再恢复了';
       },
-      selectDialogCancel: function() {
+      selectDialogCancel() {
         this.selectDialogShow = false;
       },
-      selectDialogConfirm: function() {
+      selectDialogConfirm() {
         this.$http.post('/yourdaily/php/user/deleteDaily.php', {
           id: this.detailData.dailyId
         }, {emulateJSON: true}).then(res => {
@@ -139,10 +137,10 @@
           }
         });
       },
-      photoPreviewHide: function() {
+      photoPreviewHide() {
         this.photoListShow = false;
       },
-      viewPhoto: function(evnet, index) {
+      viewPhoto(evnet, index) {
         this.photoListShowIndex = index;
         this.photoListShow = true;
       },
@@ -158,32 +156,29 @@
     computed: {
       ...mapGetters({
         userInfo: 'getInfo'
-      }),
-      userData: function() {
-        return this.$store.state.userData;
-      }
+      })
     },
     filters: {
-      translateYear: function(val) {
+      translateYear(val) {
         let date = new Date(val);
         return date.getFullYear();
       },
-      translateMonth: function(val) {
+      translateMonth(val) {
         let date = new Date(val);
         let tempList = ['一', '二', '三', '四', '五', '六', '七', '八', '九', '十', '十一', '十二'];
         let month = date.getMonth();
         return tempList[month];
       },
-      translateDate: function(val) {
+      translateDate(val) {
         return formateDate(val, 'dd');
       },
-      translateWeek: function(val) {
+      translateWeek(val) {
         let tempList = ['日', '一', '二', '三', '四', '五', '六'];
         let date = new Date(val);
         let day = date.getDay();
         return tempList[day];
       },
-      translateTime: function(val) {
+      translateTime(val) {
         return formateDate(val, 'hh:mm');
       }
     }
@@ -303,6 +298,25 @@
         .content-scroll
           height: 260px
         .footer
+          height: 40px
+          .delete-btn
+            height: 40px
+            line-height: 40px
+            font-size: 20px
+            color: #fff
+          .edit-btn
+            right: 24px
+            height: 40px
+            line-height: 40px
+            font-size: 20px
+            color: #fff
+  @media screen and (max-height: 480px)
+    // 兼容 iphone 4
+    .detail-dialog-wrapper
+      .detail-dialog-main
+        .footer
+          position: absolute
+          bottom: 0
           height: 40px
           .delete-btn
             height: 40px

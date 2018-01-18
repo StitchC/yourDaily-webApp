@@ -16,7 +16,7 @@
         <span class="txt">添加日记</span>
       </div>
     </div>
-    <div class="match-daily-list-wrap">
+    <div class="match-daily-list-wrap" ref="scrollWrap">
       <scroll-view :content="matchDailys" ref="scroll">
         <ul class="match-daily-list">
           <daily-item v-for="daily in matchDailys" :daily="daily" :dailykey="daily.id" :key="daily.id" @enter-dailydetail="enterDailyDetail"></daily-item>
@@ -48,6 +48,13 @@
         notepadData: {},
         notepadShow: false
       };
+    },
+    mounted() {
+      let width = window.outerWidth;
+      setTimeout(() => {
+        this.$refs.scrollWrap.style.top = width + 'px';
+        this.$refs.scroll.refresh();
+      }, 50);
     },
     components: {
       'daily-detail-dialog': dailyDetailDialog,
@@ -178,6 +185,7 @@
   @import "../../common/stylus/theme.styl"
 
   .calendar-wrapper
+    position: relative
     width: 100%
     height: 100%
     overflow: hidden
@@ -261,8 +269,9 @@
           .txt
             color: $female-color
     .match-daily-list-wrap
+      position: absolute
+      bottom: 0
       width: 100%
-      height: 300px
       overflow: hidden
       .match-daily-list
         padding-bottom: 20px
