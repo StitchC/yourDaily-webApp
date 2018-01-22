@@ -3,7 +3,7 @@
  * */
 
 // 网络错误时提示框的内容
-export let netWorkError = '很抱歉，你的网络存在问题请检查你的网络';
+export let netWorkError = '啊哦, 你的网络有点小问题请稍候重试';
 
 
 

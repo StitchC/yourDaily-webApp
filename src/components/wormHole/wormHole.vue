@@ -9,16 +9,16 @@
           <p class="txt">进入虫洞, 遇见神秘的TA</p>
         </div>
         <div class="btn-group">
-          <div class="time-hint" v-show="userInfo.matchStatus === randomMatchTimeShow">距离虫洞打开时间还有: {{timeTxt}}</div>
+          <div class="time-hint" v-show="randomMatchTimeShow">距离虫洞打开时间还有: {{timeTxt}}</div>
           <div class="left-match-time-hint" v-show="leftTimeShow">距离匹配结束还有: {{leftTimeTxt}}</div>
-          <div class="random-match" v-show="userInfo.matchStatus === '0'" @click="randomMatch">
+          <div class="random-match" v-show="randomMatchBtnShow" @click="randomMatch">
             <img :src="btnIcon" alt="" class="btn-icon">
             <span class="txt">随机匹配</span>
           </div>
-          <div class="unlink-match" v-show="userInfo.matchStatus === '1'">
+          <div class="unlink-match" v-show="userInfo.matchStatus === '1'" @click="unlink">
             <span class="txt">断开链接</span>
           </div>
-          <span class="cancel-match" v-show="userInfo.matchStatus === '2'">取消匹配</span>
+          <span class="cancel-match" v-show="cancelMatchBtnShow" @click="cancelMatch">取消匹配</span>
         </div>
         <div class="hint">
           <div class="title-wrap">
@@ -29,6 +29,9 @@
           <p class="desc">匹配时间会持续一小时(20:00 - 21:00)</p>
           <p class="desc">匹配进行期间不能进入匹配空间</p>
         </div>
+        <loading :show="loadingShow"></loading>
+        <alert-dialog :dialogShow.sync="alertDialogShow" :txt="alertDialogTxt"></alert-dialog>
+        <hint-dialog :show="hintDialogShow" :delay="800" :hint-txt="hintTxt" @will-hide="hintWillHide"></hint-dialog>
       </div>
     </transition>
 </template>
@@ -37,31 +40,40 @@
     /**
      * 虫洞匹配组件
      *
-     * @param {Boolean} show - 控制组件的显示或隐藏
+     * @param {Boolean} show - 控制组件的显示或隐藏 (双向数据绑定)
      *
      * @event close-hole - 触发父组件事件
      * */
 
-    import {mapGetters} from 'vuex';
+
+    import alert from 'base/alertDialog/alertdialog.vue';
+    import hintDialog from 'base/hintDialog/hintDialog.vue';
+    import loading from 'base/loading/loading.vue';
+
+    import {mapGetters, mapActions} from 'vuex';
+    import {SUCCESS_CODE} from 'api/statusCode.js';
+    import {netWorkError} from 'common/js/dialog.js';
+    import setDateTime from 'common/js/setDateTime.js';
 
     // 定义虫洞匹配时间的时分秒
-    const MATCH_HOUR = 20;
-    const MATCH_MIN = 60;
-    const MATCH_SEC = 60;
+    const MATCH_TIME = setDateTime(20, 0, 0);
+
 
     // 定义虫洞运作的时间
-    const OPERATE_HOUR = 21;
-    const OPERATE_MIN = 60;
-    const OPERATE_SEC = 60;
+    const HOLE_RUNTIME = setDateTime(21, 0, 0);
 
-    // 用户匹配状态
-    // const MATCHING = '2';
+
 
     export default {
         data() {
           return {
             time: new Date(),
-            leftMatchTime: new Date()
+            leftMatchTime: new Date(),
+            alertDialogShow: false,
+            hintDialogShow: false,
+            loadingShow: false,
+            alertDialogTxt: '',
+            hintTxt: ''
           };
         },
         props: {
@@ -69,28 +81,150 @@
             type: Boolean
           }
         },
-        created() {
-          if(this.userInfo.matchStatus === '2') {
-            this._interval();
-          }
-          /*
-          this._interval();
-          if(this.time.getHours() >= 20) {
-            this._calcEndMatchTime();
-          }
-          */
+        components: {
+          'alert-dialog': alert,
+          'hint-dialog': hintDialog,
+          loading
         },
         methods: {
+          ...mapActions([
+            'reloadUserInfo',
+            'reloadData'
+          ]),
           _interval() {
             // 设置检测时间变化函数
-            this.time = new Date();
-            this.timer = setTimeout(this._interval(), 1000);
+            if(new Date().getHours() < 21) {
+              this.time = new Date();
+              this.timer = setTimeout(this._interval, 1000);
+            }
+          },
+          _diffTime(endTime) {
+            // 获得时间的差值
+            let diffDate = new Date(endTime).getTime() - this.time.getTime();
+            let hour = Math.floor(diffDate / 1000 / 60 / 60);
+            let minutes = Math.floor(diffDate / 1000 / 60 % 60);
+            let seconds = Math.floor(diffDate / 1000 % 60);
+
+            hour = (hour + '').padStart(2, 0);
+            minutes = (minutes + '').padStart(2, 0);
+            seconds = (seconds + '').padStart(2, 0);
+
+            return `${hour} : ${minutes} : ${seconds}`;
+          },
+          _updateMatchStatus({url, params}) {
+            return this.$http.post(url, params, {
+              before() {
+                this._toggleLoadingDialog();
+              },
+              emulateJSON: true
+            });
+          },
+          _toggleLoadingDialog() {
+            this.loadingShow = !this.loadingShow;
+          },
+          _showAlertDialog(txt = netWorkError) {
+            this.alertDialogShow = !this.alertDialogShow;
+            this.alertDialogTxt = txt;
+          },
+          _toggleHintDialog(txt = '') {
+            this.hintDialogShow = !this.hintDialogShow;
+            this.hintTxt = txt;
+          },
+          _afterModifySend(res, hintTxt) {
+            let data = res.body;
+
+            if(data.status === SUCCESS_CODE) {
+              // 修改匹配状态成功后 重新请求用户信息数据 更新 vuex
+              this.reloadUserInfo({
+                id: this.userInfo.id
+              }).then(() => {
+                // 隐藏loading
+                this._toggleLoadingDialog();
+                // 显示提示框
+                this._toggleHintDialog(hintTxt);
+              });
+            }else {
+              this._toggleLoadingDialog();
+              this._showAlertDialog();
+            }
+          },
+          _afterUnlink(res, hintTxt) {
+            let data = res.body;
+
+            if(data.status === SUCCESS_CODE) {
+              // 断开匹配对象的链接后 重新请求用户信息数据 更新 vuex
+              this.reloadData({
+                id: this.userInfo.id,
+                connectId: ''
+              }).then(() => {
+                // 隐藏loading
+                this._toggleLoadingDialog();
+                // 显示提示框
+                this._toggleHintDialog(hintTxt);
+              });
+            }else {
+              this._toggleLoadingDialog();
+              this._showAlertDialog();
+            }
+          },
+          hintWillHide(promise) {
+            promise.then(() => {
+              this._toggleHintDialog();
+            });
           },
           close() {
-            this.$emit('close-hole');
+            this.$emit('update:show', false);
           },
           randomMatch() {
-            this._calcRandomMatchTime();
+            this._updateMatchStatus({
+              url: '/yourdaily/php/user/modifyMatchStatus.php',
+              params: {
+                id: this.userInfo.id,
+                status: 2
+              }
+            }).then((res) => {
+              this._afterModifySend(res, '加入成功！');
+            }).catch(() => {
+              this._toggleLoadingDialog();
+              this._showAlertDialog();
+            });
+          },
+          cancelMatch() {
+            this._updateMatchStatus({
+              url: '/yourdaily/php/user/modifyMatchStatus.php',
+              params: {
+                id: this.userInfo.id,
+                status: 0
+              }
+            }).then((res) => {
+              this._afterModifySend(res, '取消成功');
+            }).catch(() => {
+              this._toggleLoadingDialog();
+              this._showAlertDialog();
+            });
+          },
+          unlink() {
+            this._updateMatchStatus({
+              url: '/yourdaily/php/user/unlinkMatch.php',
+              params: {
+                id: this.userInfo.id
+              }
+            }).then((res) => {
+              this._afterModifySend(res, '断开成功');
+            }).catch((err) => {
+              console.log(err);
+              this._toggleLoadingDialog();
+              this._showAlertDialog();
+            });
+          }
+        },
+        watch: {
+          show(val) {
+            if(val === true) {
+              this._interval();
+            }else {
+              clearTimeout(this.timer);
+            }
           }
         },
         computed: {
@@ -101,35 +235,46 @@
             return this.userInfo.sex === '1' ? '/static/images/male-random.png' : '/static/images/female-random.png';
           },
           timeTxt() {
-           let hour = MATCH_HOUR - this.time.getHours();
-           let min = MATCH_MIN - this.time.getMinutes() === 60 ? 0 : MATCH_MIN - this.time.getMinutes();
-           let sec = MATCH_SEC - this.time.getSeconds() === 60 ? 0 : MATCH_SEC - this.time.getSeconds();
-
-           hour = (hour + '').padStart(2, '0');
-           min = (min + '').padStart(2, '0');
-           sec = (sec + '').padStart(2, '0');
-
-           return `${hour} : ${min} : ${sec}`;
+            return this._diffTime(MATCH_TIME);
           },
           leftTimeTxt() {
-            if(this.leftMatchTime) {
-              let hour = OPERATE_HOUR - this.leftMatchTime.getHours();
-              let min = OPERATE_MIN - this.leftMatchTime.getMinutes() === 60 ? 0 : MATCH_MIN - this.time.getMinutes();
-              let sec = OPERATE_SEC - this.leftMatchTime.getSeconds() === 60 ? 0 : MATCH_SEC - this.time.getSeconds();
-
-              hour = (hour + '').padStart(2, '0');
-              min = (min + '').padStart(2, '0');
-              sec = (sec + '').padStart(2, '0');
-
-              return `${hour} : ${min} : ${sec}`;
-            }
-            return '';
+            return this._diffTime(HOLE_RUNTIME);
           },
           leftTimeShow() {
-
+            // 如果用户当前为未匹配 且 时间在 20 - 21 点之间
+            // 将匹配剩余事件显示
+            if(this.userInfo.matchStatus === '0' && this.time.getHours() < 21 && this.time.getHours() > 20) {
+              return true;
+            }else {
+              return false;
+            }
           },
           randomMatchTimeShow() {
-
+            // 如果用户当前匹配状态为 '正在匹配' 且 时间在20 点前
+            // 将虫洞开启倒计时显示
+            if(this.userInfo.matchStatus === '2' && this.time.getHours() < 20) {
+              return true;
+            }else {
+              return false;
+            }
+          },
+          randomMatchBtnShow() {
+            // 如果用户为未匹配用户 且 时间在 20点之前或 21 点之后
+            // 显示随机匹配的按钮
+            if(this.userInfo.matchStatus === '0' && (this.time.getHours() < 20 || this.time.getHours() > 21)) {
+              return true;
+            }else {
+              return false;
+            }
+          },
+          cancelMatchBtnShow() {
+            // 当用户为 '正在匹配' 且时间在20点前或21点后
+            // 显示取消匹配按钮
+            if(this.userInfo.matchStatus === '2' && (this.time.getHours() < 20 || this.time.getHours() > 21)) {
+              return true;
+            }else {
+              return false;
+            }
           }
         }
     };

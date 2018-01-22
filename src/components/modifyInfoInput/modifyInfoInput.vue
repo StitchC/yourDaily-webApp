@@ -103,8 +103,7 @@
         this.saveStatus = 1;
         // 修改成功后 发送ajax 请求 更新vuex 数据
         this.reloadUserInfo({
-          id: this.initData.userId,
-          connectId: this.initData.connect
+          id: this.initData.userId
         }).then(() => {
           // 隐藏加载框
           this._toggleLoadingShow();

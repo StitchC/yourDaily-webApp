@@ -31,7 +31,7 @@
     },
     methods: {
       hide: function() {
-        this.$emit('dialog-show-change');
+        this.$emit('update:dialogShow', false);
       }
     },
     watch: {

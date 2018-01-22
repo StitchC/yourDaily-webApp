@@ -22,7 +22,7 @@
       <daily-lock :show="dailyLockShow" :status="1" @daily-lock-success="dailyLockSuccess"></daily-lock>
       <hint-dialog :show="hintDialogShow" :hint-txt="hintTxt" :delay="hintDialogDelay" @will-hide="hintDialogWillHide"></hint-dialog>
       <loading :show="loadingShow"></loading>
-      <worm-hole :show="holeShow" @close-hole="hideWormHole"></worm-hole>
+      <worm-hole :show.sync="holeShow"></worm-hole>
     </div>
   </transition>
 </template>
