@@ -29,6 +29,8 @@
       </div>
       <select-dialog :show="selectDialogShow" :txt="selectDialogTxt" @cancel="selectDialogCancel" @confirm="selectDialogConfirm"></select-dialog>
       <photo-preview-list :images-list="detailData.images" :show="photoListShow" :images-show-index="photoListShowIndex" @photo-preview-list-hide="photoPreviewHide"></photo-preview-list>
+      <loading :show="loadingShow"></loading>
+      <hint-dialog :show="hintDialogShow" :hint-txt="hintTxt" :delay="800" @will-hide="hintWillHide"></hint-dialog>
     </div>
   </transition>
 </template>
@@ -57,11 +59,13 @@
    * @event - daily-has-delete      组件删除按钮点击时通知父组件
    * @event - daily-modify          组件编辑按钮点击时通知父组件
    */
-  import {formateDate} from 'common/js/formateDate.js';
+
   import selectDialog from 'base/selectDialog/selectdialog.vue';
   import photoPreviewList from 'components/photoPreviewList/photoPreviewList.vue';
-  // import BetScroll from 'better-scroll';
+  import loading from 'base/loading/loading.vue';
+  import hintDialog from 'base/hintDialog/hintDialog.vue';
   import {mapGetters, mapActions} from 'vuex';
+  import {formateDate} from 'common/js/formateDate.js';
   import scrollView from 'base/scrollView/scrollView.vue';
 
   const SUCCESS_CODE = 200;
@@ -73,7 +77,10 @@
         selectDialogShow: false,
         selectDialogTxt: '',
         photoListShow: false,
-        photoListShowIndex: 0
+        photoListShowIndex: 0,
+        loadingShow: false,
+        hintDialogShow: false,
+        hintTxt: ''
       };
     },
     props: {
@@ -96,6 +103,18 @@
       ...mapActions([
         'reloadData'
       ]),
+      _toggleLoading() {
+        this.loadingShow = !this.loadingShow;
+      },
+      _toggleHintDialog(txt = '') {
+        this.hintDialogShow = !this.hintDialogShow;
+        this.hintTxt = txt;
+      },
+      hintWillHide(promise) {
+        promise.then(() => {
+          this._toggleHintDialog();
+        });
+      },
       closeDialog() {
         this.$emit('detail-dialog-close');
       },
@@ -123,16 +142,25 @@
       selectDialogConfirm() {
         this.$http.post('/yourdaily/php/user/deleteDaily.php', {
           id: this.detailData.dailyId
-        }, {emulateJSON: true}).then(res => {
+        }, {
+          emulateJSON: true,
+          before() {
+            this._toggleLoading();
+          }
+        }).then(res => {
           let msg = res.body;
           if(msg.status === SUCCESS_CODE) {
+            // 隐藏选择对话框
+            this.selectDialogShow = false;
+            this.$emit('detail-dialog-close');
             // 删除成功后发送ajax 请求更新 vuex 数据
             this.reloadData({
               id: this.userInfo.id,
               connectId: this.userInfo.connect
             }).then(() => {
-              this.selectDialogShow = false;
-              this.$emit('detail-dialog-close');
+              this._toggleLoading();
+              // 显示提示框
+              this._toggleHintDialog('删除成功');
             });
           }
         });
@@ -151,7 +179,9 @@
     components: {
       'select-dialog': selectDialog,
       'photo-preview-list': photoPreviewList,
-      'scroll-view': scrollView
+      'scroll-view': scrollView,
+      'hint-dialog': hintDialog,
+      loading
     },
     computed: {
       ...mapGetters({

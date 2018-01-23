@@ -11,7 +11,7 @@
         <div class="btn-group">
           <div class="time-hint" v-show="randomMatchTimeShow">距离虫洞打开时间还有: {{timeTxt}}</div>
           <div class="left-match-time-hint" v-show="leftTimeShow">距离匹配结束还有: {{leftTimeTxt}}</div>
-          <div class="random-match" v-show="randomMatchBtnShow" @click="randomMatch">
+          <div class="random-match" v-show="randomMatchBtnShow" @click="joinMatch">
             <img :src="btnIcon" alt="" class="btn-icon">
             <span class="txt">随机匹配</span>
           </div>
@@ -136,7 +136,8 @@
             if(data.status === SUCCESS_CODE) {
               // 修改匹配状态成功后 重新请求用户信息数据 更新 vuex
               this.reloadUserInfo({
-                id: this.userInfo.id
+                id: this.userInfo.id,
+                connect: this.userInfo.connect
               }).then(() => {
                 // 隐藏loading
                 this._toggleLoadingDialog();
@@ -155,7 +156,7 @@
               // 断开匹配对象的链接后 重新请求用户信息数据 更新 vuex
               this.reloadData({
                 id: this.userInfo.id,
-                connectId: ''
+                connect: ''
               }).then(() => {
                 // 隐藏loading
                 this._toggleLoadingDialog();
@@ -175,23 +176,29 @@
           close() {
             this.$emit('update:show', false);
           },
-          randomMatch() {
-            this._updateMatchStatus({
-              url: '/yourdaily/php/user/modifyMatchStatus.php',
-              params: {
-                id: this.userInfo.id,
-                status: 2
-              }
-            }).then((res) => {
-              this._afterModifySend(res, '加入成功！');
-            }).catch(() => {
-              this._toggleLoadingDialog();
-              this._showAlertDialog();
-            });
+          joinMatch() {
+            if(this.userDaily instanceof Array) {
+              this._showAlertDialog('请留下一篇日记才进行匹配哦');
+              return;
+            }else {
+              this._updateMatchStatus({
+                url: '/yourdaily/php/user/joinMatch.php',
+                params: {
+                  id: this.userInfo.id,
+                  sex: this.userInfo.sex,
+                  status: 2
+                }
+              }).then((res) => {
+                this._afterModifySend(res, '加入成功！');
+              }).catch(() => {
+                this._toggleLoadingDialog();
+                this._showAlertDialog();
+              });
+            }
           },
           cancelMatch() {
             this._updateMatchStatus({
-              url: '/yourdaily/php/user/modifyMatchStatus.php',
+              url: '/yourdaily/php/user/cancelMatch.php',
               params: {
                 id: this.userInfo.id,
                 status: 0
@@ -207,12 +214,12 @@
             this._updateMatchStatus({
               url: '/yourdaily/php/user/unlinkMatch.php',
               params: {
-                id: this.userInfo.id
+                id: this.userInfo.id,
+                connectId: this.userInfo.connect
               }
             }).then((res) => {
-              this._afterModifySend(res, '断开成功');
-            }).catch((err) => {
-              console.log(err);
+              this._afterUnlink(res, '断开成功');
+            }).catch(() => {
               this._toggleLoadingDialog();
               this._showAlertDialog();
             });
@@ -229,7 +236,8 @@
         },
         computed: {
           ...mapGetters({
-            userInfo: 'getInfo'
+            userInfo: 'getInfo',
+            userDaily: 'getDaily'
           }),
           btnIcon() {
             return this.userInfo.sex === '1' ? '/static/images/male-random.png' : '/static/images/female-random.png';

@@ -19,7 +19,7 @@
     <div class="match-daily-list-wrap" ref="scrollWrap">
       <scroll-view :content="matchDailys" ref="scroll">
         <ul class="match-daily-list">
-          <daily-item v-for="daily in matchDailys" :daily="daily" :dailykey="daily.id" :key="daily.id" @enter-dailydetail="enterDailyDetail"></daily-item>
+          <daily-item v-if="daily.userId === userInfo.id" v-for="daily in matchDailys" :daily="daily" :dailykey="daily.id" :key="daily.id" @enter-dailydetail="enterDailyDetail"></daily-item>
         </ul>
       </scroll-view>
     </div>
@@ -78,6 +78,7 @@
         });
       },
       addDaily() {
+        console.log('fk');
         this.notepadData = {
           editType: 0,
           curTime: new Date(),
@@ -91,7 +92,6 @@
       },
       enterDailyDetail(key) {
         if (event._constructed) {
-          console.log(key);
           let data = this.userDaily[key];
           this.dailyDetail = {
             dailyId: data.id,
@@ -143,7 +143,7 @@
         for (let key in this.userDaily) {
           let tempArr = this.userDaily[key].publicTime.split(' ');
           let tempItem = tempArr[0];
-          if (tempItem === curDateStr) {
+          if (tempItem === curDateStr && this.userDaily[key].userId === this.userInfo.id) {
             resultList.push(this.userDaily[key]);
           }
         }
@@ -240,6 +240,7 @@
         .week
           font-size: $font-size-large
     .no-match-daily-hint
+      position: relative
       width: 90%
       height: 80px
       line-height: 80px
@@ -247,6 +248,7 @@
       text-align: center
       background-color: #fff
       border-radius: 5px
+      z-index: 5
       .hint-content
         .icon
           display: inline-block
