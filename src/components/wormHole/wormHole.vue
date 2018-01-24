@@ -93,14 +93,22 @@
           ]),
           _interval() {
             // 设置检测时间变化函数
-            if(new Date().getHours() < 21) {
-              this.time = new Date();
-              this.timer = setTimeout(this._interval, 1000);
-            }
+            this.time = new Date();
+            this.timer = setTimeout(this._interval, 1000);
           },
           _diffTime(endTime) {
             // 获得时间的差值
-            let diffDate = new Date(endTime).getTime() - this.time.getTime();
+            let diffDate;
+            if(this.time.getHours() >= 21) {
+              // 如果当前用户加入的匹配事件大于21 点
+              // 时间的差值计算为 明天的20点 减去 当前时间
+              let nextDate = new Date(endTime).setDate(new Date().getDate() + 1);
+              diffDate = new Date(nextDate).getTime() - this.time.getTime();
+            }else {
+              // 否则直接计算时间差值
+              diffDate = new Date(endTime).getTime() - this.time.getTime();
+            }
+
             let hour = Math.floor(diffDate / 1000 / 60 / 60);
             let minutes = Math.floor(diffDate / 1000 / 60 % 60);
             let seconds = Math.floor(diffDate / 1000 % 60);
@@ -136,8 +144,7 @@
             if(data.status === SUCCESS_CODE) {
               // 修改匹配状态成功后 重新请求用户信息数据 更新 vuex
               this.reloadUserInfo({
-                id: this.userInfo.id,
-                connect: this.userInfo.connect
+                id: this.userInfo.id
               }).then(() => {
                 // 隐藏loading
                 this._toggleLoadingDialog();
@@ -232,6 +239,19 @@
             }else {
               clearTimeout(this.timer);
             }
+          },
+          time(val) {
+            if(val.getHours() === 21) {
+              // 如果当前时间为21点 重新获取一次用户的信息数据
+              this.reloadUserInfo({
+                id: this.userInfo.id
+              }).then(() => {
+                this.reloadData({
+                  id: this.userInfo.id,
+                  connectId: this.userInfo.connect
+                });
+              });
+            }
           }
         },
         computed: {
@@ -249,9 +269,9 @@
             return this._diffTime(HOLE_RUNTIME);
           },
           leftTimeShow() {
-            // 如果用户当前为未匹配 且 时间在 20 - 21 点之间
-            // 将匹配剩余事件显示
-            if(this.userInfo.matchStatus === '0' && this.time.getHours() < 21 && this.time.getHours() > 20) {
+            // 如果时间在 20 - 21 点之间
+            // 将匹配操作剩余时间显示
+            if(this.time.getHours() <= 21 && this.time.getHours() >= 20) {
               return true;
             }else {
               return false;
@@ -260,7 +280,8 @@
           randomMatchTimeShow() {
             // 如果用户当前匹配状态为 '正在匹配' 且 时间在20 点前
             // 将虫洞开启倒计时显示
-            if(this.userInfo.matchStatus === '2' && this.time.getHours() < 20) {
+            let limitTime = this.time.getHours() < 20 || this.time.getHours() >= 21;
+            if(this.userInfo.matchStatus === '2' && limitTime) {
               return true;
             }else {
               return false;
@@ -269,7 +290,9 @@
           randomMatchBtnShow() {
             // 如果用户为未匹配用户 且 时间在 20点之前或 21 点之后
             // 显示随机匹配的按钮
-            if(this.userInfo.matchStatus === '0' && (this.time.getHours() < 20 || this.time.getHours() > 21)) {
+            let curHour = this.time.getHours();
+            let isLimitTime = curHour < 20 || curHour >= 21;
+            if(this.userInfo.matchStatus === '0' && isLimitTime) {
               return true;
             }else {
               return false;
@@ -278,7 +301,8 @@
           cancelMatchBtnShow() {
             // 当用户为 '正在匹配' 且时间在20点前或21点后
             // 显示取消匹配按钮
-            if(this.userInfo.matchStatus === '2' && (this.time.getHours() < 20 || this.time.getHours() > 21)) {
+            let limitTime = this.time.getHours() < 20 || this.time.getHours() >= 21;
+            if(this.userInfo.matchStatus === '2' && limitTime) {
               return true;
             }else {
               return false;

@@ -20,12 +20,11 @@ export const reloadData = function({commit}, {id, connectId}) {
 };
 
 // 重新加载用户信息
-export const reloadUserInfo = function({commit}, {id, connectId}) {
+export const reloadUserInfo = function({commit}, {id}) {
   return new Promise((resolve, reject) => {
     axios.get('/yourdaily/php/user/getUserInfo.php', {
       params: {
-        id,
-        connectId
+        id
       }
     }).then((res) => {
       commit(type.UPDATE_USER_INFO, res.data.info);
