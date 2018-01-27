@@ -16,7 +16,7 @@
           <span class="find-pwd-link" @click="toFindPwd">登陆遇到困难？去找回密码</span>
         </div>
       </index-page>
-      <alert-dialog :dialog-show="dialogShowStatus" :txt="dialogTxt" @dialog-show-change="listenDialogStatus"></alert-dialog>
+      <alert-dialog :dialog-show.sync="dialogShowStatus" :txt="dialogTxt" @dialog-show-change="listenDialogStatus"></alert-dialog>
     <loading :show="loadingShow"></loading>
     </div>
 </template>
@@ -60,9 +60,10 @@
           this.$router.push('/login');
         }
       },
-      _setDialog(options) {
-        this.dialogShowStatus = options.showStatus;
-        this.dialogTxt = options.dialogTxt;
+
+      _toggleDialog(txt = '') {
+        this.dialogShowStatus = !this.dialogShowStatus;
+        this.dialogTxt = txt;
       },
       _registerSuccess() {
         this.loadingShow = false;
@@ -78,22 +79,13 @@
       register() {
         let reg = /^[A-Za-z\d]+([-_.][A-Za-z\d]+)*@([A-Za-z\d]+[-.])+[A-Za-z\d]{2,4}$/;
         if(this.accountVal === '' || this.pwdVal === '') {
-          this._setDialog({
-            showStatus: true,
-            dialogTxt: '注册的邮箱或密码不能为空哦'
-          });
+          this._toggleDialog('注册的邮箱或密码不能为空哦');
         }
         if(!reg.test(this.accountVal)) {
-            this._setDialog({
-              showStatus: true,
-              dialogTxt: '请填写正确的邮箱地址哦'
-            });
+          this._toggleDialog('请填写正确的邮箱地址哦');
         }else if(reg.test(this.accountVal) && this.pwdVal !== '') {
           if(this.pwdVal.length >= 16) {
-            this._setDialog({
-              showStatus: true,
-              dialogTxt: '你的密码太长了哦最多只能输入16位英文，数字或特殊字符'
-            });
+            this._toggleDialog('你的密码太长了哦最多只能输入16位英文，数字或特殊字符');
             this.pwdVal = '';
           }else {
             this.$http.post('/yourdaily/php/register/check.php', {
@@ -108,24 +100,15 @@
               let data = res.body;
 
               if(data.status === SUCCESS_CODE) {
-                this._setDialog({
-                  showStatus: true,
-                  dialogTxt: '注册成功啦'
-                });
+                this._toggleDialog('注册成功啦');
                 this._registerSuccess();
               }else if(data.status === ERROR_CODE) {
-                this._setDialog({
-                  showStatus: true,
-                  dialogTxt: '啊哦，这个账号貌似已被人注册了'
-                });
+                this._toggleDialog('啊哦，这个账号貌似已被人注册了');
                 this._registerError();
               }
             }).catch(() => {
               this._registerError();
-              this._setDialog({
-                showStatus: true,
-                dialogTxt: netWorkError
-              });
+              this._toggleDialog(netWorkError);
             });
           }
         }
@@ -154,7 +137,6 @@
       position: fixed
       bottom: 172px
       width: 100%
-      margin: 15% auto 0 auto
       transition: all .3s linear
       .input-wrap
         width: 80%
@@ -194,7 +176,7 @@
   @media screen and (max-height: 450px)
     .register-wrapper
       .input-group
-        top: 15px
+        bottom: 25%
       .btn-group
         display: none
         opacity: 0

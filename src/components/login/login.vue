@@ -15,7 +15,7 @@
           <span class="register-link" @click="toRegister">没有账号？去注册</span>
         </div>
       </index-page>
-      <alert-dialog :dialog-show="dialogShowStatus" :txt="dialogTxt" @dialog-show-change="listenDialogStatus"></alert-dialog>
+      <alert-dialog :dialog-show.sync="dialogShowStatus" :txt="dialogTxt"></alert-dialog>
     <loading :show="loadingShow"></loading>
     </div>
 </template>
@@ -24,7 +24,6 @@
   import indexPage from 'components/indexPage/indexPage.vue';
   import dialog from 'base/alertDialog/alertdialog.vue';
   import loading from 'base/loading/loading.vue';
-  import {setLocalstorage, baseDataKey} from 'common/js/localStorage.js';
   import {SUCCESS_CODE, ERROR_CODE} from 'api/statusCode.js';
   import {netWorkError} from 'common/js/dialog.js';
   import {login, getAllData} from 'api/allApi.js';
@@ -52,20 +51,16 @@
       _toUser() {
         this.$router.push('/user');
       },
-      _setDialog(options) {
-        // 设置提示框的显示和内容
-        this.dialogTxt = options.dialogTxt;
-        this.dialogShowStatus = options.showStatus;
-      },
       _toggleLoadingShow() {
         this.loadingShow = !this.loadingShow;
       },
+      _toggleDialog(txt = '') {
+        this.dialogShowStatus = !this.dialogShowStatus;
+        this.dialogTxt = txt;
+      },
       login() {
         if(this.accountVal === '' || this.pwdVal === '') {
-          this._setDialog({
-            showStatus: true,
-            dialogTxt: '账号或密码不能为空哦'
-          });
+          this._toggleDialog('账号或密码不能为空哦');
         }else {
           this._toggleLoadingShow();
           login('/yourdaily/php/login/check.php', {
@@ -74,14 +69,12 @@
           }).then((res) => {
             if(res.data.status === SUCCESS_CODE) {
               // 登录成功
-              // 在localstorage 中保存用户的数据
-              setLocalstorage(baseDataKey, res.data.info);
-
               // 发送请求获取用户数据
               getAllData('/yourdaily/php/user/getUserData.php', {
                 id: res.data.info.id,
                 connectId: res.data.info.connect
               }).then((res) => {
+                // 设置vuex 数据
                 this.saveDaily(res.data.daily);
                 this.saveInfo(res.data.info);
                 this._toggleLoadingShow();
@@ -90,23 +83,14 @@
             }else if(res.data.status === ERROR_CODE) {
               // 登录错误
               this._toggleLoadingShow();
-              this._setDialog({
-                showStatus: true,
-                dialogTxt: '你的账号或密码有错误哦'
-              });
+              this._toggleDialog('你的账号或密码有错误哦');
             }
           }).catch(() => {
             // 网络错误
             this._toggleLoadingShow();
-            this._setDialog({
-              showStatus: true,
-              dialogTxt: netWorkError
-            });
+            this._toggleDialog(netWorkError);
           });
         }
-      },
-      listenDialogStatus() {
-        this.dialogShowStatus = false;
       }
     },
     components: {
@@ -175,7 +159,7 @@
   @media screen and (max-height: 450px)
     .login-wrapper
       .input-group
-        top: 15px
+        bottom: 25%
       .btn-group
         display: none
         opacity: 0

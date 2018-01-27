@@ -34,7 +34,7 @@
         </ul>
       </transition>
       <extra-selector :classList="selectorClassList" :selectorToggleShow="selectorShow" @selector-change="listenSelectorChange" @selector-show-change="listenSelectorShow"></extra-selector>
-      <alert-dialog :dialog-show="dialogShowStatus" :txt="dialogTxt" @dialog-show-change="listenDialogShow"></alert-dialog>
+      <alert-dialog :dialog-show.sync="dialogShowStatus" :txt="dialogTxt"></alert-dialog>
       <select-dialog :txt="selectDialogTxt" :show="selectDialogShowStatus" @confirm="confrimClose" @cancel="cancelClose"></select-dialog>
       <daily-photo-view :show="photoViewShow" :photo-url="curPhotoUrl" :photo-index="curPhotoIndex" @close="photoViewClose" @delete-photo="dropPhoto"></daily-photo-view>
       <hint-dialog :show="hintDialogShow" :hint-txt="hintTxt" :delay="hintDialogDelay" @will-hide="hintDialogWillHide"></hint-dialog>
@@ -83,6 +83,7 @@
   import {formateDate} from 'common/js/formateDate.js';
   import {SUCCESS_CODE, ERROR_CODE} from 'api/statusCode.js';
   import {mapGetters, mapActions} from 'vuex';
+  import lrz from 'lrz';
 
 
   const DAILY_HAS_SAVE = 1;  // 日记已保存的状态码
@@ -142,6 +143,14 @@
       ...mapActions([
         'reloadData'
       ]),
+      _toggleSelectDialog(txt = '') {
+        this.selectDialogShowStatus = !this.selectDialogShowStatus;
+        this.selectDialogTxt = txt;
+      },
+      _toggleDialogShow(txt = '') {
+        this.dialogShowStatus = !this.dialogShowStatus;
+        this.dialogTxt = txt;
+      },
       _toggleLoadingShow() {
         this.loadingShow = !this.loadingShow;
       },
@@ -167,8 +176,7 @@
           // 初始化日记输入组件
           this.initNotepad();
         }else {
-          this.selectDialogShowStatus = true;
-          this.selectDialogTxt = '你确定要离开编辑日记吗';
+          this._toggleSelectDialog('你确定要离开编辑日记吗');
         }
       },
       confrimClose() {
@@ -178,7 +186,8 @@
         this.$emit('notepad-close');
       },
       cancelClose() {
-        this.selectDialogShowStatus = false;
+        // 关闭选择对话框
+        this._toggleSelectDialog();
       },
       _doUploadDaily(url, args) {
         return this.$http.post(url, args, {
@@ -234,9 +243,12 @@
               }else if(res.body.status === ERROR_CODE) {
                 // 隐藏加载提示框
                 this._toggleLoadingShow();
-                this.dialogShowStatus = true;
-                this.dialogTxt = '很抱歉，日记未能保存请检查你的网络';
+                this._toggleDialogShow('很抱歉，日记未能保存请检查你的网络');
               }
+            }).catch(() => {
+              // 隐藏加载提示框
+              this._toggleLoadingShow();
+              this._toggleDialogShow('很抱歉，日记未能保存请检查你的网络');
             });
           }
         }
@@ -269,12 +281,8 @@
       listenSelectorShow(bool) {
         this.selectorShow = bool;
       },
-      listenDialogShow(bool) {
-        this.dialogShowStatus = bool;
-      },
       selectImgChange(event) {
         let file = event.target.files[0];
-        let e = event;
         let reg = /image\/(jpg|png|jpeg)/;
         // 判断文件是否存在或数量是否已达到标准
         // 满足则返回空值结束函数
@@ -283,8 +291,7 @@
         }
         // 文件名不符显示提示框 返回空值结束函数
         if(!reg.test(file.type)) {
-          this.dialogShowStatus = true;
-          this.dialogTxt = '上传的图片格式只能为 jpg,png,jpeg 哦';
+          this._toggleDialog('上传的图片格式只能为 jpg,png,jpeg 哦');
           return;
         }
         // 是否有相同文件名
@@ -294,18 +301,18 @@
         }
         // 以上条件均不成立 对文件进行读取显示
         // 保存文件数据 用作上传
-        let reader = new FileReader();
-        this.loadingShow = true;
-        reader.readAsDataURL(file);
-        reader.addEventListener('load', (event) => {
+
+        // 显示加载提示框
+        this._toggleLoadingShow();
+        lrz(file).then((rst) => {
           let fileObj = {
-            content: file,
-            url: event.target.result
+            content: rst.file,
+            url: rst.base64
           };
           this.fileContenList.push(fileObj);
-          this.curPhotoName.push(file.name);
-          e.target.value = '';
-          this.loadingShow = false;
+          this.curPhotoName.push(rst.origin.name);
+          // 隐藏加载提示框
+          this._toggleLoadingShow();
         });
       },
       seePhoto(event, index) {

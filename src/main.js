@@ -14,7 +14,7 @@ Vue.config.productionTip = false;
 Vue.use(VueResource);
 Vue.use(lazyload, {
   preLoad: 1.3,
-  loading: '/static/images/lazyloadicon.gif',
+  loading: './static/images/lazyloadicon.gif',
   attempt: 3
 });
 

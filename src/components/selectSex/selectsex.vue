@@ -9,7 +9,7 @@
       <div class="enter-wrap">
         <div class="enter" v-show="curSex !== 2" @click="enterDaily">进入你的日记</div>
       </div>
-      <alert-dialog :dialog-show="dialogShowStatus" :txt="dialogTxt" @dialog-show-change="listenDialogStatus"></alert-dialog>
+      <alert-dialog :dialog-show.sync="dialogShowStatus" :txt="dialogTxt"></alert-dialog>
       <loading :show="loadingShow"></loading>
     </div>
   </transition>
@@ -20,6 +20,7 @@
   import loading from 'base/loading/loading.vue';
   import {SUCCESS_CODE} from 'api/statusCode';
   import {netWorkError} from 'common/js/dialog';
+  import {mapGetters} from 'vuex';
 
   /**
    * 选择性别组件
@@ -44,13 +45,17 @@
       sexSelect(val) {
         this.curSex = val;
       },
+      _toggleDialogShow(txt = '') {
+        this.dialogShowStatus = !this.dialogShowStatus;
+        this.dialogTxt = txt;
+      },
       _toggleLoading() {
         this.loadingShow = !this.loadingShow;
       },
       enterDaily() {
         this.$http.post('/yourdaily/php/user/modifySex.php', {
           sex: this.curSex,
-          id: this.userId
+          id: this.userInfo.id
         }, {
           emulateJSON: true,
           before() {
@@ -62,13 +67,11 @@
             this.$emit('select-complete', this.curSex);
             this.curSex = 2;
           }else {
-            this.dialogShowStatus = true;
-            this.dialogTxt = netWorkError;
+            this._toggleDialogShow(netWorkError);
           }
+        }).catch(() => {
+          this._toggleDialogShow(netWorkError);
         });
-      },
-      listenDialogStatus: function(bool) {
-        this.dialogShowStatus = bool;
       }
     },
     props: {
@@ -85,9 +88,10 @@
       loading
     },
     computed: {
-      show: function() {
-        return this.$store.state.selectSexShow;
-      }
+      ...mapGetters({
+        userInfo: 'getInfo',
+        show: 'getSelectSexShowStatus'
+      })
     }
   };
 </script>

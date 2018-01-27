@@ -32,6 +32,7 @@
     methods: {
       hide: function() {
         this.$emit('update:dialogShow', false);
+        this.$emit('dialog-show-change');
       }
     },
     watch: {

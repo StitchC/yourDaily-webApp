@@ -18,7 +18,7 @@
         </div>
         <div class="upload-btn" @click="uploadImg">上传图片</div>
       </div>
-      <alert-dialog :dialog-show="alertDialogShow" :txt="alertDialogTxt" @dialog-show-change="toggleAlertDialog"></alert-dialog>
+      <alert-dialog :dialog-show.sync="alertDialogShow" :txt="alertDialogTxt"></alert-dialog>
       <loading :show="loadingShow"></loading>
     </div>
   </transition>
@@ -27,9 +27,9 @@
 <script type="text/ecmascript-6">
   import alertDialog from 'base/alertDialog/alertdialog.vue';
   import loading from 'base/loading/loading.vue';
-  import {compressImg} from 'common/js/compressPhoto.js';
   import {SUCCESS_CODE} from 'api/statusCode.js';
   import {mapGetters, mapActions} from 'vuex';
+  import lrz from 'lrz';
   /**
    * 上传图片组件
    *
@@ -60,8 +60,18 @@
       ...mapActions([
         'reloadData'
       ]),
+      _toggleDialogShow(txt = '') {
+        this.alertDialogShow = !this.alertDialogShow;
+        this.alertDialogTxt = txt;
+      },
+      _toggleLoading() {
+        this.loadingShow = !this.loadingShow;
+      },
+      _sendImg({url, data, opts}) {
+        return this.$http.post(url, data, opts);
+      },
       close() {
-        this.$emit('upload-img-close');
+        this.$emit('update:show', false);
         this.imgURL = '';
         this.fileContent = null;
       },
@@ -70,31 +80,34 @@
            let reg = /image\/(jpg|png|jpeg)/;
            this.fileContent = this.$refs.fileInput.files[0];
            if(!reg.test(this.fileContent.type)) {
-             this.alertDialogShow = true;
-             this.alertDialogTxt = '上传的图片格式只能为 jpg,png,jpeg 哦';
+             this._toggleDialog('上传的图片格式只能为 jpg,png,jpeg 哦');
            }else {
-             compressImg(this.fileContent, 80, 80, () => {
-                 this.loadingShow = true;
-             }, (val) => {
-               this.imgURL = val.compressImgUr || val.originalUrl;
-               this.fileContent = val.compressBlob || val.originBlob;
-               this.loadingShow = false;
+             // 显示加载提示框
+             this._toggleLoading();
+             lrz(this.fileContent).then((rst) => {
+               this.imgURL = rst.base64;
+               this.fileContent = rst.file;
+               // 隐藏加载提示框
+               this._toggleLoading();
              });
            }
          }
       },
       uploadImg() {
         if(!this.fileContent) {
-            this.alertDialogShow = true;
-            this.alertDialogTxt = '你还没有选择图片喔';
-            return;
+          this._toggleDialog('你还没有选择图片喔');
+          return;
         }
         let formdata = new FormData();
         formdata.append('avatar', this.fileContent);
         formdata.append('id', this.userInfo.id);
-        this.$http.post('/yourdaily/php/user/uploadAvatar.php', formdata, {
-          before: function() {
-            this.loadingShow = true;
+        this._sendImg({
+          url: '/yourdaily/php/user/uploadAvatar.php',
+          data: formdata,
+          opts: {
+            before: function() {
+              this._toggleLoading();
+            }
           }
         }).then((res) => {
           let data = res.body;
@@ -103,20 +116,22 @@
               id: this.userInfo.id,
               connectId: this.userInfo.connect
             }).then(() => {
-              this.loadingShow = false;
+              // 隐藏加载提示框
+              this._toggleLoading();
               this.imgURL = '';
               this.fileContent = null;
               this.$emit('upload-img-close');
             });
           }else {
-            this.loadingShow = false;
-            this.alertDialogShow = true;
-            this.alertDialogTxt = '你的网络有点小问题请稍候重试哦';
+            // 隐藏加载提示框
+            this._toggleLoading();
+            this._toggleDialog('你的网络有点小问题请稍候重试哦');
           }
+        }).catch(() => {
+          // 隐藏加载提示框
+          this._toggleLoading();
+          this._toggleDialog('你的网络有点小问题请稍候重试哦');
         });
-      },
-      toggleAlertDialog() {
-        this.alertDialogShow = false;
       }
     },
     computed: {

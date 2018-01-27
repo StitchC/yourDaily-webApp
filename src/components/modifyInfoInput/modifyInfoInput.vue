@@ -10,7 +10,7 @@
         <input type="text" class="content-input" v-model="modifyContent">
         <span class="limit">{{resetLimit}}</span>
       </div>
-      <alert-dialog :dialog-show="alertDialogShow" :txt="dialogTxt" @dialog-show-change="alertDialogShowChange"></alert-dialog>
+      <alert-dialog :dialog-show.sync="alertDialogShow" :txt="dialogTxt"></alert-dialog>
       <loading :show="loadingShow"></loading>
       <hint-dialog :show="hintDialogShow" :hint-txt="hintTxt" :delay="hintDialogDelay" @will-hide="hintDialogWillHide"></hint-dialog>
     </div>
@@ -57,7 +57,7 @@
       initData: {
         type: Object
       },
-      inputShow: {
+      show: {
         type: Boolean
       }
     },
@@ -71,7 +71,11 @@
         'reloadUserInfo'
       ]),
       close() {
-        this.$emit('input-close');
+        this.$emit('update:show', false);
+      },
+      _toggleDialogShow(txt = '') {
+        this.alertDialogShow = !this.alertDialogShow;
+        this.dialogTxt = txt;
       },
       _toggleLoadingShow() {
         this.loadingShow = !this.loadingShow;
@@ -114,8 +118,7 @@
       _modifyFailed() {
         // 隐藏加载组件
         this._toggleLoadingShow();
-        this.alertDialogShow = true;
-        this.dialogTxt = '抱歉, 网络出了点小问题哦, 请稍候重试';
+        this._toggleDialogShow('抱歉, 网络出了点小问题哦, 请稍候重试');
       },
       hintDialogWillHide(promise) {
         promise.then(() => {
@@ -155,9 +158,6 @@
             });
           }
         }
-      },
-      alertDialogShowChange() {
-        this.alertDialogShow = false;
       }
     },
     watch: {

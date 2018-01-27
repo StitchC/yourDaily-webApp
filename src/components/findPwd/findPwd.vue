@@ -4,41 +4,52 @@
         <p slot="page-title" class="title">你的日记<span>·</span>找回密码</p>
         <div slot="input-group" class="input-group">
           <div class="input-wrap border-1px">
-            <input type="text" placeholder="邮箱">
+            <input type="text" placeholder="邮箱" v-model="email">
           </div>
         </div>
         <div class="btn-group" slot="btn-group">
-          <div class="get-email-btn">获取[ 重置密码 ]邮件</div>
+          <div class="get-email-btn" @click="getEmail">获取[ 重置密码 ]邮件</div>
           <span class="login-link" @click="toLogin">又想起来了？去登陆</span>
         </div>
       </index-page>
-      <alert-dialog :dialog-show="dialogShowStatus" :txt="dialogTxt" @dialog-show-change="listenDialogStatus"></alert-dialog>
+      <alert-dialog :dialog-show.sync="dialogShowStatus" :txt="dialogTxt"></alert-dialog>
     </div>
 </template>
 
 <script type="text/ecmascript-6">
-  import router from '../../router/index.js';
   import indexPage from 'components/indexPage/indexPage.vue';
   import dialog from 'base/alertDialog/alertdialog.vue';
 
   export default {
     data: function() {
       return {
+        email: '',
         dialogShowStatus: false,
         dialogTxt: ''
       };
     },
-    router: router,
     components: {
       'index-page': indexPage,
       'alert-dialog': dialog
     },
     methods: {
-      toLogin: function() {
+      _toggleDialog(txt = '') {
+        this.dialogShowStatus = !this.dialogShowStatus;
+        this.dialogTxt = txt;
+      },
+      _sendEmail({url, account}) {
+        // 提交账号给后台 获取密码邮件
+        return this.$http.post(url, {
+          mail: account
+        }, {
+          emulateJSON: true
+        });
+      },
+      toLogin() {
         this.$router.push('/login');
       },
-      listenDialogStatus: function(bool) {
-        this.dialogShowStatus = bool;
+      getEmail() {
+        this._toggleDialog('抱歉, 邮件系统尚未完成');
       }
     }
   };
@@ -108,7 +119,7 @@
   @media screen and (max-height: 450px)
     .findpwd-wrapper
       .input-group
-        top: 30px
+        bottom: 25%
       .btn-group
         display: none
         opacity: 0

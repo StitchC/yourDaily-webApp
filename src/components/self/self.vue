@@ -40,7 +40,7 @@
         </div>
       </scroll-view>
     </div>
-    <modify-user-info :modify-info-show="toggleModifyInfo" :user-data="userInfo" @modify-info-close="closeModifyInfo"></modify-user-info>
+    <modify-user-info :show.sync="toggleModifyInfo" :user-data="userInfo"></modify-user-info>
     <photo-preview-list :images-list="userInfo.images" :show="photoListShow" :images-show-index="photoListShowIndex" @photo-preview-list-hide="photoPreviewHide"></photo-preview-list>
   </div>
 </template>
@@ -67,9 +67,6 @@
       'scroll-view': scrollView
     },
     methods: {
-      closeModifyInfo() {
-        this.toggleModifyInfo = false;
-      },
       showModifyInfo() {
         this.toggleModifyInfo = true;
       },
@@ -88,9 +85,9 @@
       avatar() {
         if(this.userInfo.avatar === '') {
           if(this.userInfo.sex === '1') {
-            return '/static/images/male-avatar.jpg';
+            return './static/images/male-avatar.jpg';
           }else {
-            return '/static/images/female-avatar.jpg';
+            return './static/images/female-avatar.jpg';
           }
         }else {
           return this.userInfo.avatar;

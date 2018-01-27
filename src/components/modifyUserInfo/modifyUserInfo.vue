@@ -29,8 +29,8 @@
           <span class="edit-btn icon-arrow-right" :class="{'male-theme': userInfo.sex === '1', 'female-theme': userInfo.sex === '0'}" @click="modifySex"></span>
         </div>
       </div>
-      <info-input :init-data="initInfoInput" :input-show="toggleInput" @input-close="closeInput"></info-input>
-      <upload-image :show="uploadImgShow" @upload-img-close="toggleUploadImage"></upload-image>
+      <info-input :init-data="initInfoInput" :show.sync="toggleInput"></info-input>
+      <upload-image :show.sync="uploadImgShow"></upload-image>
     </div>
   </transition>
 </template>
@@ -58,7 +58,7 @@
       };
     },
     props: {
-      modifyInfoShow: {
+      show: {
         type: Boolean
       }
     },
@@ -71,10 +71,7 @@
         toggleSelectSex: 'TOGGLE_SELECT_SEX'
       }),
       close() {
-        this.$emit('modify-info-close');
-      },
-      toggleUploadImage() {
-        this.uploadImgShow = false;
+        this.$emit('update:show', false);
       },
       modifyUserAvatar() {
         this.uploadImgShow = true;
@@ -107,9 +104,6 @@
       modifySex() {
         // 个人信息修改性别 将vuex toggleSelectSex 修改为true 弹出选择性别组件
         this.toggleSelectSex(true);
-      },
-      closeInput() {
-        this.toggleInput = false;
       }
     },
     watch: {

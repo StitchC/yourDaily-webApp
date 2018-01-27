@@ -13,6 +13,7 @@
   "dependencies": {
     "axios": "^0.16.2",
     "better-scroll": "^0.1.15",
+    "lrz": "^4.9.40",
     "vue": "^2.4.2",
     "vue-awesome-swiper": "^2.6.5",
     "vue-lazyload": "^1.1.3",

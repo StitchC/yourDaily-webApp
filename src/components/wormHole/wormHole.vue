@@ -241,8 +241,9 @@
             }
           },
           time(val) {
-            if(val.getHours() === 21) {
-              // 如果当前时间为21点 重新获取一次用户的信息数据
+            if(val.getHours() === 21 && this.userInfo.matchStatus === '2') {
+              // 如果当前时间为21点而且用户为正在匹配状态
+              // 重新获取一次用户的信息数据
               this.reloadUserInfo({
                 id: this.userInfo.id
               }).then(() => {
@@ -260,7 +261,7 @@
             userDaily: 'getDaily'
           }),
           btnIcon() {
-            return this.userInfo.sex === '1' ? '/static/images/male-random.png' : '/static/images/female-random.png';
+            return this.userInfo.sex === '1' ? './static/images/male-random.png' : './static/images/female-random.png';
           },
           timeTxt() {
             return this._diffTime(MATCH_TIME);

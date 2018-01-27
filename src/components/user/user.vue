@@ -55,8 +55,8 @@
   import wormHole from 'components/wormHole/wormHole.vue';
   import loading from 'base/loading/loading.vue';
   import hintDialog from 'base/hintDialog/hintDialog.vue';
-  import {getLocalstorage, setLocalstorage, baseDataKey, getUserDailyLock} from 'common/js/localStorage.js';
   import {mapGetters, mapMutations, mapActions} from 'vuex';
+  import {getUserDailyLock} from 'common/js/localStorage.js';
 
 
   const SEX_NOTINIT = 2;
@@ -78,24 +78,18 @@
       };
     },
     created: function() {
-      let user = getLocalstorage(baseDataKey);
-      this.userId = user.id;
-      // 创建一个组件内部的变量
-      this.userConnectId = user.connect;
-      let dailyLock = getUserDailyLock(this.userId);
-      // 如果用户有设置到日记锁并且日记锁为启用状态 显示解锁界面
-      if(dailyLock && dailyLock.lockStatus === true) {
+      let dailyLock = getUserDailyLock(this.getUserInfo.id);
+      // 用户刷新页面的时候 返回到登录页面
+      if(!this.getUserInfo.id) {
+        this.$router.replace('/login');
+        return;
+      }
+      // 如果用户加了日记锁
+      if(dailyLock.lockStatus === true) {
         this.dailyLockShow = true;
       }
-      if(!this.getUserInfo.id) {
-        // 用户刷新页面的时候重新加载vuex 数据
-        this.reloadData({
-          id: this.userId,
-          connectId: this.userConnectId
-        });
-      }
-      if(parseInt(user.sex) === SEX_NOTINIT) {
-        // 如果用户是新注册用户
+      // 如果用户是新注册用户
+      if(parseInt(this.getUserInfo.sex) === SEX_NOTINIT) {
         this.toggleSexSelect(true);
       }else {
         setTimeout(() => {
@@ -140,11 +134,11 @@
         // 选择性别前显示加载提示组件
         this._toggleLoadingShow();
       },
-      confirmSex: function(sex) {
+      confirmSex: function() {
         // 选择完性别之后发送ajax 更新 vuex 数据
         this.reloadData({
-          id: this.userId,
-          connectId: this.userConnectId
+          id: this.getUserInfo.id,
+          connectId: this.getUserInfo.connect
         }).then(() => {
           // 确认选择性别后 隐藏性别选择组件
           this.toggleSexSelect(false);
@@ -152,10 +146,6 @@
           this._toggleLoadingShow();
           // 显示提示组件
           this._toggleHintDialogShow('修改成功');
-          // 设置localStorage 中的用户数据
-          let userData = getLocalstorage(baseDataKey);
-          userData.sex = sex;
-          setLocalstorage(baseDataKey, userData);
         });
       },
       settingHide: function() {
