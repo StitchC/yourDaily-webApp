@@ -41,7 +41,6 @@
   export default {
     data() {
       return {
-        show: this.inputShow,
         modifyContent: this.initData.content,
         saveStatus: 0,
         limit: this.initData.limit,

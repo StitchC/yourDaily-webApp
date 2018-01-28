@@ -47,7 +47,7 @@
         clearInfo: 'UPDATE_USER_INFO'
       }),
       hide: function() {
-        this.$emit('hide-setting');
+        this.$emit('update:show', false);
       },
       hideDailyLock: function() {
         this.dailyLockShow = false;

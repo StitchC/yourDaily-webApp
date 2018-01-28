@@ -26,16 +26,11 @@
     <daily-notepad :all-data="notepadData" :notepad-show="notepadShow" @notepad-close="notepadClose"></daily-notepad>
     <daily-detail-dialog :detail-data="dailyDetail" :detail-dialog-show="detailDialogShow"
                          @detail-dialog-close="detailDialogClose"></daily-detail-dialog>
+    <alert-dialog :dialog-show.sync="dialogShowStatus" :txt="dialogTxt"></alert-dialog>
   </div>
 </template>
 
 <script type="text/ecmascript-6">
-  import dailyNotePad from 'components/dailyNotePad/dailynotepad.vue';
-  import dailyDetailDialog from 'components/dailyDetailDialog/dailyDetailDialog.vue';
-  import dailyItem from 'base/dailyItem/dailyItem.vue';
-  import scrollView from 'base/scrollView/scrollView.vue';
-  import {mapGetters, mapActions} from 'vuex';
-
   /**
    * 日记列表组件
    *
@@ -50,6 +45,15 @@
    * 写日记的功能：
    *   写日记功能基本在dailynotepad 组件中实现 请看dailynotepad 组件的注释
    */
+
+  import dailyNotePad from 'components/dailyNotePad/dailynotepad.vue';
+  import dailyDetailDialog from 'components/dailyDetailDialog/dailyDetailDialog.vue';
+  import dailyItem from 'base/dailyItem/dailyItem.vue';
+  import scrollView from 'base/scrollView/scrollView.vue';
+  import alertDialog from 'base/alertDialog/alertdialog.vue';
+  import {mapGetters, mapActions} from 'vuex';
+
+
   export default {
     data: function () {
       return {
@@ -57,14 +61,17 @@
         notepadData: {},
         notepadShow: false,
         dailyDetail: {},
-        detailDialogShow: false
+        detailDialogShow: false,
+        dialogShowStatus: false,
+        dialogTxt: ''
       };
     },
     components: {
       'daily-notepad': dailyNotePad,
       'daily-detail-dialog': dailyDetailDialog,
       'scroll-view': scrollView,
-      'daily-item': dailyItem
+      'daily-item': dailyItem,
+      'alert-dialog': alertDialog
     },
     methods: {
       ...mapActions([
@@ -117,6 +124,10 @@
         }
         ;
       },
+      _toggleDialogShow(txt = '') {
+        this.dialogShowStatus = !this.dialogShowStatus;
+        this.dialogTxt = txt;
+      },
       _toggleLoadingIconShow() {
         this.loadingIconShow = !this.loadingIconShow;
       },
@@ -130,6 +141,9 @@
             setTimeout(() => {
               this._toggleLoadingIconShow();
             }, 800);
+          }).catch(() => {
+            this._toggleLoadingIconShow();
+            this._toggleDialogShow('你的网络出现问题了。');
           });
         }
       }

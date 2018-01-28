@@ -44,14 +44,13 @@
   /**
    * 个人资料组件
    *
-   * @param {Boolean} modifyInfoShow - 个人资料组件显示或隐藏
+   * @param {Boolean} show - 个人资料组件显示或隐藏
    *
    * */
 
   export default {
     data() {
       return {
-        show: this.modifyInfoShow,
         initInfoInput: {},
         toggleInput: false,
         uploadImgShow: false

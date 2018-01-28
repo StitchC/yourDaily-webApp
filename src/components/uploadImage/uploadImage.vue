@@ -80,7 +80,7 @@
            let reg = /image\/(jpg|png|jpeg)/;
            this.fileContent = this.$refs.fileInput.files[0];
            if(!reg.test(this.fileContent.type)) {
-             this._toggleDialog('上传的图片格式只能为 jpg,png,jpeg 哦');
+             this._toggleDialogShow('上传的图片格式只能为 jpg,png,jpeg 哦');
            }else {
              // 显示加载提示框
              this._toggleLoading();
@@ -95,7 +95,7 @@
       },
       uploadImg() {
         if(!this.fileContent) {
-          this._toggleDialog('你还没有选择图片喔');
+          this._toggleDialogShow('你还没有选择图片喔');
           return;
         }
         let formdata = new FormData();
@@ -125,12 +125,12 @@
           }else {
             // 隐藏加载提示框
             this._toggleLoading();
-            this._toggleDialog('你的网络有点小问题请稍候重试哦');
+            this._toggleDialogShow('你的网络有点小问题请稍候重试哦');
           }
         }).catch(() => {
           // 隐藏加载提示框
           this._toggleLoading();
-          this._toggleDialog('你的网络有点小问题请稍候重试哦');
+          this._toggleDialogShow('你的网络有点小问题请稍候重试哦');
         });
       }
     },

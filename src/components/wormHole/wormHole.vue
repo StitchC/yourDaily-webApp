@@ -326,14 +326,14 @@
     z-index: 60
     &.hole-slide-enter
       transform: translate3d(100%,0,0)
-    &.hole-slide-enter-to
-      transform: translate(0,0,0);
     &.hole-slide-enter-active
-      transition: all .4s ease
-    &.hole-slide-leave-to
-      transform: translate3d(100%,0,0);
+      transition: all .5s ease
+    &.hole-slide-enter-to
+      transform: translate3d(0,0,0)
     &.hole-slide-leave-active
-      transition: all .4s ease
+      transition: all .5s ease
+    &.hole-slide-leave-to
+      transform: translate3d(100%,0,0)
     .worm-hole-header
       padding: 10px 0 0 10px
       .icon

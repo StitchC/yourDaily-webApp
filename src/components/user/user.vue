@@ -9,8 +9,8 @@
             <router-link to="/user/calendar" class="nav-item">日历</router-link>
             <router-link to="/user/self" class="nav-item">我</router-link>
           </div>
-          <div class="worm-hold">
-            <img src="./sex-double.png" @click="showWormHole">
+          <div class="worm-hold" @click="showWormHole">
+            <img src="./sex-double.png">
           </div>
         </div>
       </div>
@@ -18,11 +18,11 @@
         <router-view></router-view>
       </div>
       <select-sex :select-show="selectSexShow" :user-id="userId" @before-select="beforeConfirmSex" @select-complete="confirmSex"></select-sex>
-      <user-setting :show="settingShow" @hide-setting="settingHide"></user-setting>
+      <user-setting :show.sync="settingShow" @hide-setting="settingHide"></user-setting>
+      <worm-hole :show.sync="holeShow"></worm-hole>
       <daily-lock :show="dailyLockShow" :status="1" @daily-lock-success="dailyLockSuccess"></daily-lock>
       <hint-dialog :show="hintDialogShow" :hint-txt="hintTxt" :delay="hintDialogDelay" @will-hide="hintDialogWillHide"></hint-dialog>
       <loading :show="loadingShow"></loading>
-      <worm-hole :show.sync="holeShow"></worm-hole>
     </div>
   </transition>
 </template>
@@ -168,9 +168,6 @@
       showWormHole() {
         this._toggleWormHoleShow();
       },
-      hideWormHole() {
-        this._toggleWormHoleShow();
-      },
       dailyLockSuccess: function() {
         this.dailyLockShow = false;
       }
@@ -279,7 +276,7 @@
           width: 30px
           height: 30px
           line-height: 30px
-          font-size: 0
+          font-size: 18px
           text-align: center
           img
             width: 20px

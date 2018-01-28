@@ -291,7 +291,7 @@
         }
         // 文件名不符显示提示框 返回空值结束函数
         if(!reg.test(file.type)) {
-          this._toggleDialog('上传的图片格式只能为 jpg,png,jpeg 哦');
+          this._toggleDialogShow('上传的图片格式只能为 jpg,png,jpeg 哦');
           return;
         }
         // 是否有相同文件名
@@ -304,6 +304,7 @@
 
         // 显示加载提示框
         this._toggleLoadingShow();
+        // 压缩图片
         lrz(file).then((rst) => {
           let fileObj = {
             content: rst.file,

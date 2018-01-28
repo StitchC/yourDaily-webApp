@@ -60,7 +60,6 @@
           this.$router.push('/login');
         }
       },
-
       _toggleDialog(txt = '') {
         this.dialogShowStatus = !this.dialogShowStatus;
         this.dialogTxt = txt;
@@ -80,9 +79,11 @@
         let reg = /^[A-Za-z\d]+([-_.][A-Za-z\d]+)*@([A-Za-z\d]+[-.])+[A-Za-z\d]{2,4}$/;
         if(this.accountVal === '' || this.pwdVal === '') {
           this._toggleDialog('注册的邮箱或密码不能为空哦');
+          return;
         }
         if(!reg.test(this.accountVal)) {
           this._toggleDialog('请填写正确的邮箱地址哦');
+          return;
         }else if(reg.test(this.accountVal) && this.pwdVal !== '') {
           if(this.pwdVal.length >= 16) {
             this._toggleDialog('你的密码太长了哦最多只能输入16位英文，数字或特殊字符');
