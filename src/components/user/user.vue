@@ -18,11 +18,12 @@
         <router-view></router-view>
       </div>
       <select-sex :select-show="selectSexShow" :user-id="userId" @before-select="beforeConfirmSex" @select-complete="confirmSex"></select-sex>
-      <user-setting :show.sync="settingShow" @hide-setting="settingHide"></user-setting>
       <worm-hole :show.sync="holeShow"></worm-hole>
+      <user-setting :show.sync="settingShow" @hide-setting="settingHide"></user-setting>
       <daily-lock :show="dailyLockShow" :status="1" @daily-lock-success="dailyLockSuccess"></daily-lock>
       <hint-dialog :show="hintDialogShow" :hint-txt="hintTxt" :delay="hintDialogDelay" @will-hide="hintDialogWillHide"></hint-dialog>
       <loading :show="loadingShow"></loading>
+      <!--<test :show.sync="testShow"></test>-->
     </div>
   </transition>
 </template>
@@ -74,7 +75,8 @@
         hintDialogShow: false,
         hintTxt: '',
         hintDialogDelay: 400,
-        holeShow: false
+        holeShow: false,
+        testShow: false
       };
     },
     created: function() {
@@ -85,7 +87,7 @@
         return;
       }
       // 如果用户加了日记锁
-      if(dailyLock.lockStatus === true) {
+      if(dailyLock && dailyLock.lockStatus === true) {
         this.dailyLockShow = true;
       }
       // 如果用户是新注册用户

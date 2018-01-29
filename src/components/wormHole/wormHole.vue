@@ -9,8 +9,8 @@
           <p class="txt">进入虫洞, 遇见神秘的TA</p>
         </div>
         <div class="btn-group">
-          <div class="time-hint" v-show="randomMatchTimeShow">距离虫洞打开时间还有: {{timeTxt}}</div>
-          <div class="left-match-time-hint" v-show="leftTimeShow">距离匹配结束还有: {{leftTimeTxt}}</div>
+          <div class="time-hint" v-show="randomMatchTimeShow">匹配中...</div>
+          <div class="left-match-time-hint" v-show="leftTimeShow">虫洞开启中...</div>
           <div class="random-match" v-show="randomMatchBtnShow" @click="joinMatch">
             <img :src="btnIcon" alt="" class="btn-icon">
             <span class="txt">随机匹配</span>
@@ -56,7 +56,11 @@
     import setDateTime from 'common/js/setDateTime.js';
 
     // 定义虫洞匹配时间的时分秒
-    const MATCH_TIME = setDateTime(20, 0, 0);
+    const MATCH_TIME = setDateTime({
+      h: 20,
+      m: 0,
+      s: 0
+    });
 
 
     // 定义虫洞运作的时间
@@ -81,6 +85,9 @@
             type: Boolean
           }
         },
+        created() {
+          console.log(MATCH_TIME);
+        },
         components: {
           'alert-dialog': alert,
           'hint-dialog': hintDialog,
@@ -99,6 +106,7 @@
           _diffTime(endTime) {
             // 获得时间的差值
             let diffDate;
+            /*
             if(this.time.getHours() >= 21) {
               // 如果当前用户加入的匹配事件大于21 点
               // 时间的差值计算为 明天的20点 减去 当前时间
@@ -108,7 +116,7 @@
               // 否则直接计算时间差值
               diffDate = new Date(endTime).getTime() - this.time.getTime();
             }
-
+            */
             let hour = Math.floor(diffDate / 1000 / 60 / 60);
             let minutes = Math.floor(diffDate / 1000 / 60 % 60);
             let seconds = Math.floor(diffDate / 1000 % 60);
@@ -241,9 +249,9 @@
             }
           },
           time(val) {
-            if(val.getHours() === 21 && this.userInfo.matchStatus === '2') {
-              // 如果当前时间为21点而且用户为正在匹配状态
-              // 重新获取一次用户的信息数据
+            if(val.getHours() >= 21 && this.userInfo.matchStatus === '2') {
+              // 如果当前时间为21点或之后 而且用户为正在匹配状态
+              // 更新一次用户的信息数据
               this.reloadUserInfo({
                 id: this.userInfo.id
               }).then(() => {
@@ -264,9 +272,11 @@
             return this.userInfo.sex === '1' ? './static/images/male-random.png' : './static/images/female-random.png';
           },
           timeTxt() {
+            // 存在性能问题 待优化
             return this._diffTime(MATCH_TIME);
           },
           leftTimeTxt() {
+            // 存在性能问题 待优化
             return this._diffTime(HOLE_RUNTIME);
           },
           leftTimeShow() {
@@ -348,6 +358,7 @@
     .btn-group
       .time-hint,
       .left-match-time-hint
+        margin-top: 10px
         line-height: 20px
         text-align: center
         color: #9d9d9d
