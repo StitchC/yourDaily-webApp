@@ -2,7 +2,7 @@
 
 > 你的日记webApp
 
-> [demo地址：123.207.51.189/yourdailyapp](123.207.51.189/yourdailyapp) 
+> demo 地址：123.207.51.189/yourdailyapp (手机浏览器打开效果更佳)
 
 ## Build Setup
 
