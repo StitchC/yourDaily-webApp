@@ -1,6 +1,8 @@
 # yourdaily
 
-> 高仿你的日记webApp
+> 你的日记webApp
+
+> [demo地址：123.207.51.189/yourdailyapp](123.207.51.189/yourdailyapp) 
 
 ## Build Setup
 
