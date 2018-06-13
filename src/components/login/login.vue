@@ -63,14 +63,14 @@
           this._toggleDialog('账号或密码不能为空哦');
         }else {
           this._toggleLoadingShow();
-          login('/yourdaily/php/login/check.php', {
+          login({
             account: this.accountVal,
             pwd: this.pwdVal
           }).then((res) => {
             if(res.data.status === SUCCESS_CODE) {
               // 登录成功
               // 发送请求获取用户数据
-              getAllData('/yourdaily/php/user/getUserData.php', {
+              getAllData({
                 id: res.data.info.id,
                 connectId: res.data.info.connect
               }).then((res) => {

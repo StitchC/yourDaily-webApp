@@ -1,6 +1,6 @@
 <template>
   <div class="calendar-wrapper">
-    <div class="calendar-main" :class="{'male-theme':userInfo.sex === '1', 'female-theme': userInfo.sex === '0'}">
+    <div class="calendar-main" :class="{'male-theme':userInfo.sex === 1, 'female-theme': userInfo.sex === 0}">
       <div class="reward-btn icon-arrow-left" @click="rewardDate"></div>
       <div class="date-txt">
         <p class="month">{{curDate | translateMonth}}月</p>
@@ -10,7 +10,7 @@
       <div class="next-btn icon-arrow-right" @click="nextDate"></div>
     </div>
     <div class="no-match-daily-hint" v-show="matchDailys.length === 0 && isToday">
-      <div class="hint-content" :class="{'male-theme': userInfo.sex === '1', 'female-theme': userInfo.sex === '0'}"
+      <div class="hint-content" :class="{'male-theme': userInfo.sex === 1, 'female-theme': userInfo.sex === 0}"
            @click="addDaily">
         <span class="icon icon-pen"></span>
         <span class="txt">添加日记</span>
@@ -78,7 +78,6 @@
         });
       },
       addDaily() {
-        console.log('fk');
         this.notepadData = {
           editType: 0,
           curTime: new Date(),
@@ -95,7 +94,7 @@
           let data = this.userDaily[key];
           this.dailyDetail = {
             dailyId: data.id,
-            time: data.publicTime,
+            time: data.publictime,
             title: data.title,
             content: data.content,
             userId: data.userId,
@@ -141,13 +140,12 @@
         let resultList = [];
 
         for (let key in this.userDaily) {
-          let tempArr = this.userDaily[key].publicTime.split(' ');
+          let tempArr = this.userDaily[key].publictime.split(' ');
           let tempItem = tempArr[0];
           if (tempItem === curDateStr && this.userDaily[key].userId === this.userInfo.id) {
             resultList.push(this.userDaily[key]);
           }
         }
-        console.log(resultList);
         return resultList;
       },
       isToday() {

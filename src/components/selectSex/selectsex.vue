@@ -20,6 +20,7 @@
   import loading from 'base/loading/loading.vue';
   import {SUCCESS_CODE} from 'api/statusCode';
   import {netWorkError} from 'common/js/dialog';
+  import { modifySex } from 'api/allApi.js';
   import {mapGetters} from 'vuex';
 
   /**
@@ -53,16 +54,13 @@
         this.loadingShow = !this.loadingShow;
       },
       enterDaily() {
-        this.$http.post('/yourdaily/php/user/modifySex.php', {
+        // 显示加载提示框
+        // this._toggleLoading();
+        modifySex({
           sex: this.curSex,
           id: this.userInfo.id
-        }, {
-          emulateJSON: true,
-          before() {
-           this.$emit('before-select');
-          }
         }).then(res => {
-          let data = res.body;
+          let data = res.data;
           if(data.status === SUCCESS_CODE) {
             this.$emit('select-complete', this.curSex);
             this.curSex = 2;

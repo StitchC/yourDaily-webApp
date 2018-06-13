@@ -33,6 +33,7 @@
   import loading from 'base/loading/loading.vue';
   import hintDialog from 'base/hintDialog/hintDialog.vue';
   import {SUCCESS_CODE, ERROR_CODE} from 'api/statusCode.js';
+  import {modifyUserName, modifyUserMotto} from 'api/allApi.js';
   import {mapActions} from 'vuex';
 
 
@@ -83,24 +84,6 @@
         this.hintDialogShow = !this.hintDialogShow;
         this.hintTxt = txt;
       },
-      _modifyUserName(url, args) {
-        return this.$http.post(url, args, {
-          emulateJSON: true,
-          before() {
-            // 显示加载提示框
-            this._toggleLoadingShow();
-          }
-        });
-      },
-      _modifyMotto(url, args) {
-        return this.$http.post(url, args, {
-          emulateJSON: true,
-          before() {
-            // 显示加载提示框
-            this._toggleLoadingShow();
-          }
-        });
-      },
       _modifySuccess() {
         // 修改成功之后要做的事情
         this.saveStatus = 1;
@@ -128,11 +111,14 @@
       saveClick() {
         if(this.saveStatus === 0) {
           if(this.initData.modifyType === MODIFY_USERNAME_CODE) {
-            this._modifyUserName('/yourdaily/php/user/modifyUserName.php', {
+            // 显示加载框
+            this._toggleLoadingShow();
+
+            modifyUserName({
               id: this.initData.userId,
               username: this.modifyContent
             }).then(res => {
-              let data = res.body;
+              let data = res.data;
               if(data.status === SUCCESS_CODE) {
                 this._modifySuccess();
               }else if(data.status === ERROR_CODE) {
@@ -142,11 +128,14 @@
               this._modifyFailed();
             });
           }else if(this.initData.modifyType === MODIFY_MOTTO_CODE) {
-            this._modifyMotto('/yourdaily/php/user/modifyMotto.php', {
+            // 显示加载框
+            this._toggleLoadingShow();
+            
+            modifyUserMotto({
               id: this.initData.userId,
               motto: this.modifyContent
             }).then(res => {
-              let data = res.body;
+              let data = res.data;
               if(data.status === SUCCESS_CODE) {
                 this._modifySuccess();
               }else if(data.status === ERROR_CODE) {

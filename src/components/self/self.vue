@@ -1,6 +1,6 @@
 <template>
   <div class="self-wrapper">
-    <div class="user-detail" :class="{'male-theme': userInfo.sex === '1', 'female-theme': userInfo.sex === '0'}">
+    <div class="user-detail" :class="{'male-theme': userInfo.sex === 1, 'female-theme': userInfo.sex === 0}">
       <div class="user-detail-main">
         <div class="avatar-wrap">
           <img :src="avatar">
@@ -32,7 +32,7 @@
     <div class="gallary-wrap">
       <scroll-view :content="userInfo.images" ref="scroll">
         <div class="gallary">
-          <div class="image-item" v-for="(image, index) in userInfo.images">
+          <div class="image-item" v-for="(image, index) in userInfo.images" :key="index">
             <div class="inner-img-wrap">
               <img :src="image" @click="photoPreviewShow($event, index)">
             </div>
@@ -84,7 +84,7 @@
       }),
       avatar() {
         if(this.userInfo.avatar === '') {
-          if(this.userInfo.sex === '1') {
+          if(this.userInfo.sex === 1) {
             return './static/images/male-avatar.jpg';
           }else {
             return './static/images/female-avatar.jpg';

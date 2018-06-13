@@ -1,14 +1,12 @@
 import * as type from './mutation-types';
-import axios from 'axios';
+import {getAllData, getUserInfo} from 'api/allApi.js';
 
 // 重新加载全部用户数据 包括日记及个人信息
 export const reloadData = function({commit}, {id, connectId}) {
   return new Promise((resolve, reject) => {
-    axios.get('/yourdaily/php/user/getUserData.php', {
-      params: {
-        id,
-        connectId
-      }
+    getAllData({
+      id,
+      connectId
     }).then((res) => {
       commit(type.UPDATE_DAILY, res.data.daily);
       commit(type.UPDATE_USER_INFO, res.data.info);
@@ -22,10 +20,8 @@ export const reloadData = function({commit}, {id, connectId}) {
 // 重新加载用户信息
 export const reloadUserInfo = function({commit}, {id}) {
   return new Promise((resolve, reject) => {
-    axios.get('/yourdaily/php/user/getUserInfo.php', {
-      params: {
+    getUserInfo({
         id
-      }
     }).then((res) => {
       commit(type.UPDATE_USER_INFO, res.data.info);
       resolve();

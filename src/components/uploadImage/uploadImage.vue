@@ -1,6 +1,6 @@
 <template>
   <transition name="upload-image-slide">
-    <div class="upload-image-wrapper" :class="{'male-theme': userInfo.sex === '1', 'female-theme': userInfo.sex === '0'}" v-show="show">
+    <div class="upload-image-wrapper" :class="{'male-theme': userInfo.sex === 1, 'female-theme': userInfo.sex === 0}" v-show="show">
       <div class="upload-image-header">
         <h3 class="title">上传文件</h3>
         <span class="close-btn icon-close" @click="close"></span>
@@ -28,6 +28,7 @@
   import alertDialog from 'base/alertDialog/alertdialog.vue';
   import loading from 'base/loading/loading.vue';
   import {SUCCESS_CODE} from 'api/statusCode.js';
+  import {uploadAvatar} from 'api/allApi.js';
   import {mapGetters, mapActions} from 'vuex';
   import lrz from 'lrz';
   /**
@@ -67,9 +68,6 @@
       _toggleLoading() {
         this.loadingShow = !this.loadingShow;
       },
-      _sendImg({url, data, opts}) {
-        return this.$http.post(url, data, opts);
-      },
       close() {
         this.$emit('update:show', false);
         this.imgURL = '';
@@ -100,17 +98,20 @@
         }
         let formdata = new FormData();
         formdata.append('avatar', this.fileContent);
-        formdata.append('id', this.userInfo.id);
-        this._sendImg({
-          url: '/yourdaily/php/user/uploadAvatar.php',
-          data: formdata,
-          opts: {
-            before: function() {
-              this._toggleLoading();
-            }
-          }
-        }).then((res) => {
-          let data = res.body;
+
+        let json = {
+          id: this.userInfo.id
+        };
+
+
+        formdata.append('id', new Blob(
+          [JSON.stringify(json)],
+           {type: 'application/json'}
+         ));
+
+        this._toggleLoading();
+        uploadAvatar(formdata).then((res) => {
+          let data = res.data;
           if(data.status === SUCCESS_CODE) {
             this.reloadData({
               id: this.userInfo.id,

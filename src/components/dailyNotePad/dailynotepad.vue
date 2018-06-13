@@ -28,7 +28,7 @@
       </div>
       <transition name="photo-list-fade">
         <ul class="photo-list-preview" v-show="fileContenList.length !== 0">
-          <li v-for="(item, index) in fileContenList" class="img-item">
+          <li v-for="(item, index) in fileContenList" class="img-item" :key="index">
             <img :src="item.url" @click="seePhoto($event, index)">
           </li>
         </ul>
@@ -82,6 +82,7 @@
   import hintDialog from 'base/hintDialog/hintDialog.vue';
   import {formateDate} from 'common/js/formateDate.js';
   import {SUCCESS_CODE, ERROR_CODE} from 'api/statusCode.js';
+  import {uploadDaily} from 'api/allApi.js';
   import {mapGetters, mapActions} from 'vuex';
   import lrz from 'lrz';
 
@@ -201,7 +202,7 @@
         // 遍历所有文件保存到 formdata
         if(this.fileContenList.length > 0) {
           for(let i = 0; i < this.fileContenList.length; i++) {
-            formdata.append('file[]', this.fileContenList[i].content);
+            formdata.append('files', this.fileContenList[i].content);
           };
         }
         // 保存所有除图片外的日记信息
@@ -212,10 +213,15 @@
           mood: this.curMoodType,
           weather: this.curWeatherType
         };
-        // 遍历日记信息 保存到 formdata
-        for(let key in baseData) {
-          formdata.append(key, baseData[key]);
-        };
+
+       
+        formdata.append('dailyInfo', new Blob(
+          [JSON.stringify(baseData)],
+          {
+            type: 'application/json'
+          }
+        ));
+      
 
         return formdata;
       },
@@ -226,9 +232,10 @@
             this.dialogTxt = '你还没有输入日记内容哦';
           }else {
             let formdata = this._formatForm();
-
-            this._doUploadDaily('/yourdaily/php/user/uploadDaily.php', formdata).then(res => {
-              if(res.body.status === SUCCESS_CODE) {
+            // 显示加载框
+            this._toggleLoadingShow();
+            uploadDaily(formdata).then(res => {
+              if(res.data.status === SUCCESS_CODE) {
                 this.saveBtnStatus = DAILY_HAS_SAVE;
                 // 发布成功后 发送ajax 请求 更新vuex 数据
                 this.reloadData({

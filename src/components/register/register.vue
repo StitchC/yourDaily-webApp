@@ -27,6 +27,7 @@
   import loading from 'base/loading/loading.vue';
   import {SUCCESS_CODE, ERROR_CODE} from 'api/statusCode';
   import {netWorkError} from 'common/js/dialog.js';
+  import {register} from 'api/allApi';
 
 
   export default {
@@ -89,16 +90,11 @@
             this._toggleDialog('你的密码太长了哦最多只能输入16位英文，数字或特殊字符');
             this.pwdVal = '';
           }else {
-            this.$http.post('/yourdaily/php/register/check.php', {
+            register({
               account: this.accountVal,
               pwd: this.pwdVal
-            }, {
-              emulateJSON: true,
-              before() {
-                this.loadingShow = true;
-              }
             }).then(res => {
-              let data = res.body;
+              let data = res.data;
 
               if(data.status === SUCCESS_CODE) {
                 this._toggleDialog('注册成功啦');

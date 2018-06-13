@@ -1,14 +1,14 @@
 <template>
   <li class="daily-item"
-      :class="{'male-theme': daily.sex === '1', 'female-theme': daily.sex === '0'}"
+      :class="{'male-theme': daily.sex === 1, 'female-theme': daily.sex === 0}"
       @click="enterDailyDetail($event, dailykey)">
     <div class="date-time">
-      <div class="date">{{daily.publicTime | translateDate}}</div>
-      <div class="day">{{daily.publicTime | translateDay}}</div>
+      <div class="date">{{daily.publictime | translateDate}}</div>
+      <div class="day">{{daily.publictime | translateDay}}</div>
     </div>
     <div class="daily-main">
       <div class="header">
-        <div class="time">{{daily.publicTime | translateTime}}</div>
+        <div class="time">{{daily.publictime | translateTime}}</div>
         <div class="mood-weather" v-show="daily.mood !== -1 && daily.weather !== -1">
           <span class="mood" :class="outputMoodClass(daily.mood)"></span>
           <span class="weather" :class="outputWeatherClass(daily.weather)"></span>

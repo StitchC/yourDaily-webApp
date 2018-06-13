@@ -1,7 +1,7 @@
 <template>
   <transition name="modify-info-slide">
     <div class="modify-user-info-wrapper" v-show="show">
-      <div class="modify-user-info-header" :class="{'male-theme': userInfo.sex === '1', 'female-theme': userInfo.sex === '0'}">
+      <div class="modify-user-info-header" :class="{'male-theme': userInfo.sex === 1, 'female-theme': userInfo.sex === 0}">
         <span class="close-btn icon-close" @click="close"></span>
         <h3 class="header-title">修改信息</h3>
       </div>
@@ -10,23 +10,23 @@
           <span class="title">头像</span>
           <div class="info-content avatar-wrap">
             <img :src="avatar">
-            <span class="edit-btn icon-arrow-right" :class="{'male-theme': userInfo.sex === '1', 'female-theme': userInfo.sex === '0'}" @click="modifyUserAvatar"></span>
+            <span class="edit-btn icon-arrow-right" :class="{'male-theme': userInfo.sex === 1, 'female-theme': userInfo.sex === 0}" @click="modifyUserAvatar"></span>
           </div>
         </div>
         <div class="info-content-wrap user-name">
           <span class="title">你的名字</span>
           <span class="info-content user-name-content">{{userInfo.username}}</span>
-          <span class="edit-btn icon-arrow-right" :class="{'male-theme': userInfo.sex === '1', 'female-theme': userInfo.sex === '0'}" @click="modifyUserName"></span>
+          <span class="edit-btn icon-arrow-right" :class="{'male-theme': userInfo.sex === 1, 'female-theme': userInfo.sex === 0}" @click="modifyUserName"></span>
         </div>
         <div class="info-content-wrap user-motto">
           <span class="title">格言</span>
           <span class="info-content user-otto-content">{{userInfo.motto}}</span>
-          <span class="edit-btn icon-arrow-right" :class="{'male-theme': userInfo.sex === '1', 'female-theme': userInfo.sex === '0'}" @click="modifyMotto"></span>
+          <span class="edit-btn icon-arrow-right" :class="{'male-theme': userInfo.sex === 1, 'female-theme': userInfo.sex === 0}" @click="modifyMotto"></span>
         </div>
         <div class="info-content-wrap user-sex">
           <span class="title">身份</span>
-          <span class="info-content user-sex-content" :class="{'icon-male-icon': userInfo.sex === '1', 'icon-female-icon': userInfo.sex === '0'}"></span>
-          <span class="edit-btn icon-arrow-right" :class="{'male-theme': userInfo.sex === '1', 'female-theme': userInfo.sex === '0'}" @click="modifySex"></span>
+          <span class="info-content user-sex-content" :class="{'icon-male-icon': userInfo.sex === 1, 'icon-female-icon': userInfo.sex === 0}"></span>
+          <span class="edit-btn icon-arrow-right" :class="{'male-theme': userInfo.sex === 1, 'female-theme': userInfo.sex === 0}" @click="modifySex"></span>
         </div>
       </div>
       <info-input :init-data="initInfoInput" :show.sync="toggleInput"></info-input>
@@ -116,7 +116,7 @@
       }),
       avatar() {
         if(this.userInfo.avatar === '') {
-          if(this.userInfo.sex === '1') {
+          if(this.userInfo.sex === 1) {
             return '/static/images/male-avatar.jpg';
           }else {
             return '/static/images/female-avatar.jpg';

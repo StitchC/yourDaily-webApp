@@ -5,10 +5,10 @@
         <img src="./loading.gif">
       </div>
     </transition>
-    <div class="no-daily-hint" v-show="userDaily.length === 0">
+    <div class="no-daily-hint" v-show="Object.keys(userDaily).length === 0">
       <h3 class="hint-title">NO Enteries</h3>
       <p class="hint-txt">你还没有写过日记</p>
-      <p class="begin-write-daily" :class="{'male-theme': userInfo.sex === '1', 'female-theme': userInfo.sex === '0'}"
+      <p class="begin-write-daily" :class="{'male-theme': userInfo.sex === 1, 'female-theme': userInfo.sex === 0}"
          @click="showNotepad">开始写日记</p>
     </div>
     <div class="daily-list-wrap">
@@ -18,15 +18,20 @@
         </ul>
       </scroll-view>
     </div>
-    <div class="daily-bottom-bar" :class="{'male-theme': userInfo.sex === '1', 'female-theme': userInfo.sex === '0'}"
+    <div class="daily-bottom-bar" :class="{'male-theme': userInfo.sex === 1, 'female-theme': userInfo.sex === 0}"
          v-show="userDaily.length !== 0">
       <span class="write-daily-btn icon-pen" @click="showNotepad"></span>
       <span class="total-daily-num">{{userInfo.count}}篇日记</span>
     </div>
     <daily-notepad :all-data="notepadData" :notepad-show="notepadShow" @notepad-close="notepadClose"></daily-notepad>
+    
     <daily-detail-dialog :detail-data="dailyDetail" :detail-dialog-show="detailDialogShow"
-                         @detail-dialog-close="detailDialogClose"></daily-detail-dialog>
-    <alert-dialog :dialog-show.sync="dialogShowStatus" :txt="dialogTxt"></alert-dialog>
+    @detail-dialog-close="detailDialogClose"
+    ></daily-detail-dialog>
+
+    <alert-dialog 
+    :dialog-show.sync="dialogShowStatus" 
+    :txt="dialogTxt"></alert-dialog>
   </div>
 </template>
 
@@ -112,10 +117,10 @@
 
           this.dailyDetail = {
             dailyId: detail.id,
-            time: detail.publicTime,
+            time: detail.publictime,
             title: detail.title,
             content: detail.content,
-            userId: detail.userId,
+            userId: detail.userid,
             sex: parseInt(detail.sex),
             images: detail.image === '' ? [] : detail.image.split(',')
           };

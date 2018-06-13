@@ -1,6 +1,6 @@
 <template>
   <transition name="user-fade">
-    <div class="user-wrapper" :class="{'male-theme': getUserInfo.sex === '1', 'female-theme': getUserInfo.sex === '0'}">
+    <div class="user-wrapper" :class="{'male-theme': getUserInfo.sex === 1, 'female-theme': getUserInfo.sex === 0}">
       <div class="user-header">
         <div class="user-tool-bar">
           <div class="setting-icon icon-setting" @click="showSetting"></div>
@@ -138,6 +138,8 @@
       },
       confirmSex: function() {
         // 选择完性别之后发送ajax 更新 vuex 数据
+        // 显示加载框
+        this._toggleLoadingShow();
         this.reloadData({
           id: this.getUserInfo.id,
           connectId: this.getUserInfo.connect

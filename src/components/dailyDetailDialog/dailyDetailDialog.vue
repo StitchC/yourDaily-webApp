@@ -15,7 +15,7 @@
                 <p class="title" v-show="detailData.title !== ''">{{detailData.title}}</p>
                 <p class="txt">{{detailData.content}}</p>
                 <ul class="daily-image-list">
-                  <li v-for="(item, index) in detailData.images" class="image-item">
+                  <li v-for="(item, index) in detailData.images" class="image-item" :key="index">
                     <img @click="viewPhoto($event, index)" @load="imgLoad" v-lazy="item">
                   </li>
                 </ul>
@@ -66,6 +66,7 @@
   import hintDialog from 'base/hintDialog/hintDialog.vue';
   import {mapGetters, mapActions} from 'vuex';
   import {formateDate} from 'common/js/formateDate.js';
+  import {deleteDaily} from 'api/allApi.js';
   import scrollView from 'base/scrollView/scrollView.vue';
 
   const SUCCESS_CODE = 200;
@@ -73,7 +74,6 @@
     data() {
       return {
         show: this.detailDialogShow,
-        detail: this.detailData,
         selectDialogShow: false,
         selectDialogTxt: '',
         photoListShow: false,
@@ -94,9 +94,10 @@
     watch: {
       detailDialogShow: function(val) {
         this.show = val;
+        console.log(val);
       },
       detailData: function(val) {
-
+          console.log(this.detail);
       }
     },
     methods: {
@@ -126,6 +127,9 @@
         let curDailyUserId = this.detailData.userId;
         let curLoginUserId = this.userInfo.id;
 
+        console.log(curDailyUserId, curLoginUserId);
+        
+
         if(curDailyUserId === curLoginUserId) {
           return true;
         }else {
@@ -140,15 +144,11 @@
         this.selectDialogShow = false;
       },
       selectDialogConfirm() {
-        this.$http.post('/yourdaily/php/user/deleteDaily.php', {
+        this._toggleLoading();
+        deleteDaily({
           id: this.detailData.dailyId
-        }, {
-          emulateJSON: true,
-          before() {
-            this._toggleLoading();
-          }
         }).then(res => {
-          let msg = res.body;
+          let msg = res.data;
           if(msg.status === SUCCESS_CODE) {
             // 隐藏选择对话框
             this.selectDialogShow = false;
@@ -191,6 +191,7 @@
     filters: {
       translateYear(val) {
         let date = new Date(val);
+  
         return date.getFullYear();
       },
       translateMonth(val) {

@@ -1,7 +1,7 @@
 <template>
   <transition name="setting-wrapper-slide">
     <div class="setting-wrapper" v-show="show">
-      <div class="setting-header" :class="{'male-theme': userInfo.sex === '1', 'female-theme': userInfo.sex === '0'}">
+      <div class="setting-header" :class="{'male-theme': userInfo.sex === 1, 'female-theme': userInfo.sex === 0}">
         <span class="close-btn icon-close" @click="hide"></span>
         <h3 class="setting-title">设置</h3>
       </div>
